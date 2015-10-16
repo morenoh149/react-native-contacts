@@ -5,15 +5,16 @@ Work in progress successor to react-native-addressbook.
 * Preliminary iOS and Android support
 * API subject to revision, changelog in release notes  
 
+| Feature | iOS | Android |
+| ------- | --- | ------- |
+| getAll  | ✔   | ✔ |
+| addContact | ✔ | 😞 |
+| updateContact | ✔ | 😞 |
+| deleteContact | ✔ | 😞 |
+| get with options | 😞 | 😞 |
+| groups  | 😞 | 😞 |
 
-feature | iOS | Android
-------- | -- | -------
-getAll | ✔ | ✔ 
-addContact | ✔ | 😞
-updateContact | ✔ | 😞
-deleteContact | ✔ | 😞
-get with options | 😞 | 😞
-groups | 😞 | 😞
+
 
 ## API
 `getAll` (callback) - returns *all* contacts as an array of objects  

@@ -4,8 +4,6 @@ import android.provider.ContactsContract;
 import android.content.ContentResolver;
 import android.content.Context;
 
-import android.widget.Toast;
-
 import android.database.Cursor;
 import android.net.Uri;
 import android.content.ContentUris;
@@ -29,8 +27,9 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     super(reactContext);
   }
 
+  // @TODO can potentially be much faster: http://stackoverflow.com/questions/12109391/getting-name-and-email-from-contact-list-is-very-slow
   @ReactMethod
-  public void getContacts(Callback callback) {
+  public void getAll(Callback callback) {
     ContentResolver cr = getReactApplicationContext().getContentResolver();
     Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
 
@@ -55,39 +54,97 @@ public class ContactsManager extends ReactContextBaseJavaModule {
           contact.putString("middleName", middle);
       }
 
-      // String givenName = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME));
-      // String familyName = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME));
-      // String middleName = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME));
-      //
-      // // Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id);
-      // // Uri thumbnailPath = Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
-
       WritableArray phoneNumbers = Arguments.createArray();
-
       if (Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-         Cursor pCur = cr.query(
+        Cursor pCur = cr.query(
                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                    null,
                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",
                    new String[]{stringId}, null);
-         while (pCur.moveToNext()) {
-             WritableMap phoneNoMap = Arguments.createMap();
-             String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-             phoneNoMap.putString("number", phoneNo);
-             phoneNumbers.pushMap(phoneNoMap);
-            //  Toast.makeText(getReactApplicationContext(), "Phone No: " + phoneNo, Toast.LENGTH_SHORT).show();
-         }
+        while (pCur.moveToNext()) {
+            WritableMap phoneNoMap = Arguments.createMap();
+            String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            phoneNoMap.putString("number", phoneNo);
+            phoneNumbers.pushMap(phoneNoMap);
+        }
         pCur.close();
       }
 
+      WritableArray emailAddresses = Arguments.createArray();
+      Cursor eCur = cr.query(
+              ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+              null,
+              ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+              new String[] { stringId }, null);
+      int labelId = eCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.LABEL);
+      int emailId = eCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS);
+      int typeId = eCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE);
+
+      while (eCur.moveToNext()) {
+        WritableMap emailMap = Arguments.createMap();
+        emailMap.putString("address", eCur.getString(emailId));
+        int type = eCur.getInt(typeId);
+        if(type == 1){
+          emailMap.putString("label", "home");
+        } else if(type == 2){
+          emailMap.putString("label", "work");
+        } else if(type == 3){
+          emailMap.putString("label", "other");
+        } else if(type == 4){
+          emailMap.putString("label", "mobile");
+        } else if(type == 0){
+          emailMap.putString("label", eCur.getString(labelId));
+        }
+        emailAddresses.pushMap(emailMap);
+      }
+
+      String thumbnailPath = this.getPhotoUri(id);
       contact.putArray("phoneNumbers", phoneNumbers);
-      // contact.putString("thumbnailPath", thumbnailPath.toString());
+      contact.putArray("emailAddresses", emailAddresses);
+      contact.putString("thumbnailPath", thumbnailPath);
       contact.putInt("recordID", id);
       contacts.pushMap(contact);
     }
     cur.close();
     callback.invoke(contacts);
 
+  }
+
+  public String getPhotoUri(long contactId) {
+    ContentResolver cr = getReactApplicationContext().getContentResolver();
+
+    Cursor cursor = cr
+        .query(ContactsContract.Data.CONTENT_URI,
+            null,
+            ContactsContract.Data.CONTACT_ID
+                + "="
+                + contactId
+                + " AND "
+
+                + ContactsContract.Data.MIMETYPE
+                + "='"
+                + ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE
+                + "'", null, null);
+    try {
+        if (cursor != null) {
+        if (!cursor.moveToFirst()) {
+            return null; // no photo
+        }
+        } else {
+        return null; // error in cursor process
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;
+    }
+
+    cursor.close();
+
+    Uri person = ContentUris.withAppendedId(
+        ContactsContract.Contacts.CONTENT_URI, contactId);
+    return Uri.withAppendedPath(person,
+        ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString();
   }
 
   @Override

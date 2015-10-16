@@ -1,25 +1,33 @@
 # React Native Contacts
-Work in progress successor to react-native-addressbook
+Work in progress successor to react-native-addressbook.
+
+#### Status
+* Preliminary iOS and Android support
+* API subject to revision, changelog in release notes
+
+|feature|iOS|Android|
+|-|-|-|
+|`getAll`|✔|✔|
+|`addContact`|✔|😞|
+|`updateContact`|✔|😞|
+|`deleteContact`|✔|😞|
+|get with options|😞|😞|
+|groups|😞|😞|
 
 ## API
-`getContacts` (callback) - returns *all* contacts as an array of objects  
+`getAll` (callback) - returns *all* contacts as an array of objects  
 `addContact` (contact, callback) - adds a contact to the AddressBook.  
 `updateContact` (contact, callback) - where contact is an object with a valid recordID  
 `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
 
-####Permissions Methods (optional)
-`checkPermission` (callback) - checks permission to use AddressBook.  
-`requestPermission` (callback) - request permission to use AddressBook.  
-
 ## Usage Example
 ```js
-var AddressBook = require('react-native-addressbook')
+var Contacts = require('react-native-contacts')
 
-AddressBook.getContacts( (err, contacts) => {
+Contacts.getContacts((err, contacts) => {
   if(err && err.type === 'permissionDenied'){
     // x.x
-  }
-  else{
+  } else {
     console.log(contacts)
   }
 })
@@ -29,8 +37,8 @@ AddressBook.getContacts( (err, contacts) => {
 ```js
 {
   recordID: 1,
-  lastName: "Jung",
-  firstName: "Carl",
+  familyName: "Jung",
+  givenName: "Carl",
   middleName: "",
   emailAddresses: [{
     label: "work",
@@ -40,7 +48,7 @@ AddressBook.getContacts( (err, contacts) => {
     label: "mobile",
     number: "(555) 555-5555",
   }],
-  thumbnailPath: "",
+  thumbnailPath: "", //iOS only
 }
 ```
 
@@ -56,33 +64,85 @@ var newPerson = {
   }],
 }
 
-AddressBook.addContact(newPerson, (err) => { /*...*/ })
+Contacts.addContact(newPerson, (err) => { /*...*/ })
 ```
 
 ## Updating and Deleting Contacts
 ```js
 //contrived example
-AddressBook.getContacts( (err, contacts) => {
+Contacts.getContacts( (err, contacts) => {
   //update the first record
   let someRecord = contacts[0]
   someRecord.emailAddresses.push({
     label: "junk",
     email: "mrniet+junkmail@test.com",
   })
-  AddressBook.updateContact(someRecord, (err) => { /*...*/ })
+  Contacts.updateContact(someRecord, (err) => { /*...*/ })
 
   //delete the second record
-  AddressBook.deleteContact(contacts[1], (err) => { /*...*/ })
+  Contacts.deleteContact(contacts[1], (err) => { /*...*/ })
 })
 ```
 Update and delete reference contacts by their recordID (as returned by the OS in getContacts). Apple does not guarantee the recordID will not change, e.g. it may be reassigned during a phone migration. Consequently you should always grab a fresh contact list with `getContacts` before performing update and delete operations.
 
 You can also delete a record using only it's recordID like follows: `AddressBook.deleteContact({recordID: 1}, (err) => {})}`
 
-##Permissions
-Permissions will automatically be checked and if needed requested upon calling getContacts. If you need more granular control you can using the checkPermission and requestPermission methods as follows:
+## Getting started - iOS
+1. `npm install react-native-contacts`
+2. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
+3. add `./node_modules/react-native-contacts/RCTContacts.xcodeproj`
+4. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTContacts.a**
+
+## Getting started - Android
+* In `android/setting.gradle`
+```gradle
+...
+include ':react-native-contacts'
+project(':react-native-contacts').projectDir = new File(settingsDir, '../node_modules/react-native-contacts/android')
+```
+
+* In `android/app/build.gradle`
+```gradle
+...
+dependencies {
+    ...
+    compile project(':react-native-contacts')
+}
+```
+
+* register module (in android/app/src/main/java/[your-app-namespace]/MainActivity.java)
+```java
+import com.rt2zz.reactnativecontacts.ReactNativeContacts; // <------ add import
+
+public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
+  ......
+    mReactInstanceManager = ReactInstanceManager.builder()
+      .setApplication(getApplication())
+      .setBundleAssetName("index.android.bundle")
+      .setJSMainModuleName("index.android")
+      .addPackage(new MainReactPackage())
+      .addPackage(new ReactNativeContacts())              // <------ add package
+      .setUseDeveloperSupport(BuildConfig.DEBUG)
+      .setInitialLifecycleState(LifecycleState.RESUMED)
+      .build();
+  ......
+}
+```
+
+* add Contacts permission (in android/app/src/main/AndroidManifest.xml)
+```xml
+...
+  <uses-permission android:name="android.permission.READ_CONTACTS" />
+...
+```
+
+####Permissions Methods (iOS only, optional)
+`checkPermission` (callback) - checks permission to use AddressBook.  
+`requestPermission` (callback) - request permission to use AddressBook.  
+
+Permissions will automatically be checked and if needed requested upon calling getAll. If you need more granular control you can using the checkPermission and requestPermission methods as follows:
 ```js
-AddressBook.checkPermission( (err, permission) => {
+Contacts.checkPermission( (err, permission) => {
   // AddressBook.PERMISSION_AUTHORIZED || AddressBook.PERMISSION_UNDEFINED || AddressBook.PERMISSION_DENIED
   if(permission === 'undefined'){
     AddressBook.requestPermission( (err, permission) => {
@@ -98,20 +158,8 @@ AddressBook.checkPermission( (err, permission) => {
 })
 ```
 
-## Getting started
-1. `npm install react-native-addressbook`
-2. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-3. add `./node_modules/react-native-addressbook/RCTAddressBook.xcodeproj`
-4. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTAddressBook.a**
-
 ## Todo
-- [x] `checkPermission` & `requestPermission`
-- [x] `getContacts` (get all contacts)
-- [x] `addContact`
-- [x] Update and Delete methods
-- [ ] `getContacts` options (a la camera roll's getPhotos)
-- [x] Automatic permission check & request in `getContacts`
-- [ ] Contact Groups support
-
-## Credits
-Thanks to @mattotodd whose [RCTAddressBook](https://github.com/mattotodd/react-native-addressbook-ios) this is largely derived from.
+- [] android feature parity
+- [] migrate iOS from AddressBook to Contacts
+- [] implement `get` with options
+- [] groups support

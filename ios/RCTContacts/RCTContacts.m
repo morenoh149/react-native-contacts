@@ -38,7 +38,7 @@ RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
   });
 }
 
-RCT_EXPORT_METHOD(getContacts:(RCTResponseSenderBlock) callback)
+RCT_EXPORT_METHOD(getAll:(RCTResponseSenderBlock) callback)
 {
   ABAddressBookRef addressBookRef = ABAddressBookCreateWithOptions(NULL, nil);
   int authStatus = ABAddressBookGetAuthorizationStatus();
@@ -85,20 +85,20 @@ withCallback:(RCTResponseSenderBlock) callback
   NSMutableDictionary* contact = [NSMutableDictionary dictionary];
 
   NSNumber *recordID = [NSNumber numberWithInteger:(ABRecordGetRecordID(person))];
-  NSString *firstName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonFirstNameProperty));
-  NSString *lastName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonLastNameProperty));
+  NSString *givenName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonFirstNameProperty));
+  NSString *familyName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonLastNameProperty));
   NSString *middleName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonMiddleNameProperty));
 
   [contact setObject: recordID forKey: @"recordID"];
 
   BOOL hasName = false;
-  if (firstName) {
-    [contact setObject: firstName forKey:@"firstName"];
+  if (givenName) {
+    [contact setObject: givenName forKey:@"givenName"];
     hasName = true;
   }
 
-  if (lastName) {
-    [contact setObject: lastName forKey:@"lastName"];
+  if (familyName) {
+    [contact setObject: familyName forKey:@"familyName"];
     hasName = true;
   }
 
@@ -216,11 +216,11 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 -(void) updateRecord:(ABRecordRef)record onAddressBook:(ABAddressBookRef)addressBookRef withData:(NSDictionary *)contactData completionCallback:(RCTResponseSenderBlock)callback
 {
   CFErrorRef error = NULL;
-  NSString *firstName = [contactData valueForKey:@"firstName"];
-  NSString *lastName = [contactData valueForKey:@"lastName"];
+  NSString *givenName = [contactData valueForKey:@"givenName"];
+  NSString *familyName = [contactData valueForKey:@"familyName"];
   NSString *middleName = [contactData valueForKey:@"middleName"];
-  ABRecordSetValue(record, kABPersonFirstNameProperty, (__bridge CFStringRef) firstName, &error);
-  ABRecordSetValue(record, kABPersonLastNameProperty, (__bridge CFStringRef) lastName, &error);
+  ABRecordSetValue(record, kABPersonFirstNameProperty, (__bridge CFStringRef) givenName, &error);
+  ABRecordSetValue(record, kABPersonLastNameProperty, (__bridge CFStringRef) familyName, &error);
   ABRecordSetValue(record, kABPersonMiddleNameProperty, (__bridge CFStringRef) middleName, &error);
 
   ABMutableMultiValueRef multiPhone = ABMultiValueCreateMutable(kABMultiStringPropertyType);

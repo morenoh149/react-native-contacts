@@ -7,10 +7,10 @@ Work in progress successor to react-native-addressbook.
 
 | Feature | iOS | Android |
 | ------- | --- | ------- |
-| getAll  | ✔   | ✔ |
-| addContact | ✔ | 😞 |
-| updateContact | ✔ | 😞 |
-| deleteContact | ✔ | 😞 |
+| `getAll`  | ✔   | ✔ |
+| `addContact` | ✔ | 😞 |
+| `updateContact` | ✔ | 😞 |
+| `deleteContact` | ✔ | 😞 |
 | get with options | 😞 | 😞 |
 | groups  | 😞 | 😞 |
 

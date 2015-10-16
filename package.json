@@ -12,7 +12,9 @@
     "react",
     "react-component",
     "addressbook",
-    "contacts"
+    "contacts",
+    "ios",
+    "android"
   ],
   "bugs": {
     "url": "https://github.com/rt2zz/react-native-contacts/issues"

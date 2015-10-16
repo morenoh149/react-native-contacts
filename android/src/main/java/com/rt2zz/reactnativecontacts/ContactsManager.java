@@ -48,7 +48,6 @@ public class ContactsManager extends ReactContextBaseJavaModule {
           String given = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME));
           String family = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME));
           String middle = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME));
-          // Toast.makeText(getReactApplicationContext(), "Name: " + given + " Family: " +  family + " Displayname: "  + given, Toast.LENGTH_LONG).show();
           contact.putString("givenName", given);
           contact.putString("familyName", family);
           contact.putString("middleName", middle);
@@ -106,8 +105,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
       contacts.pushMap(contact);
     }
     cur.close();
-    callback.invoke(contacts);
-
+    callback.invoke(null, contacts);
   }
 
   public String getPhotoUri(long contactId) {
@@ -149,6 +147,6 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
   @Override
   public String getName() {
-    return "ReactNativeContacts";
+    return "Contacts";
   }
 }

@@ -137,7 +137,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 ...
 ```
 
-####Permissions Methods (iOS only, optional)
+## Permissions Methods (iOS only, optional)
 `checkPermission` (callback) - checks permission to use AddressBook.  
 `requestPermission` (callback) - request permission to use AddressBook.  
 

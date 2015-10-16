@@ -3,10 +3,11 @@ Work in progress successor to react-native-addressbook.
 
 #### Status
 * Preliminary iOS and Android support
-* API subject to revision, changelog in release notes
+* API subject to revision, changelog in release notes  
+
 
 feature|iOS|Android
------
+-------|--|-------
 `getAll`|✔|✔
 `addContact`|✔|😞
 `updateContact`|✔|😞

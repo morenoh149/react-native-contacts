@@ -21,6 +21,7 @@ Work in progress successor to react-native-addressbook.
 `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
 
 ## Usage Example
+`getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
 ```js
 var Contacts = require('react-native-contacts')
 

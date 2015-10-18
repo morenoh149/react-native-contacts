@@ -136,7 +136,7 @@
 				ENABLE_TESTABILITY = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../react-native/React/**",
+					"$(SRCROOT)/../react-native/React/**",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				OTHER_LDFLAGS = "-ObjC";
@@ -150,7 +150,7 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../react-native/React/**",
+					"$(SRCROOT)/../react-native/React/**",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				OTHER_LDFLAGS = "-ObjC";
@@ -196,13 +196,13 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../React/**",
-					"$(SRCROOT)/../../react-native/React/**",
+					"$(SRCROOT)/../react-native/React/**",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../react-native/React/**";
 			};
 			name = Debug;
 		};
@@ -237,12 +237,12 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../React/**",
-					"$(SRCROOT)/../../react-native/React/**",
+					"$(SRCROOT)/../react-native/React/**",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../react-native/React/**";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

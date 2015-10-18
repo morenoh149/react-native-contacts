@@ -27,7 +27,7 @@ Work in progress successor to react-native-addressbook.
 ```js
 var Contacts = require('react-native-contacts')
 
-Contacts.getContacts((err, contacts) => {
+Contacts.getAll((err, contacts) => {
   if(err && err.type === 'permissionDenied'){
     // x.x
   } else {
@@ -73,7 +73,7 @@ Contacts.addContact(newPerson, (err) => { /*...*/ })
 ## Updating and Deleting Contacts
 ```js
 //contrived example
-Contacts.getContacts( (err, contacts) => {
+Contacts.getAll( (err, contacts) => {
   //update the first record
   let someRecord = contacts[0]
   someRecord.emailAddresses.push({

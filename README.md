@@ -3,16 +3,18 @@ Work in progress successor to react-native-addressbook.
 
 #### Status
 * Preliminary iOS and Android support
-* API subject to revision, changelog in release notes
+* API subject to revision, changelog in release notes  
 
-|feature|iOS|Android|
-|-|-|-|
-|`getAll`|✔|✔|
-|`addContact`|✔|😞|
-|`updateContact`|✔|😞|
-|`deleteContact`|✔|😞|
-|get with options|😞|😞|
-|groups|😞|😞|
+| Feature | iOS | Android |
+| ------- | --- | ------- |
+| `getAll`  | ✔   | ✔ |
+| `addContact` | ✔ | 😞 |
+| `updateContact` | ✔ | 😞 |
+| `deleteContact` | ✔ | 😞 |
+| get with options | 😞 | 😞 |
+| groups  | 😞 | 😞 |
+
+
 
 ## API
 `getAll` (callback) - returns *all* contacts as an array of objects  
@@ -137,11 +139,11 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 ...
 ```
 
-####Permissions Methods (iOS only, optional)
+## Permissions Methods (iOS only, optional)
 `checkPermission` (callback) - checks permission to use AddressBook.  
 `requestPermission` (callback) - request permission to use AddressBook.  
 
-Permissions will automatically be checked and if needed requested upon calling getAll. If you need more granular control you can using the checkPermission and requestPermission methods as follows:
+These methods do **not** re-request permission if permission has already been granted or denied. Usage as follows:
 ```js
 Contacts.checkPermission( (err, permission) => {
   // AddressBook.PERMISSION_AUTHORIZED || AddressBook.PERMISSION_UNDEFINED || AddressBook.PERMISSION_DENIED

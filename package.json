@@ -25,5 +25,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "rt2zz <zack@root-two.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "rx": "^4.0.6"
+  }
 }

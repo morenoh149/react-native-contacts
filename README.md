@@ -88,7 +88,7 @@ Contacts.getContacts( (err, contacts) => {
 ```
 Update and delete reference contacts by their recordID (as returned by the OS in getContacts). Apple does not guarantee the recordID will not change, e.g. it may be reassigned during a phone migration. Consequently you should always grab a fresh contact list with `getContacts` before performing update and delete operations.
 
-You can also delete a record using only it's recordID like follows: `AddressBook.deleteContact({recordID: 1}, (err) => {})}`
+You can also delete a record using only it's recordID like follows: `Contacts.deleteContact({recordID: 1}, (err) => {})}`
 
 ## Getting started - iOS
 1. `npm install react-native-contacts`
@@ -146,9 +146,9 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 These methods do **not** re-request permission if permission has already been granted or denied. Usage as follows:
 ```js
 Contacts.checkPermission( (err, permission) => {
-  // AddressBook.PERMISSION_AUTHORIZED || AddressBook.PERMISSION_UNDEFINED || AddressBook.PERMISSION_DENIED
+  // Contacts.PERMISSION_AUTHORIZED || Contacts.PERMISSION_UNDEFINED || Contacts.PERMISSION_DENIED
   if(permission === 'undefined'){
-    AddressBook.requestPermission( (err, permission) => {
+    Contacts.requestPermission( (err, permission) => {
       // ...
     })
   }

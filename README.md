@@ -164,7 +164,7 @@ Contacts.checkPermission( (err, permission) => {
 ```
 
 ## Todo
-- [] android feature parity
-- [] migrate iOS from AddressBook to Contacts
-- [] implement `get` with options
-- [] groups support
+- [ ] android feature parity
+- [ ] migrate iOS from AddressBook to Contacts
+- [ ] implement `get` with options
+- [ ] groups support

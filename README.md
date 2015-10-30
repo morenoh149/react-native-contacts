@@ -24,8 +24,11 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 `updateContact` (contact, callback) - where contact is an object with a valid recordID  
 `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
 
-## Usage Example
+## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
+
+Also there is a lot of room for performance enhancements in both iOS and android. PR's welcome!
+
 ```js
 var Contacts = require('react-native-contacts')
 

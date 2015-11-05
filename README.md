@@ -148,7 +148,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 `checkPermission` (callback) - checks permission to use AddressBook.  
 `requestPermission` (callback) - request permission to use AddressBook.  
 
-These methods do **not** re-request permission if permission has already been granted or denied. Usage as follows:
+Usage as follows:
 ```js
 Contacts.checkPermission( (err, permission) => {
   // Contacts.PERMISSION_AUTHORIZED || Contacts.PERMISSION_UNDEFINED || Contacts.PERMISSION_DENIED
@@ -165,6 +165,8 @@ Contacts.checkPermission( (err, permission) => {
   }
 })
 ```
+
+These methods do **not** re-request permission if permission has already been granted or denied. This is a limitation in iOS, the best you can do is prompt the user with instructions for how to enable contacts from the phone settings page `Settings > [app name] > contacts`.
 
 ## Todo
 - [ ] android feature parity

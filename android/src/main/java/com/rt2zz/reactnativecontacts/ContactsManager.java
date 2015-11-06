@@ -35,6 +35,10 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
     WritableArray contacts = Arguments.createArray();
 
+    if(cur == null) {
+      callback.invoke(null, contacts);
+    }
+
     while (cur.moveToNext())
     {
       WritableMap contact = Arguments.createMap();
@@ -44,13 +48,16 @@ public class ContactsManager extends ReactContextBaseJavaModule {
       String whereName = ContactsContract.Data.MIMETYPE + " = ? AND " + ContactsContract.CommonDataKinds.StructuredName.CONTACT_ID + " = " + id;
       String[] whereNameParams = new String[] { ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE };
       Cursor nameCur = getReactApplicationContext().getContentResolver().query(ContactsContract.Data.CONTENT_URI, null, whereName, whereNameParams, ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME);
-      while (nameCur.moveToNext()) {
-          String given = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME));
-          String family = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME));
-          String middle = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME));
-          contact.putString("givenName", given);
-          contact.putString("familyName", family);
-          contact.putString("middleName", middle);
+      if(nameCur != null) {
+        while (nameCur.moveToNext()) {
+            String given = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME));
+            String family = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME));
+            String middle = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME));
+            contact.putString("givenName", given);
+            contact.putString("familyName", family);
+            contact.putString("middleName", middle);
+        }
+        nameCur.close();
       }
 
       WritableArray phoneNumbers = Arguments.createArray();
@@ -60,13 +67,15 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                    null,
                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",
                    new String[]{stringId}, null);
-        while (pCur.moveToNext()) {
-            WritableMap phoneNoMap = Arguments.createMap();
-            String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-            phoneNoMap.putString("number", phoneNo);
-            phoneNumbers.pushMap(phoneNoMap);
+        if(pCur != null) {
+          while (pCur.moveToNext()) {
+              WritableMap phoneNoMap = Arguments.createMap();
+              String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+              phoneNoMap.putString("number", phoneNo);
+              phoneNumbers.pushMap(phoneNoMap);
+          }
+          pCur.close();
         }
-        pCur.close();
       }
 
       WritableArray emailAddresses = Arguments.createArray();

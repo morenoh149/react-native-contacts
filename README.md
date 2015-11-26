@@ -64,8 +64,8 @@ Contacts.getAll((err, contacts) => {
 Currently all fields from the contact record except for thumbnailPath are supported for writing
 ```js
 var newPerson = {
-  lastName: "Nietzsche",
-  firstName: "Friedrich",
+  familyName: "Nietzsche",
+  givenName: "Friedrich",
   emailAddresses: [{
     label: "work",
     email: "mrniet@example.com",

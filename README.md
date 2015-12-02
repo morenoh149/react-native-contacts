@@ -102,7 +102,7 @@ You can also delete a record using only it's recordID like follows: `Contacts.de
 4. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTContacts.a**
 
 ## Getting started - Android
-* In `android/setting.gradle`
+* In `android/settings.gradle`
 ```gradle
 ...
 include ':react-native-contacts'

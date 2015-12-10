@@ -10,7 +10,7 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 | Feature | iOS | Android |
 | ------- | --- | ------- |
 | `getAll`  | ✔   | ✔ |
-| `addContact` | ✔ | 😞 |
+| `addContact` | ✔ | ✔ |
 | `updateContact` | ✔ | 😞 |
 | `deleteContact` | ✔ | 😞 |
 | get with options | 😞 | 😞 |

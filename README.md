@@ -138,9 +138,11 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 ```
 
 * add Contacts permission (in android/app/src/main/AndroidManifest.xml)
+(only add the permissions you need)
 ```xml
 ...
   <uses-permission android:name="android.permission.READ_CONTACTS" />
+  <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 ...
 ```
 

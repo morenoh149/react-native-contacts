@@ -1,25 +1,18 @@
 package com.rt2zz.reactnativecontacts;
 
-import android.provider.ContactsContract;
 import android.content.ContentResolver;
-import android.content.Context;
-
 import android.database.Cursor;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds;
 import android.net.Uri;
-import android.content.ContentUris;
-
-import com.facebook.react.bridge.NativeModule;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
-
-import java.util.Map;
 
 public class ContactsManager extends ReactContextBaseJavaModule {
 
@@ -27,131 +20,148 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     super(reactContext);
   }
 
-  // @TODO can potentially be much faster: http://stackoverflow.com/questions/12109391/getting-name-and-email-from-contact-list-is-very-slow
+  /*
+   * Returns all contactable records on phone
+   * queries CommonDataKinds.Contactables to get phones and emails
+   */
   @ReactMethod
   public void getAll(Callback callback) {
     ContentResolver cr = getReactApplicationContext().getContentResolver();
-    Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+    Uri uri = CommonDataKinds.Contactables.CONTENT_URI;
+    String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = " + 1;
+    String sortBy = CommonDataKinds.Contactables.LOOKUP_KEY;
 
-    WritableArray contacts = Arguments.createArray();
+    Cursor cursor = cr.query(uri, null, selection, null, sortBy);
 
-    if(cur == null) {
-      callback.invoke(null, contacts);
+    WritableArray contacts = Arguments.createArray(); // resultSet
+
+    if (cursor.getCount() == 0) {
+      callback.invoke(null, contacts); // return empty if no contacts
     }
 
-    while (cur.moveToNext())
-    {
-      WritableMap contact = Arguments.createMap();
+    int idColumnIndex = cursor.getColumnIndex(CommonDataKinds.Contactables._ID);
+    int nameColumnIndex = cursor.getColumnIndex(CommonDataKinds.Contactables.DISPLAY_NAME);
+    int lookupColumnIndex = cursor.getColumnIndex(CommonDataKinds.Contactables.LOOKUP_KEY);
+    int typeColumnIndex = cursor.getColumnIndex(CommonDataKinds.Contactables.MIMETYPE);
+    int photoColumnIndex = cursor.getColumnIndex(CommonDataKinds.Contactables.PHOTO_URI);
 
-      int id = cur.getInt(cur.getColumnIndex(ContactsContract.Contacts._ID));
-      String stringId = Integer.toString(id);
-      String whereName = ContactsContract.Data.MIMETYPE + " = ? AND " + ContactsContract.CommonDataKinds.StructuredName.CONTACT_ID + " = " + id;
-      String[] whereNameParams = new String[] { ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE };
-      Cursor nameCur = getReactApplicationContext().getContentResolver().query(ContactsContract.Data.CONTENT_URI, null, whereName, whereNameParams, ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME);
-      if(nameCur != null) {
-        while (nameCur.moveToNext()) {
-            String given = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME));
-            String family = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME));
-            String middle = nameCur.getString(nameCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME));
-            contact.putString("givenName", given);
-            contact.putString("familyName", family);
-            contact.putString("middleName", middle);
+    cursor.moveToFirst();
+    String lookupKey = "";
+    WritableMap contact = Arguments.createMap();
+    WritableArray phoneNumbers = Arguments.createArray();
+    WritableArray emailAddresses = Arguments.createArray();
+    do {
+      String currentLookupKey = cursor.getString(lookupColumnIndex);
+
+      if (!lookupKey.equals(currentLookupKey)) { // new contact
+        if (!lookupKey.equals("")) { // push accumulated contact
+          contact.putArray("emailAddresses", emailAddresses);
+          contact.putArray("phoneNumbers", phoneNumbers);
+          contacts.pushMap(contact);
         }
-        nameCur.close();
-      }
+        lookupKey = currentLookupKey;
+        contact = Arguments.createMap();
+        phoneNumbers = Arguments.createArray();
+        emailAddresses = Arguments.createArray();
 
-      WritableArray phoneNumbers = Arguments.createArray();
-      if (Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-        Cursor pCur = cr.query(
-                   ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                   null,
-                   ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",
-                   new String[]{stringId}, null);
-        if(pCur != null) {
-          while (pCur.moveToNext()) {
-              WritableMap phoneNoMap = Arguments.createMap();
-              String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-              phoneNoMap.putString("number", phoneNo);
-              phoneNumbers.pushMap(phoneNoMap);
-          }
-          pCur.close();
+        String id = cursor.getString(idColumnIndex);
+        contact.putInt("recordID", Integer.parseInt(id));
+
+        // add photo
+        String photoURI = cursor.getString(photoColumnIndex);
+        contact.putString("thumbnailPath", photoURI == null ? "" : photoURI);
+
+        // add name fields
+        String displayName = cursor.getString(nameColumnIndex);
+        contact.putString("givenName", displayName);
+        contact.putString("middleName", "");
+        contact.putString("familyName", "");
+
+        String mimeType = cursor.getString(typeColumnIndex);
+        if (mimeType.equals(CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
+          WritableMap phoneNoMap = parsePhoneRow(cursor);
+          phoneNumbers.pushMap(phoneNoMap);
+        } else if (mimeType.equals(CommonDataKinds.Email.CONTENT_ITEM_TYPE)) {
+          WritableMap emailMap = parseEmailRow(cursor);
+          emailAddresses.pushMap(emailMap);
+        }
+      } else { // same contact
+        String mimeType = cursor.getString(typeColumnIndex);
+        if (mimeType.equals(CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
+          WritableMap phoneNoMap = parsePhoneRow(cursor);
+          phoneNumbers.pushMap(phoneNoMap);
+        } else if (mimeType.equals(CommonDataKinds.Email.CONTENT_ITEM_TYPE)) {
+          WritableMap emailMap = parseEmailRow(cursor);
+          emailAddresses.pushMap(emailMap);
         }
       }
+    } while (cursor.moveToNext());
+    cursor.close();
 
-      WritableArray emailAddresses = Arguments.createArray();
-      Cursor eCur = cr.query(
-              ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-              null,
-              ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
-              new String[] { stringId }, null);
-      int labelId = eCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.LABEL);
-      int emailId = eCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS);
-      int typeId = eCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE);
+    // push last contact
+    contact.putArray("emailAddresses", emailAddresses);
+    contact.putArray("phoneNumbers", phoneNumbers);
+    contacts.pushMap(contact);
 
-      while (eCur.moveToNext()) {
-        WritableMap emailMap = Arguments.createMap();
-        emailMap.putString("address", eCur.getString(emailId));
-        int type = eCur.getInt(typeId);
-        if(type == 1){
-          emailMap.putString("label", "home");
-        } else if(type == 2){
-          emailMap.putString("label", "work");
-        } else if(type == 3){
-          emailMap.putString("label", "other");
-        } else if(type == 4){
-          emailMap.putString("label", "mobile");
-        } else if(type == 0){
-          emailMap.putString("label", eCur.getString(labelId));
-        }
-        emailAddresses.pushMap(emailMap);
-      }
-
-      String thumbnailPath = this.getPhotoUri(id);
-      contact.putArray("phoneNumbers", phoneNumbers);
-      contact.putArray("emailAddresses", emailAddresses);
-      contact.putString("thumbnailPath", thumbnailPath);
-      contact.putInt("recordID", id);
-      contacts.pushMap(contact);
-    }
-    cur.close();
     callback.invoke(null, contacts);
   }
 
-  public String getPhotoUri(long contactId) {
-    ContentResolver cr = getReactApplicationContext().getContentResolver();
+  /*
+   * converts email row into a object
+   * {label: 'work', email: 'carl-jung@example.com'}
+   */
+  private WritableMap parseEmailRow(Cursor cursor) {
+    int emailAddressColumnIndex = cursor.getColumnIndex(CommonDataKinds.Email.ADDRESS);
+    int emailTypeColumnIndex = cursor.getColumnIndex(CommonDataKinds.Email.TYPE);
+    int emailLabelColumnIndex = cursor.getColumnIndex(CommonDataKinds.Email.LABEL);
 
-    Cursor cursor = cr
-        .query(ContactsContract.Data.CONTENT_URI,
-            null,
-            ContactsContract.Data.CONTACT_ID
-                + "="
-                + contactId
-                + " AND "
+    WritableMap emailAddressMap = Arguments.createMap();
+    String emailAddress = cursor.getString(emailAddressColumnIndex);
+    emailAddressMap.putString("email", emailAddress);
 
-                + ContactsContract.Data.MIMETYPE
-                + "='"
-                + ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE
-                + "'", null, null);
-    try {
-        if (cursor != null) {
-        if (!cursor.moveToFirst()) {
-            return null; // no photo
-        }
-        } else {
-        return null; // error in cursor process
-        }
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return null;
+    int type = cursor.getInt(emailTypeColumnIndex);
+    if (type == CommonDataKinds.Email.TYPE_HOME) {
+      emailAddressMap.putString("label", "home");
+    } else if (type == CommonDataKinds.Email.TYPE_MOBILE) {
+      emailAddressMap.putString("label", "mobile");
+    } else if (type == CommonDataKinds.Email.TYPE_OTHER) {
+      emailAddressMap.putString("label", "other");
+    } else if (type == CommonDataKinds.Email.TYPE_WORK) {
+      emailAddressMap.putString("label", "work");
+    } else if (type == CommonDataKinds.Email.TYPE_CUSTOM) {
+      emailAddressMap.putString("label", cursor.getString(emailLabelColumnIndex));
+    } else {
+      emailAddressMap.putString("label", "other");
     }
+    return emailAddressMap;
+  }
 
-    cursor.close();
+  /*
+   * converts phone number row into an map (json object)
+   * {label: 'mobile', number: '(555) 555-5555'}
+   * TODO support all phone types
+   * http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Phone.html
+   */
+  private WritableMap parsePhoneRow(Cursor cursor) {
+    int phoneNumberColumnIndex = cursor.getColumnIndex(CommonDataKinds.Phone.NUMBER);
+    int phoneTypeColumnIndex = cursor.getColumnIndex(CommonDataKinds.Phone.TYPE);
+    int phoneLabelColumnIndex = cursor.getColumnIndex(CommonDataKinds.Phone.LABEL);
 
-    Uri person = ContentUris.withAppendedId(
-        ContactsContract.Contacts.CONTENT_URI, contactId);
-    return Uri.withAppendedPath(person,
-        ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString();
+    WritableMap phoneNumberMap = Arguments.createMap();
+    String phoneNumber = cursor.getString(phoneNumberColumnIndex);
+    phoneNumberMap.putString("number", phoneNumber);
+
+    int type = cursor.getInt(phoneTypeColumnIndex);
+    if (type == CommonDataKinds.Phone.TYPE_HOME) {
+      phoneNumberMap.putString("label", "home");
+    } else if (type == CommonDataKinds.Phone.TYPE_MOBILE) {
+      phoneNumberMap.putString("label", "mobile");
+    } else if (type == CommonDataKinds.Phone.TYPE_WORK) {
+      phoneNumberMap.putString("label", "work");
+    } else {
+      phoneNumberMap.putString("label", "other");
+    }
+    return phoneNumberMap;
   }
 
   @Override

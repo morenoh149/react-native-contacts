@@ -182,6 +182,8 @@ withCallback:(RCTResponseSenderBlock) callback
     tempfilePath = [[NSFileManager defaultManager]
     stringWithFileSystemRepresentation:template
     length:strlen(template)];
+    
+    tempfilePath = [tempfilePath stringByAppendingString:@".png"];
 
     [data writeToFile:tempfilePath options:NSAtomicWrite error:&err];
     CFRelease(photoDataRef);

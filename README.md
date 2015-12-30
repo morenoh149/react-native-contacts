@@ -1,5 +1,5 @@
 # React Native Contacts
-Work in progress successor to react-native-addressbook.
+Work in progress successor to react-native-addressbook. This is essentially a pre-alpha release. Expect breaking changes!
 
 Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
 

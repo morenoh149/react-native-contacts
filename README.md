@@ -56,9 +56,11 @@ Contacts.getAll((err, contacts) => {
     label: "mobile",
     number: "(555) 555-5555",
   }],
-  thumbnailPath: "", //iOS only
+  thumbnailPath: "",
 }
 ```
+**NOTE**
+* on Android the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing

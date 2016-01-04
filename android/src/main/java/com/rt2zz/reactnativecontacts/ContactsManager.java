@@ -37,6 +37,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
     if (cursor.getCount() == 0) {
       callback.invoke(null, contacts); // return empty if no contacts
+      return;
     }
 
     int idColumnIndex = cursor.getColumnIndex(CommonDataKinds.Contactables._ID);

@@ -108,13 +108,15 @@ The thumbnailPath is the direct URI for the temp location of the contact's cropp
 />
 ```
 
-## Getting started - iOS
-1. `npm install react-native-contacts`
-2. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-3. add `./node_modules/react-native-contacts/RCTContacts.xcodeproj`
-4. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTContacts.a**
+## Getting started
+run `npm install react-native-contacts`
 
-## Getting started - Android
+### iOS
+1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
+2. add `./node_modules/react-native-contacts/RCTContacts.xcodeproj`
+3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTContacts.a**
+
+### Android
 * In `android/settings.gradle`
 ```gradle
 ...

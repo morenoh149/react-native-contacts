@@ -169,7 +169,7 @@ withCallback:(RCTResponseSenderBlock) callback
   if (ABPersonHasImageData(person)){
     CFDataRef photoDataRef = ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
     if(!photoDataRef){
-      return nil;
+      return @"";
     }
 
     NSData* data = (__bridge_transfer NSData*)photoDataRef;

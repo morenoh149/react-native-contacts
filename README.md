@@ -134,9 +134,6 @@ dependencies {
 ```
 
 * register module (in android/app/src/main/java/[your-app-namespace]/MainActivity.java)
-
-If your MainActivity.java includes `MainActivity extends ReactActivity` then do the following:
-
 ```java
    /**
    * A list of packages used by the app. If the app uses additional views
@@ -150,25 +147,7 @@ If your MainActivity.java includes `MainActivity extends ReactActivity` then do 
       );
     }
 ```
-
-Otherwise, for older versions of React Native, if your MainActivity.java includes `MainActivity extends Activity implements DefaultHardwareBackBtnHandler` then do the following:
-```java
-import com.rt2zz.reactnativecontacts.ReactNativeContacts; // <------ add import
-
-public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
-  ......
-    mReactInstanceManager = ReactInstanceManager.builder()
-      .setApplication(getApplication())
-      .setBundleAssetName("index.android.bundle")
-      .setJSMainModuleName("index.android")
-      .addPackage(new MainReactPackage())
-      .addPackage(new ReactNativeContacts())              // <------ add package
-      .setUseDeveloperSupport(BuildConfig.DEBUG)
-      .setInitialLifecycleState(LifecycleState.RESUMED)
-      .build();
-  ......
-}
-```
+If you are using an older version of MainActivity (i.e. `public class MainActivity extends Activity`) please see the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android)
 
 * add Contacts permission (in android/app/src/main/AndroidManifest.xml)
 (only add the permissions you need)

@@ -134,6 +134,24 @@ dependencies {
 ```
 
 * register module (in android/app/src/main/java/[your-app-namespace]/MainActivity.java)
+
+If your MainActivity.java includes `MainActivity extends ReactActivity` then do the following:
+
+```java
+   /**
+   * A list of packages used by the app. If the app uses additional views
+   * or modules besides the default ones, add more packages here.
+   */
+    @Override
+    protected List<ReactPackage> getPackages() {
+      return Arrays.<ReactPackage>asList(
+        new MainReactPackage(),
+        new ReactNativeContacts() // <------ add package
+      );
+    }
+```
+
+Otherwise, for older versions of React Native, if your MainActivity.java includes `MainActivity extends Activity implements DefaultHardwareBackBtnHandler` then do the following:
 ```java
 import com.rt2zz.reactnativecontacts.ReactNativeContacts; // <------ add import
 

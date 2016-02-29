@@ -133,6 +133,8 @@ dependencies {
 }
 ```
 
+* add import `import com.rt2zz.reactnativecontacts.ReactNativeContacts;` before MainActivity
+
 * register module (in android/app/src/main/java/[your-app-namespace]/MainActivity.java)
 ```java
    /**

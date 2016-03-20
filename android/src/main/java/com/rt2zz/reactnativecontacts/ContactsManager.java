@@ -35,7 +35,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
   @ReactMethod
   public void getAll(Callback callback) {
     ContentResolver cr = getReactApplicationContext().getContentResolver();
-    Uri uri = CommonDataKinds.Contactables.CONTENT_URI;
+    Uri uri = ContactsContract.Contacts.CONTENT_URI;
     String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = " + 1;
     String sortBy = CommonDataKinds.Contactables.LOOKUP_KEY;
 
@@ -86,13 +86,15 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         contact.putString("middleName", "");
         contact.putString("familyName", "");
 
-        String mimeType = cursor.getString(typeColumnIndex);
-        if (mimeType.equals(CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
-          WritableMap phoneNoMap = parsePhoneRow(cursor);
-          phoneNumbers.pushMap(phoneNoMap);
-        } else if (mimeType.equals(CommonDataKinds.Email.CONTENT_ITEM_TYPE)) {
-          WritableMap emailMap = parseEmailRow(cursor);
-          emailAddresses.pushMap(emailMap);
+        if(typeColumnIndex != -1) {
+          String mimeType = cursor.getString(typeColumnIndex);
+          if (mimeType.equals(CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
+            WritableMap phoneNoMap = parsePhoneRow(cursor);
+            phoneNumbers.pushMap(phoneNoMap);
+          } else if (mimeType.equals(CommonDataKinds.Email.CONTENT_ITEM_TYPE)) {
+            WritableMap emailMap = parseEmailRow(cursor);
+            emailAddresses.pushMap(emailMap);
+          }
         }
       } else { // same contact
         String mimeType = cursor.getString(typeColumnIndex);

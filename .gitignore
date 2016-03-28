@@ -11,3 +11,11 @@ local.properties
 build
 
 .npm-debug.log
+*.log
+### Gradle ###
+.gradle
+gradle
+gradlew
+gradlew.bat
+local.properties
+.idea

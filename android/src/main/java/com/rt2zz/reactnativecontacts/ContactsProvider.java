@@ -63,12 +63,14 @@ public class ContactsProvider {
             String mimeType = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.MIMETYPE));
 
             String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            if (!TextUtils.isEmpty(name) && TextUtils.isEmpty(contact.displayName))
+            if (!TextUtils.isEmpty(name) && TextUtils.isEmpty(contact.displayName)) {
                 contact.displayName = name;
+            }
 
             String photoUri = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
-            if (!TextUtils.isEmpty(photoUri))
+            if (!TextUtils.isEmpty(photoUri)) {
                 contact.photoUri = photoUri;
+            }
 
             if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {
                 contact.givenName = cursor.getString(cursor.getColumnIndex(StructuredName.GIVEN_NAME));
@@ -78,21 +80,23 @@ public class ContactsProvider {
                 String phoneNumber = cursor.getString(cursor.getColumnIndex(Phone.NUMBER));
                 int type = cursor.getInt(cursor.getColumnIndex(Phone.TYPE));
 
-                String label;
-                switch (type) {
-                    case Phone.TYPE_HOME:
-                        label = "home";
-                        break;
-                    case Phone.TYPE_WORK:
-                        label = "work";
-                        break;
-                    case Phone.TYPE_MOBILE:
-                        label = "mobile";
-                        break;
-                    default:
-                        label = "other";
+                if (!TextUtils.isEmpty(phoneNumber)) {
+                    String label;
+                    switch (type) {
+                        case Phone.TYPE_HOME:
+                            label = "home";
+                            break;
+                        case Phone.TYPE_WORK:
+                            label = "work";
+                            break;
+                        case Phone.TYPE_MOBILE:
+                            label = "mobile";
+                            break;
+                        default:
+                            label = "other";
+                    }
+                    contact.phones.add(new Contact.Item(label, phoneNumber));
                 }
-                contact.phones.add(new Contact.Item(label, phoneNumber));
             } else if (mimeType.equals(Email.CONTENT_ITEM_TYPE)) {
                 String email = cursor.getString(cursor.getColumnIndex(Email.ADDRESS));
                 int type = cursor.getInt(cursor.getColumnIndex(Email.TYPE));
@@ -110,7 +114,7 @@ public class ContactsProvider {
                             label = "mobile";
                             break;
                         case Email.TYPE_CUSTOM:
-                            label = cursor.getString(cursor.getColumnIndex(Email.LABEL));
+                            label = cursor.getString(cursor.getColumnIndex(Email.LABEL)).toLowerCase();
                             break;
                         default:
                             label = "other";

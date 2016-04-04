@@ -25,5 +25,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "rt2zz <zack@root-two.com>",
+	"contributors": [
+		"Harry Moreno <b@rubble.com> (http://harrymoreno.com/)",
+		"Nick Pomfret"
+	],
   "license": "MIT"
 }

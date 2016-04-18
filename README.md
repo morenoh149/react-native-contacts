@@ -136,12 +136,12 @@ dependencies {
 * register module (in android/app/src/main/java/[your-app-namespace]/MainActivity.java)
 ```java
 	...
-	
+
 	import com.rt2zz.reactnativecontacts.ReactNativeContacts; 	// <--- import module!
-	
+
 	public class MainActivity extends ReactActivity {
 		...
-		
+
 	   	/**
 	   	* A list of packages used by the app. If the app uses additional views
 	   	* or modules besides the default ones, add more packages here.
@@ -153,7 +153,7 @@ dependencies {
 	        new ReactNativeContacts() 	// <--- and add package
 	      );
 	    }
-	    
+
     	...
     }
 ```
@@ -165,6 +165,7 @@ If you are using an older version of MainActivity (i.e. `public class MainActivi
 ...
   <uses-permission android:name="android.permission.READ_CONTACTS" />
   <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+  <uses-permission android:name="android.permission.READ_PROFILE" />
 ...
 ```
 

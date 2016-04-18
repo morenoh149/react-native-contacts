@@ -2,7 +2,9 @@ package com.rt2zz.reactnativecontacts;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.facebook.react.bridge.Arguments;
@@ -17,6 +19,29 @@ import java.util.Map;
 import static android.provider.ContactsContract.CommonDataKinds.*;
 
 public class ContactsProvider {
+    public static final int ID_FOR_PROFILE_CONTACT = -1;
+
+    private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {{
+        add(ContactsContract.Contacts.Data.MIMETYPE);
+        add(ContactsContract.Profile.DISPLAY_NAME);
+        add(Contactables.PHOTO_URI);
+        add(StructuredName.DISPLAY_NAME);
+        add(StructuredName.GIVEN_NAME);
+        add(StructuredName.MIDDLE_NAME);
+        add(StructuredName.FAMILY_NAME);
+        add(Phone.NUMBER);
+        add(Phone.TYPE);
+        add(Phone.LABEL);
+        add(Email.DATA);
+        add(Email.ADDRESS);
+        add(Email.TYPE);
+        add(Email.LABEL);
+    }};
+
+    private static final List<String> FULL_PROJECTION = new ArrayList<String>() {{
+        add(ContactsContract.Data.CONTACT_ID);
+        addAll(JUST_ME_PROJECTION);
+    }};
 
     private final ContentResolver contentResolver;
 
@@ -25,39 +50,70 @@ public class ContactsProvider {
     }
 
     public WritableArray getContacts() {
-        Cursor cursor = contentResolver.query(
-                ContactsContract.Data.CONTENT_URI,
-                new String[]{
-                        ContactsContract.Data.CONTACT_ID,
-                        ContactsContract.Data.MIMETYPE,
-                        ContactsContract.Contacts.DISPLAY_NAME,
-                        Contactables.PHOTO_URI,
-                        ContactsContract.Contacts.HAS_PHONE_NUMBER,
-                        StructuredName.DISPLAY_NAME,
-                        StructuredName.GIVEN_NAME,
-                        StructuredName.MIDDLE_NAME,
-                        StructuredName.FAMILY_NAME,
-                        Phone.NUMBER,
-                        Phone.TYPE,
-                        Phone.LABEL,
-                        Email.DATA,
-                        Email.ADDRESS,
-                        Email.TYPE,
-                        Email.LABEL
-                },
-                ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
-                new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE},
-                null
-        );
+        Map<Integer, Contact> justMe;
+        {
+            Cursor cursor = contentResolver.query(
+                    Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI, ContactsContract.Contacts.Data.CONTENT_DIRECTORY),
+                    JUST_ME_PROJECTION.toArray(new String[JUST_ME_PROJECTION.size()]),
+                    null,
+                    null,
+                    null
+            );
+
+            try {
+                justMe = loadContactsFrom(cursor);
+            } finally {
+                cursor.close();
+            }
+        }
+
+        Map<Integer, Contact> everyoneElse;
+        {
+            Cursor cursor = contentResolver.query(
+                    ContactsContract.Data.CONTENT_URI,
+                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
+                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE},
+                    null
+            );
+
+            try {
+                everyoneElse = loadContactsFrom(cursor);
+            } finally {
+                cursor.close();
+            }
+        }
+
+        WritableArray contacts = Arguments.createArray();
+        for (Contact contact : justMe.values()) {
+            contacts.pushMap(contact.toMap());
+        }
+        for (Contact contact : everyoneElse.values()) {
+            contacts.pushMap(contact.toMap());
+        }
+
+        return contacts;
+    }
+
+    @NonNull
+    private Map<Integer, Contact> loadContactsFrom(Cursor cursor) {
 
         Map<Integer, Contact> map = new LinkedHashMap<>();
 
         while (cursor.moveToNext()) {
 
-            int contactId = cursor.getInt(cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID));
+            int columnIndex = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
+            int contactId;
+            if (columnIndex != -1) {
+                contactId = cursor.getInt(columnIndex);
+            } else {
+                contactId = ID_FOR_PROFILE_CONTACT;//no contact id for 'ME' user
+            }
+
             if (!map.containsKey(contactId)) {
                 map.put(contactId, new Contact(contactId));
             }
+
             Contact contact = map.get(contactId);
 
             String mimeType = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.MIMETYPE));
@@ -124,14 +180,7 @@ public class ContactsProvider {
             }
         }
 
-        cursor.close();
-
-        WritableArray contacts = Arguments.createArray();
-        for (Contact contact : map.values()) {
-            contacts.pushMap(contact.toMap());
-        }
-
-        return contacts;
+        return map;
     }
 
     private static class Contact {
@@ -187,5 +236,4 @@ public class ContactsProvider {
             }
         }
     }
-
 }

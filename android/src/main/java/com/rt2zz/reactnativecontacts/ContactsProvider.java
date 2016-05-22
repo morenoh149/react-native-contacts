@@ -63,7 +63,9 @@ public class ContactsProvider {
             try {
                 justMe = loadContactsFrom(cursor);
             } finally {
-                cursor.close();
+                if (cursor != null) {
+                    cursor.close();
+                }
             }
         }
 
@@ -80,7 +82,9 @@ public class ContactsProvider {
             try {
                 everyoneElse = loadContactsFrom(cursor);
             } finally {
-                cursor.close();
+                if (cursor != null) {
+                    cursor.close();
+                }
             }
         }
 

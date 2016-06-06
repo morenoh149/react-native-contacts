@@ -34,9 +34,10 @@ public class ContactsManager extends ReactContextBaseJavaModule {
    */
   @ReactMethod
   public void getAll(Callback callback) {
-      ContentResolver cr = getReactApplicationContext().getContentResolver();
+      Context context = getReactApplicationContext();
+      ContentResolver cr = context.getContentResolver();
 
-      ContactsProvider contactsProvider = new ContactsProvider(cr);
+      ContactsProvider contactsProvider = new ContactsProvider(cr, context);
       WritableArray contacts = contactsProvider.getContacts();
 
       callback.invoke(null, contacts);

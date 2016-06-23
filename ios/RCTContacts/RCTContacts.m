@@ -88,7 +88,7 @@ withCallback:(RCTResponseSenderBlock) callback
   NSString *givenName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonFirstNameProperty));
   NSString *familyName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonLastNameProperty));
   NSString *middleName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonMiddleNameProperty));
-  NSString *company = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonCompanyProperty));
+  NSString *company = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonOrganizationProperty));
   NSString *jobTitle = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonJobTitleProperty));
 
   [contact setObject: recordID forKey: @"recordID"];
@@ -236,7 +236,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
   ABRecordSetValue(record, kABPersonFirstNameProperty, (__bridge CFStringRef) givenName, &error);
   ABRecordSetValue(record, kABPersonLastNameProperty, (__bridge CFStringRef) familyName, &error);
   ABRecordSetValue(record, kABPersonMiddleNameProperty, (__bridge CFStringRef) middleName, &error);
-  ABRecordSetValue(record, kABPersonCompanyProperty, (__bridge CFStringRef) company, &error);
+  ABRecordSetValue(record, kABPersonOrganizationProperty, (__bridge CFStringRef) company, &error);
   ABRecordSetValue(record, kABPersonJobTitleProperty, (__bridge CFStringRef) jobTitle, &error);
 
   ABMutableMultiValueRef multiPhone = ABMultiValueCreateMutable(kABMultiStringPropertyType);

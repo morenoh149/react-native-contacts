@@ -88,6 +88,8 @@ withCallback:(RCTResponseSenderBlock) callback
   NSString *givenName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonFirstNameProperty));
   NSString *familyName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonLastNameProperty));
   NSString *middleName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonMiddleNameProperty));
+  NSString *company = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonCompanyProperty));
+  NSString *jobTitle = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonJobTitleProperty));
 
   [contact setObject: recordID forKey: @"recordID"];
 
@@ -104,6 +106,14 @@ withCallback:(RCTResponseSenderBlock) callback
 
   if(middleName){
     [contact setObject: (middleName) ? middleName : @"" forKey:@"middleName"];
+  }
+
+  if(company){
+    [contact setObject: (company) ? company : @"" forKey:@"company"];
+  }
+
+  if(jobTitle){
+    [contact setObject: (jobTitle) ? jobTitle : @"" forKey:@"jobTitle"];
   }
 
   if(!hasName){
@@ -182,7 +192,7 @@ withCallback:(RCTResponseSenderBlock) callback
     tempfilePath = [[NSFileManager defaultManager]
     stringWithFileSystemRepresentation:template
     length:strlen(template)];
-    
+
     tempfilePath = [tempfilePath stringByAppendingString:@".png"];
 
     [data writeToFile:tempfilePath options:NSAtomicWrite error:&err];
@@ -221,9 +231,13 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
   NSString *givenName = [contactData valueForKey:@"givenName"];
   NSString *familyName = [contactData valueForKey:@"familyName"];
   NSString *middleName = [contactData valueForKey:@"middleName"];
+  NSString *company = [contactData valueForKey:@"company"];
+  NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
   ABRecordSetValue(record, kABPersonFirstNameProperty, (__bridge CFStringRef) givenName, &error);
   ABRecordSetValue(record, kABPersonLastNameProperty, (__bridge CFStringRef) familyName, &error);
   ABRecordSetValue(record, kABPersonMiddleNameProperty, (__bridge CFStringRef) middleName, &error);
+  ABRecordSetValue(record, kABPersonCompanyProperty, (__bridge CFStringRef) company, &error);
+  ABRecordSetValue(record, kABPersonJobTitleProperty, (__bridge CFStringRef) jobTitle, &error);
 
   ABMutableMultiValueRef multiPhone = ABMultiValueCreateMutable(kABMultiStringPropertyType);
   NSArray* phoneNumbers = [contactData valueForKey:@"phoneNumbers"];

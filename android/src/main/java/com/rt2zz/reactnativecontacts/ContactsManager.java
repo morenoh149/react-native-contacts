@@ -1,6 +1,7 @@
 package com.rt2zz.reactnativecontacts;
 
 import android.content.ContentProviderOperation;
+import android.content.pm.PackageManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -131,6 +132,32 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     } catch (Exception e) {
       callback.invoke(e.toString());
     }
+  }
+
+  /*
+   * Check permission
+   */
+  @ReactMethod
+  public void checkPermission(Callback callback) {
+    callback.invoke(null, isPermissionGranted());
+  }
+
+  /*
+   * Request permission
+   */
+  @ReactMethod
+  public void requestPermission(Callback callback) {
+    callback.invoke(null, isPermissionGranted());
+  }
+
+  /*
+   * Check if READ_CONTACTS permission is granted
+   */
+  private String isPermissionGranted() {
+    String permission = "android.permission.READ_CONTACTS";
+    // return -1 for denied and 1
+    int res = getReactApplicationContext().checkCallingOrSelfPermission(permission);
+    return (res == PackageManager.PERMISSION_GRANTED) ? "authorized" : "denied";
   }
 
   /*

@@ -23,6 +23,8 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 `addContact` (contact, callback) - adds a contact to the AddressBook.  
 `updateContact` (contact, callback) - where contact is an object with a valid recordID  
 `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
+`checkPermission` (callback) - checks permission to access Contacts  
+`requestPermission` (callback) - request permission to access Contacts
 
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
@@ -169,9 +171,9 @@ If you are using an older version of MainActivity (i.e. `public class MainActivi
 ...
 ```
 
-## Permissions Methods (iOS only, optional)
-`checkPermission` (callback) - checks permission to use AddressBook.  
-`requestPermission` (callback) - request permission to use AddressBook.  
+## Permissions Methods (optional)
+`checkPermission` (callback) - checks permission to access Contacts.  
+`requestPermission` (callback) - request permission to access Contacts.  
 
 Usage as follows:
 ```js
@@ -192,6 +194,8 @@ Contacts.checkPermission( (err, permission) => {
 ```
 
 These methods do **not** re-request permission if permission has already been granted or denied. This is a limitation in iOS, the best you can do is prompt the user with instructions for how to enable contacts from the phone settings page `Settings > [app name] > contacts`.
+
+On android permission request is done upon install so this function will only show if the  permission has been granted.
 
 ## Todo
 - [ ] android feature parity

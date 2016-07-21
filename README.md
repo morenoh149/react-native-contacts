@@ -195,7 +195,7 @@ Contacts.checkPermission( (err, permission) => {
 
 These methods do **not** re-request permission if permission has already been granted or denied. This is a limitation in iOS, the best you can do is prompt the user with instructions for how to enable contacts from the phone settings page `Settings > [app name] > contacts`.
 
-On android permission request is done uppon install so this function will only show if the  permission has been granted.
+On android permission request is done upon install so this function will only show if the  permission has been granted.
 
 ## Todo
 - [ ] android feature parity

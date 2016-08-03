@@ -206,8 +206,12 @@ withCallback:(RCTResponseSenderBlock) callback
   NSMutableDictionary *newDictionary = [dictionary mutableCopy];
 
   for (NSString *key in keyMap) {
-    [newDictionary setObject:[dictionary objectForKey:key] forKey:[keyMap objectForKey:key]];
-    [newDictionary removeObjectForKey:key];
+    NSObject *object = [dictionary objectForKey:key];
+
+    if (object) {
+      [newDictionary setObject:[dictionary objectForKey:key] forKey:[keyMap objectForKey:key]];
+      [newDictionary removeObjectForKey:key];
+    }
   }
 
   return newDictionary;

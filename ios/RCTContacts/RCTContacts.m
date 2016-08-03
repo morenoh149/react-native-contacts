@@ -183,15 +183,34 @@ withCallback:(RCTResponseSenderBlock) callback
       CFRelease(addressLabelRef);
     }
 
-    NSMutableDictionary* postalAddress = [[NSMutableDictionary alloc] init];
+    NSDictionary *keyMap = @{
+      @"Street": @"street",
+      @"ZIP": @"zipCode",
+      @"City": @"city",
+      @"CountryCode": @"countryCode",
+      @"State": @"state",
+      @"Country": @"country",
+    };
 
-    [postalAddress setObject: addressDictionary forKey:@"address"];
+    NSMutableDictionary *postalAddress = [[self mappedDictionary:addressDictionary withNewKeys:keyMap] mutableCopy];
     [postalAddress setObject: addressLabel forKey:@"label"];
 
     [postalAddresses addObject:postalAddress];
   }
 
   return postalAddresses;
+}
+
+- (NSDictionary *)mappedDictionary:(NSDictionary *)dictionary withNewKeys:(NSDictionary *)keyMap
+{
+  NSMutableDictionary *newDictionary = [dictionary mutableCopy];
+
+  for (NSString *key in keyMap) {
+    [newDictionary setObject:[dictionary objectForKey:key] forKey:[keyMap objectForKey:key]];
+    [newDictionary removeObjectForKey:key];
+  }
+
+  return newDictionary;
 }
 
 -(NSString *) getABPersonThumbnailFilepath:(ABRecordRef) person

@@ -155,9 +155,33 @@ withCallback:(RCTResponseSenderBlock) callback
     [email setObject: emailLabel forKey:@"label"];
     [emailAddreses addObject:email];
   }
-  //end emails
 
   [contact setObject: emailAddreses forKey:@"emailAddresses"];
+  //end emails
+
+  //handle postal addresses
+  NSMutableArray *postalAddresses = [[NSMutableArray alloc] init];
+
+  ABMultiValueRef multiAddresses = ABRecordCopyValue(person, kABPersonAddressProperty);
+  for (CFIndex i=0;i<ABMultiValueGetCount(multiAddresses);i++) {
+    NSDictionary *addressDictionary =(__bridge NSDictionary *) ABMultiValueCopyValueAtIndex(multiAddresses, i);
+    CFStringRef addressLabelRef = ABMultiValueCopyLabelAtIndex(multiAddresses, i);
+    NSString *addressLabel = (__bridge_transfer NSString *) ABAddressBookCopyLocalizedLabel(addressLabelRef);
+
+    if (addressLabelRef) {
+      CFRelease(addressLabelRef);
+    }
+
+    NSMutableDictionary* postalAddress = [[NSMutableDictionary alloc] init];
+
+    [postalAddress setObject: addressDictionary forKey:@"address"];
+    [postalAddress setObject: addressLabel forKey:@"label"];
+
+    [postalAddresses addObject:postalAddress];
+  }
+
+  [contact setObject: postalAddresses forKey:@"postalAddresses"];
+  //end postal addresses
 
   [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
 

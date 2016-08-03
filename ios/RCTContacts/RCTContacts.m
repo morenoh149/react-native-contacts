@@ -111,7 +111,16 @@ withCallback:(RCTResponseSenderBlock) callback
     return nil;
   }
 
-  //handle phone numbers
+  [contact setObject: [self getPhoneNumbersForPerson:person] forKey:@"phoneNumbers"];
+  [contact setObject: [self getEmailAddressesForPerson:person] forKey:@"emailAddresses"];
+  [contact setObject: [self getPostalAddressesForPerson:person] forKey:@"postalAddresses"];
+  [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
+
+  return contact;
+}
+
+- (NSArray *) getPhoneNumbersForPerson:(ABRecordRef) person
+{
   NSMutableArray *phoneNumbers = [[NSMutableArray alloc] init];
 
   ABMultiValueRef multiPhones = ABRecordCopyValue(person, kABPersonPhoneProperty);
@@ -132,10 +141,11 @@ withCallback:(RCTResponseSenderBlock) callback
     [phoneNumbers addObject:phone];
   }
 
-  [contact setObject: phoneNumbers forKey:@"phoneNumbers"];
-  //end phone numbers
+  return phoneNumbers;
+}
 
-  //handle emails
+- (NSArray *) getEmailAddressesForPerson:(ABRecordRef) person
+{
   NSMutableArray *emailAddreses = [[NSMutableArray alloc] init];
 
   ABMultiValueRef multiEmails = ABRecordCopyValue(person, kABPersonEmailProperty);
@@ -156,10 +166,11 @@ withCallback:(RCTResponseSenderBlock) callback
     [emailAddreses addObject:email];
   }
 
-  [contact setObject: emailAddreses forKey:@"emailAddresses"];
-  //end emails
+  return emailAddreses;
+}
 
-  //handle postal addresses
+- (NSArray *) getPostalAddressesForPerson:(ABRecordRef) person
+{
   NSMutableArray *postalAddresses = [[NSMutableArray alloc] init];
 
   ABMultiValueRef multiAddresses = ABRecordCopyValue(person, kABPersonAddressProperty);
@@ -180,12 +191,7 @@ withCallback:(RCTResponseSenderBlock) callback
     [postalAddresses addObject:postalAddress];
   }
 
-  [contact setObject: postalAddresses forKey:@"postalAddresses"];
-  //end postal addresses
-
-  [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
-
-  return contact;
+  return postalAddresses;
 }
 
 -(NSString *) getABPersonThumbnailFilepath:(ABRecordRef) person

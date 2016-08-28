@@ -40,6 +40,7 @@ public class ContactsProvider {
 
     private static final List<String> FULL_PROJECTION = new ArrayList<String>() {{
         add(ContactsContract.Data.CONTACT_ID);
+        add(ContactsContract.RawContacts.SOURCE_ID);
         addAll(JUST_ME_PROJECTION);
     }};
 
@@ -50,7 +51,7 @@ public class ContactsProvider {
     }
 
     public WritableArray getContacts() {
-        Map<Integer, Contact> justMe;
+        Map<String, Contact> justMe;
         {
             Cursor cursor = contentResolver.query(
                     Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI, ContactsContract.Contacts.Data.CONTENT_DIRECTORY),
@@ -63,11 +64,13 @@ public class ContactsProvider {
             try {
                 justMe = loadContactsFrom(cursor);
             } finally {
-                cursor.close();
+                if (cursor != null) {
+                    cursor.close();
+                }
             }
         }
 
-        Map<Integer, Contact> everyoneElse;
+        Map<String, Contact> everyoneElse;
         {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
@@ -80,7 +83,9 @@ public class ContactsProvider {
             try {
                 everyoneElse = loadContactsFrom(cursor);
             } finally {
-                cursor.close();
+                if (cursor != null) {
+                    cursor.close();
+                }
             }
         }
 
@@ -96,18 +101,26 @@ public class ContactsProvider {
     }
 
     @NonNull
-    private Map<Integer, Contact> loadContactsFrom(Cursor cursor) {
+    private Map<String, Contact> loadContactsFrom(Cursor cursor) {
 
-        Map<Integer, Contact> map = new LinkedHashMap<>();
+        Map<String, Contact> map = new LinkedHashMap<>();
 
         while (cursor.moveToNext()) {
 
             int columnIndex = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
-            int contactId;
+            String contactId;
             if (columnIndex != -1) {
-                contactId = cursor.getInt(columnIndex);
+                contactId = String.valueOf(cursor.getInt(columnIndex));
             } else {
-                contactId = ID_FOR_PROFILE_CONTACT;//no contact id for 'ME' user
+                contactId = String.valueOf(ID_FOR_PROFILE_CONTACT);//no contact id for 'ME' user
+            }
+
+            columnIndex = cursor.getColumnIndex(ContactsContract.RawContacts.SOURCE_ID);
+            if (columnIndex != -1) {
+                String uid = cursor.getString(columnIndex);
+                if (uid != null) {
+                    contactId = uid;
+                }
             }
 
             if (!map.containsKey(contactId)) {
@@ -188,7 +201,7 @@ public class ContactsProvider {
     }
 
     private static class Contact {
-        private final int contactId;
+        private String contactId;
         private String displayName;
         private String givenName = "";
         private String middleName = "";
@@ -197,13 +210,13 @@ public class ContactsProvider {
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
 
-        public Contact(int contactId) {
+        public Contact(String contactId) {
             this.contactId = contactId;
         }
 
         public WritableMap toMap() {
             WritableMap contact = Arguments.createMap();
-            contact.putInt("recordID", contactId);
+            contact.putString("recordID", contactId);
             contact.putString("givenName", TextUtils.isEmpty(givenName) ? displayName : givenName);
             contact.putString("middleName", middleName);
             contact.putString("familyName", familyName);

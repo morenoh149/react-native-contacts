@@ -97,15 +97,12 @@ Update and delete reference contacts by their recordID (as returned by the OS in
 
 You can also delete a record using only it's recordID like follows: `Contacts.deleteContact({recordID: 1}, (err) => {})}`
 
-## Displaying Thumbnails (iOS only)
+## Displaying Thumbnails
 
 The thumbnailPath is the direct URI for the temp location of the contact's cropped thumbnail image.
 
 ```js
-<Image
-  source={{uri: contact.thumbnailPath}}
-  style={styles.thumb}
-/>
+<Image source={{uri: contact.thumbnailPath}} />
 ```
 
 ## Getting started

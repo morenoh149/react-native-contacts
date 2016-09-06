@@ -208,7 +208,7 @@ public class ContactsProvider {
         return map;
     }
 
-    private String getPhotoURIFromContactURI(String contactURIString, int contactId) {
+    private String getPhotoURIFromContactURI(String contactURIString, String contactId) {
       String photoURI = "";
       try {
         Uri contactURI = Uri.parse(contactURIString);

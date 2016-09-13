@@ -136,6 +136,96 @@ public class ContactsManager extends ReactContextBaseJavaModule {
   }
 
   /*
+   * Update contact to phone's addressbook
+   */
+  @ReactMethod
+  public void updateContact(ReadableMap contact, Callback callback) {
+
+      String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
+
+      String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
+      String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
+      String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
+
+      ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
+      int numOfPhones = 0;
+      String[] phones = null;
+      Integer[] phonesLabels = null;
+      if (phoneNumbers != null) {
+          numOfPhones = phoneNumbers.size();
+          phones = new String[numOfPhones];
+          phonesLabels = new Integer[numOfPhones];
+          for (int i = 0; i < numOfPhones; i++) {
+              ReadableMap phoneMap = phoneNumbers.getMap(i);
+              String phoneNumber = phoneMap.getString("number");
+              String phoneLabel = phoneMap.getString("label");
+              phones[i] = phoneNumber;
+              phonesLabels[i] = mapStringToPhoneType(phoneLabel);
+          }
+      }
+
+      ReadableArray emailAddresses = contact.hasKey("emailAddresses") ? contact.getArray("emailAddresses") : null;
+      int numOfEmails = 0;
+      String[] emails = null;
+      Integer[] emailsLabels = null;
+      if (emailAddresses != null) {
+          numOfEmails = emailAddresses.size();
+          emails = new String[numOfEmails];
+          emailsLabels = new Integer[numOfEmails];
+          for (int i = 0; i < numOfEmails; i++) {
+              ReadableMap emailMap = emailAddresses.getMap(i);
+              emails[i] = emailMap.getString("email");
+              String label = emailMap.getString("label");
+              emailsLabels[i] = mapStringToEmailType(label);
+          }
+      }
+
+      ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+
+      ContentProviderOperation.Builder op = ContentProviderOperation.newUpdate(RawContacts.CONTENT_URI)
+              .withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{String.valueOf(recordID)})
+              .withValue(RawContacts.ACCOUNT_TYPE, null)
+              .withValue(RawContacts.ACCOUNT_NAME, null);
+      ops.add(op.build());
+
+      op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+              .withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{String.valueOf(recordID)})
+              .withValue(ContactsContract.Data.MIMETYPE, StructuredName.CONTENT_ITEM_TYPE)
+              .withValue(StructuredName.GIVEN_NAME, givenName)
+              .withValue(StructuredName.MIDDLE_NAME, middleName)
+              .withValue(StructuredName.FAMILY_NAME, familyName);
+      ops.add(op.build());
+
+      op.withYieldAllowed(true);
+
+      for (int i = 0; i < numOfPhones; i++) {
+          op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                  .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE})
+                  .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                  .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
+                  .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+          ops.add(op.build());
+      }
+
+      for (int i = 0; i < numOfEmails; i++) {
+          op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                  .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE})
+                  .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
+                  .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
+                  .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
+          ops.add(op.build());
+      }
+
+      Context ctx = getReactApplicationContext();
+      try {
+          ContentResolver cr = ctx.getContentResolver();
+          cr.applyBatch(ContactsContract.AUTHORITY, ops);
+          callback.invoke(); // success
+      } catch (Exception e) {
+          callback.invoke(e.toString());
+      }
+  }
+  /*
    * Check permission
    */
   @ReactMethod

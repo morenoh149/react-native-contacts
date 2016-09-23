@@ -113,6 +113,15 @@ run `npm install react-native-contacts`
 2. add `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj`
 3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTContacts.a**
 
+#### Permissions
+As of Xcode 8 and React Native 0.33 it is now **necessary to add kit specific "permission" keys** to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission. I discovered this after days of frustration.
+
+Open Xcode > Info.plist > Add a key (starting with "Privacy - ...") with your kit specific permission. The value for the key is optional.
+
+You have to add the key "Privacy - Contacts Usage Description".
+
+<img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
+
 ### Android
 * In `android/settings.gradle`
 ```gradle

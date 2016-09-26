@@ -113,7 +113,7 @@ public class ContactsProvider {
 
         Map<String, Contact> map = new LinkedHashMap<>();
 
-        while (cursor.moveToNext()) {
+        while (cursor != null && cursor.moveToNext()) {
 
             int columnIndex = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
             String contactId;
@@ -212,7 +212,7 @@ public class ContactsProvider {
       String photoURI = "";
       try {
         Uri contactURI = Uri.parse(contactURIString);
-        InputStream photoStream = contentResolver.openInputStream(contactURI);            
+        InputStream photoStream = contentResolver.openInputStream(contactURI);
         BufferedInputStream in = new BufferedInputStream(photoStream);
         File outputDir = context.getCacheDir(); // context being the Activity pointer
         File outputFile = File.createTempFile("contact" + contactId, ".jpg", outputDir);

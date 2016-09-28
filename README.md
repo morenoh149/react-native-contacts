@@ -1,9 +1,7 @@
 # React Native Contacts
-Work in progress successor to react-native-addressbook. This is essentially a pre-alpha release. Expect breaking changes!
-
 Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
 
-#### Status
+## Status
 * Preliminary iOS and Android support
 * API subject to revision, changelog in release notes  
 
@@ -11,7 +9,7 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 | ------- | --- | ------- |
 | `getAll`  | ✔   | ✔ |
 | `addContact` | ✔ | ✔ |
-| `updateContact` | ✔ | 😞 |
+| `updateContact` | ✔ | ✔ |
 | `deleteContact` | ✔ | 😞 |
 | get with options | 😞 | 😞 |
 | groups  | 😞 | 😞 |
@@ -99,15 +97,12 @@ Update and delete reference contacts by their recordID (as returned by the OS in
 
 You can also delete a record using only it's recordID like follows: `Contacts.deleteContact({recordID: 1}, (err) => {})}`
 
-## Displaying Thumbnails (iOS only)
+## Displaying Thumbnails
 
 The thumbnailPath is the direct URI for the temp location of the contact's cropped thumbnail image.
 
 ```js
-<Image
-  source={{uri: contact.thumbnailPath}}
-  style={styles.thumb}
-/>
+<Image source={{uri: contact.thumbnailPath}} />
 ```
 
 ## Getting started
@@ -117,6 +112,15 @@ run `npm install react-native-contacts`
 1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
 2. add `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj`
 3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTContacts.a**
+
+#### Permissions
+As of Xcode 8 and React Native 0.33 it is now **necessary to add kit specific "permission" keys** to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission. I discovered this after days of frustration.
+
+Open Xcode > Info.plist > Add a key (starting with "Privacy - ...") with your kit specific permission. The value for the key is optional.
+
+You have to add the key "Privacy - Contacts Usage Description".
+
+<img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
 ### Android
 * In `android/settings.gradle`

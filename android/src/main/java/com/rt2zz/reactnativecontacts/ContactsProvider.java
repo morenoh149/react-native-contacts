@@ -1,11 +1,13 @@
 package com.rt2zz.reactnativecontacts;
 
+import android.content.Context;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
@@ -15,6 +17,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 
 import static android.provider.ContactsContract.CommonDataKinds.*;
 
@@ -45,9 +51,11 @@ public class ContactsProvider {
     }};
 
     private final ContentResolver contentResolver;
+    private final Context context;
 
-    public ContactsProvider(ContentResolver contentResolver) {
+    public ContactsProvider(ContentResolver contentResolver, Context context) {
         this.contentResolver = contentResolver;
+        this.context = context;
     }
 
     public WritableArray getContacts() {
@@ -105,7 +113,7 @@ public class ContactsProvider {
 
         Map<String, Contact> map = new LinkedHashMap<>();
 
-        while (cursor.moveToNext()) {
+        while (cursor != null && cursor.moveToNext()) {
 
             int columnIndex = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
             String contactId;
@@ -136,9 +144,9 @@ public class ContactsProvider {
                 contact.displayName = name;
             }
 
-            String photoUri = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
-            if (!TextUtils.isEmpty(photoUri)) {
-                contact.photoUri = photoUri;
+            String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
+            if (!TextUtils.isEmpty(rawPhotoURI)) {
+                contact.photoUri = getPhotoURIFromContactURI(rawPhotoURI, contactId);
             }
 
             if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {
@@ -198,6 +206,32 @@ public class ContactsProvider {
         }
 
         return map;
+    }
+
+    private String getPhotoURIFromContactURI(String contactURIString, String contactId) {
+      String photoURI = "";
+      try {
+        Uri contactURI = Uri.parse(contactURIString);
+        InputStream photoStream = contentResolver.openInputStream(contactURI);
+        BufferedInputStream in = new BufferedInputStream(photoStream);
+        File outputDir = context.getCacheDir(); // context being the Activity pointer
+        File outputFile = File.createTempFile("contact" + contactId, ".jpg", outputDir);
+        FileOutputStream output = new FileOutputStream(outputFile);
+
+        int count = 0;
+        byte[] buffer = new byte[4098];
+
+        while ((count = in.read(buffer)) > 0)
+        {
+            output.write(buffer, 0, count);
+        }
+
+        photoURI = "file://" + outputFile.getAbsolutePath();
+      } catch (Exception e) {
+        Log.e("ContactsProvider", "Error writing contact image to file:", e);
+      }
+
+      return photoURI;
     }
 
     private static class Contact {

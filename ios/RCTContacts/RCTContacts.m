@@ -159,7 +159,7 @@ withCallback:(RCTResponseSenderBlock) callback
 
   [contact setObject: emailAddreses forKey:@"emailAddresses"];
 
-//  [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
+  [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
 
   return contact;
 }
@@ -178,7 +178,7 @@ withCallback:(RCTResponseSenderBlock) callback
     NSString* tempfilePath = [NSString stringWithFormat:@"%@/thumbimage_XXXXX", tempPath];
     char template[tempfilePath.length + 1];
     strcpy(template, [tempfilePath cStringUsingEncoding:NSASCIIStringEncoding]);
-    mkstemp(template);
+    close(mkstemp(template));
     tempfilePath = [[NSFileManager defaultManager]
     stringWithFileSystemRepresentation:template
     length:strlen(template)];

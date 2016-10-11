@@ -28,6 +28,7 @@ import static android.provider.ContactsContract.CommonDataKinds.Email;
 import static android.provider.ContactsContract.CommonDataKinds.Phone;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import static android.provider.ContactsContract.CommonDataKinds.Organization;
+import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
@@ -49,6 +50,16 @@ public class ContactsProvider {
         add(Email.LABEL);
         add(Organization.COMPANY);
         add(Organization.TITLE);
+        add(StructuredPostal.FORMATTED_ADDRESS);
+        add(StructuredPostal.TYPE);
+        add(StructuredPostal.LABEL);
+        add(StructuredPostal.STREET);
+        add(StructuredPostal.POBOX);
+        add(StructuredPostal.NEIGHBORHOOD);
+        add(StructuredPostal.CITY);
+        add(StructuredPostal.REGION);
+        add(StructuredPostal.POSTCODE);
+        add(StructuredPostal.COUNTRY);
     }};
 
     private static final List<String> FULL_PROJECTION = new ArrayList<String>() {{
@@ -90,8 +101,8 @@ public class ContactsProvider {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
-                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE},
+                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
+                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE},
                     null
             );
 
@@ -212,6 +223,8 @@ public class ContactsProvider {
             } else if (mimeType.equals(Organization.CONTENT_ITEM_TYPE)) {
                 contact.company = cursor.getString(cursor.getColumnIndex(Organization.COMPANY));
                 contact.jobTitle = cursor.getString(cursor.getColumnIndex(Organization.TITLE));
+            } else if (mimeType.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
+                contact.postalAddresses.add(new Contact.PostalAddressItem(cursor));
             }
         }
 
@@ -267,6 +280,7 @@ public class ContactsProvider {
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
+        private List<PostalAddressItem> postalAddresses = new ArrayList<>();
 
         public Contact(String contactId) {
             this.contactId = contactId;
@@ -300,6 +314,12 @@ public class ContactsProvider {
             }
             contact.putArray("emailAddresses", emailAddresses);
 
+            WritableArray postalAddresses = Arguments.createArray();
+            for (PostalAddressItem item : this.postalAddresses) {
+              postalAddresses.pushMap(item.map);
+            }
+            contact.putArray("postalAddresses", postalAddresses);
+
             return contact;
         }
 
@@ -310,6 +330,43 @@ public class ContactsProvider {
             public Item(String label, String value) {
                 this.label = label;
                 this.value = value;
+            }
+        }
+
+        public static class PostalAddressItem {
+            public final WritableMap map;
+
+            public PostalAddressItem(Cursor cursor) {
+                map = Arguments.createMap();
+
+                map.putString("label", getLabel(cursor));
+                putString(cursor, "formattedAddress", StructuredPostal.FORMATTED_ADDRESS);
+                putString(cursor, "street", StructuredPostal.STREET);
+                putString(cursor, "pobox", StructuredPostal.POBOX);
+                putString(cursor, "neighborhood", StructuredPostal.NEIGHBORHOOD);
+                putString(cursor, "city", StructuredPostal.CITY);
+                putString(cursor, "region", StructuredPostal.REGION);
+                putString(cursor, "postCode", StructuredPostal.POSTCODE);
+                putString(cursor, "country", StructuredPostal.COUNTRY);
+            }
+
+            private void putString(Cursor cursor, String key, String androidKey) {
+                final String value = cursor.getString(cursor.getColumnIndex(androidKey));
+                if (!TextUtils.isEmpty(value))
+                  map.putString(key, value);
+            }
+
+            static String getLabel(Cursor cursor) {
+                switch (cursor.getInt(cursor.getColumnIndex(StructuredPostal.TYPE))) {
+                    case StructuredPostal.TYPE_HOME:
+                        return "home";
+                    case StructuredPostal.TYPE_WORK:
+                        return "work";
+                    case StructuredPostal.TYPE_CUSTOM:
+                        final String label = cursor.getString(cursor.getColumnIndex(StructuredPostal.LABEL));
+                        return label != null ? label : "";
+                }
+                return "other";
             }
         }
     }

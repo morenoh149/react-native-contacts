@@ -169,6 +169,45 @@ withCallback:(RCTResponseSenderBlock) callback
 
   [contact setObject: emailAddreses forKey:@"emailAddresses"];
 
+  NSMutableArray *postalAddresses = [[NSMutableArray alloc] init];
+  ABMultiValueRef multiPostalAddresses = ABRecordCopyValue(person, kABPersonAddressProperty);
+  for(CFIndex i=0;i<ABMultiValueGetCount(multiPostalAddresses);i++) {
+    NSMutableDictionary* address = [NSMutableDictionary dictionary];
+
+    NSDictionary *addressDict = (__bridge NSDictionary *)ABMultiValueCopyValueAtIndex(multiPostalAddresses, i);
+    NSString* street = [addressDict objectForKey:(NSString*)kABPersonAddressStreetKey];
+    if(street){
+      [address setObject:street forKey:@"street"];
+    }
+    NSString* city = [addressDict objectForKey:(NSString*)kABPersonAddressCityKey];
+    if(city){
+      [address setObject:city forKey:@"city"];
+    }
+    NSString* region = [addressDict objectForKey:(NSString*)kABPersonAddressStateKey];
+    if(region){
+      [address setObject:region forKey:@"region"];
+    }
+    NSString* postCode = [addressDict objectForKey:(NSString*)kABPersonAddressZIPKey];
+    if(postCode){
+      [address setObject:postCode forKey:@"postCode"];
+    }
+    NSString* country = [addressDict objectForKey:(NSString*)kABPersonAddressCountryCodeKey];
+    if(country){
+      [address setObject:country forKey:@"country"];
+    }
+
+    CFStringRef addresssLabelRef = ABMultiValueCopyLabelAtIndex(multiPostalAddresses, i);
+    NSString *addressLabel = (__bridge_transfer NSString *) ABAddressBookCopyLocalizedLabel(addresssLabelRef);
+    if(addresssLabelRef){
+      CFRelease(addresssLabelRef);
+    }
+    [address setObject:addressLabel forKey:@"label"];
+
+    [postalAddresses addObject:address];
+  }
+  CFRelease(multiPostalAddresses);
+  [contact setObject:postalAddresses forKey:@"postalAddresses"];
+
   [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
 
   return contact;

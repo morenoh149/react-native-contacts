@@ -2,12 +2,7 @@ node_modules
 ios/RCTContacts.xcodeproj/xcuserdata
 ios/RCTContacts.xcodeproj/project.xcworkspace
 
-# Android/IJ
-.idea/workspace.xml
-.idea/libraries
-.gradle
-local.properties
-*.iml
-build
+# Intellij
+.idea
 
 .npm-debug.log

@@ -61,7 +61,7 @@ RCT_EXPORT_METHOD(getAll:(RCTResponseSenderBlock) callback)
 
 RCT_EXPORT_METHOD(getIconUri:(nonnull NSNumber*)recordID realIconUri:(NSString*)ignored resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     NSString* dir = [self getPathForDirectory:NSCachesDirectory];
-    NSString* filepath = [NSString stringWithFormat:@"%@/%@.png", dir, recordID.stringValue];
+    NSString* filepath = [NSString stringWithFormat:@"%@/contact_%@.png", dir, recordID.stringValue];
 
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
     if(fileExists) {

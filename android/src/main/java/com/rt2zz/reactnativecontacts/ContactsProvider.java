@@ -217,7 +217,7 @@ public class ContactsProvider {
             return null;
 
         File outputDir = context.getCacheDir(); // context being the Activity pointer
-        File outputFile = new File(outputDir, "contact" + contactId + ".jpg");
+        File outputFile = new File(outputDir, "contact_" + contactId + ".jpg");
 
         if (!outputFile.exists()) {
             Uri contactURI = Uri.parse(contactURIString);

@@ -64,7 +64,7 @@ RCT_EXPORT_METHOD(getIconUri:(nonnull NSNumber*)recordID realIconUri:(NSString*)
     NSString* filepath = [NSString stringWithFormat:@"%@/%@.png", dir, recordID.stringValue];
 
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
-    if(!fileExists) {
+    if(fileExists) {
         return resolve(filepath);
     }
 

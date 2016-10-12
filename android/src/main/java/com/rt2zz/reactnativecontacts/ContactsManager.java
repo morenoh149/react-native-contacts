@@ -8,8 +8,10 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.RawContacts;
+import android.util.Log;
 
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -17,6 +19,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class ContactsManager extends ReactContextBaseJavaModule {
@@ -38,6 +41,23 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         WritableArray contacts = contactsProvider.getContacts();
 
         callback.invoke(null, contacts);
+    }
+
+    @ReactMethod
+    public void getIconUri(String recordID, String iconResourceUri, Promise promise) {
+        Context context = getReactApplicationContext();
+        ContentResolver cr = context.getContentResolver();
+
+        ContactsProvider contactsProvider = new ContactsProvider(cr, context);
+
+        try {
+            String fileUri = contactsProvider.fileUriForContactIcon(iconResourceUri, recordID);
+            promise.resolve(fileUri);
+        } catch (Exception e) {
+            String message = "Failed to get photo uri for record '" + recordID + "', icon '" + iconResourceUri + "'";
+            Log.w("RNContacts", message, e);
+            promise.reject(message, e);
+        }
     }
 
     /*

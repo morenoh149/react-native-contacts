@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
@@ -150,7 +149,8 @@ public class ContactsProvider {
 
             String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
             if (!TextUtils.isEmpty(rawPhotoURI)) {
-                contact.photoUri = getPhotoURIFromContactURI(rawPhotoURI, contactId);
+                // rawPhotoURI looks like 'content://com.android.contacts/display_photo/9223372034707292161'
+                contact.photoUri = rawPhotoURI;
             }
 
             if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {
@@ -212,10 +212,16 @@ public class ContactsProvider {
         return map;
     }
 
-    private String getPhotoURIFromContactURI(String contactURIString, String contactId) {
-        Uri contactURI = Uri.parse(contactURIString);
+    public String fileUriForContactIcon(String contactURIString, String contactId) throws IOException {
+        if(TextUtils.isEmpty(contactURIString))
+            return null;
 
-        try {
+        File outputDir = context.getCacheDir(); // context being the Activity pointer
+        File outputFile = new File(outputDir, "contact" + contactId + ".jpg");
+
+        if (!outputFile.exists()) {
+            Uri contactURI = Uri.parse(contactURIString);
+
             InputStream photoStream = contentResolver.openInputStream(contactURI);
 
             if (photoStream == null)
@@ -223,8 +229,6 @@ public class ContactsProvider {
 
             try {
                 BufferedInputStream in = new BufferedInputStream(photoStream);
-                File outputDir = context.getCacheDir(); // context being the Activity pointer
-                File outputFile = File.createTempFile("contact" + contactId, ".jpg", outputDir);
                 FileOutputStream output = new FileOutputStream(outputFile);
 
                 try {
@@ -239,15 +243,12 @@ public class ContactsProvider {
                 }
 
                 in.close();
-
-                return "file://" + outputFile.getAbsolutePath();
             } finally {
                 photoStream.close();
             }
-        } catch (IOException e) {
-            Log.w("RNContacts", "Failed to get photo uri", e);
-            return "";
         }
+
+        return "file://" + outputFile.getAbsolutePath();
     }
 
     private static class Contact {

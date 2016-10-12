@@ -59,6 +59,39 @@ RCT_EXPORT_METHOD(getAll:(RCTResponseSenderBlock) callback)
   }
 }
 
+RCT_EXPORT_METHOD(getIconUri:(nonnull NSNumber*)recordID realIconUri:(NSString*)ignored resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+    NSString* dir = [self getPathForDirectory:NSCachesDirectory];
+    NSString* filepath = [NSString stringWithFormat:@"%@/%@.png", dir, recordID.stringValue];
+
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+    if(!fileExists) {
+        return resolve(filepath);
+    }
+
+    ABAddressBookRef addressBookRef = ABAddressBookCreateWithOptions(NULL, nil);
+    ABRecordRef person = ABAddressBookGetPersonWithRecordID(addressBookRef, recordID.intValue);
+    
+    if (ABPersonHasImageData(person)) {
+        
+        NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
+        BOOL success = [[NSFileManager defaultManager] createFileAtPath:filepath contents:contactImageData attributes:nil];
+        
+        if (!success) {
+            return reject(@"image_error", @"Unable to copy image", nil);
+        }
+        
+        return resolve(filepath);
+    }
+    
+    return resolve(@"");
+}
+
+- (NSString *)getPathForDirectory:(int)directory
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(directory, NSUserDomainMask, YES);
+    return [paths firstObject];
+}
+
 -(void) retrieveContactsFromAddressBook:(ABAddressBookRef)addressBookRef
 withCallback:(RCTResponseSenderBlock) callback
 {
@@ -159,39 +192,9 @@ withCallback:(RCTResponseSenderBlock) callback
 
   [contact setObject: emailAddreses forKey:@"emailAddresses"];
 
-  [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
+  [contact setObject: @"" forKey:@"thumbnailPath"];
 
   return contact;
-}
-
--(NSString *) getABPersonThumbnailFilepath:(ABRecordRef) person
-{
-  if (ABPersonHasImageData(person)){
-    CFDataRef photoDataRef = ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
-    if(!photoDataRef){
-      return @"";
-    }
-
-    NSData* data = (__bridge_transfer NSData*)photoDataRef;
-    NSString* tempPath = [NSTemporaryDirectory()stringByStandardizingPath];
-    NSError* err = nil;
-    NSString* tempfilePath = [NSString stringWithFormat:@"%@/thumbimage_XXXXX", tempPath];
-    char template[tempfilePath.length + 1];
-    strcpy(template, [tempfilePath cStringUsingEncoding:NSASCIIStringEncoding]);
-    close(mkstemp(template));
-    tempfilePath = [[NSFileManager defaultManager]
-    stringWithFileSystemRepresentation:template
-    length:strlen(template)];
-    
-    tempfilePath = [tempfilePath stringByAppendingString:@".png"];
-
-    [data writeToFile:tempfilePath options:NSAtomicWrite error:&err];
-    CFRelease(photoDataRef);
-    if(!err){
-      return tempfilePath;
-    }
-  }
-  return @"";
 }
 
 RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)

@@ -13,6 +13,7 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -209,29 +210,41 @@ public class ContactsProvider {
     }
 
     private String getPhotoURIFromContactURI(String contactURIString, String contactId) {
-      String photoURI = "";
-      try {
         Uri contactURI = Uri.parse(contactURIString);
-        InputStream photoStream = contentResolver.openInputStream(contactURI);
-        BufferedInputStream in = new BufferedInputStream(photoStream);
-        File outputDir = context.getCacheDir(); // context being the Activity pointer
-        File outputFile = File.createTempFile("contact" + contactId, ".jpg", outputDir);
-        FileOutputStream output = new FileOutputStream(outputFile);
 
-        int count = 0;
-        byte[] buffer = new byte[4098];
+        try {
+            InputStream photoStream = contentResolver.openInputStream(contactURI);
 
-        while ((count = in.read(buffer)) > 0)
-        {
-            output.write(buffer, 0, count);
+            if (photoStream == null)
+                return "";
+
+            try {
+                BufferedInputStream in = new BufferedInputStream(photoStream);
+                File outputDir = context.getCacheDir(); // context being the Activity pointer
+                File outputFile = File.createTempFile("contact" + contactId, ".jpg", outputDir);
+                FileOutputStream output = new FileOutputStream(outputFile);
+
+                try {
+                    int count;
+                    byte[] buffer = new byte[4098];
+
+                    while ((count = in.read(buffer)) > 0) {
+                        output.write(buffer, 0, count);
+                    }
+                } catch (IOException e) {
+                    output.close();
+                }
+
+                in.close();
+
+                return "file://" + outputFile.getAbsolutePath();
+            } finally {
+                photoStream.close();
+            }
+        } catch (IOException e) {
+            Log.w("RNContacts", "Failed to get photo uri", e);
+            return "";
         }
-
-        photoURI = "file://" + outputFile.getAbsolutePath();
-      } catch (Exception e) {
-        Log.e("ContactsProvider", "Error writing contact image to file:", e);
-      }
-
-      return photoURI;
     }
 
     private static class Contact {

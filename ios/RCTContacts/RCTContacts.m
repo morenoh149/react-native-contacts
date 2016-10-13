@@ -178,11 +178,11 @@ withCallback:(RCTResponseSenderBlock) callback
     NSString* tempfilePath = [NSString stringWithFormat:@"%@/thumbimage_XXXXX", tempPath];
     char template[tempfilePath.length + 1];
     strcpy(template, [tempfilePath cStringUsingEncoding:NSASCIIStringEncoding]);
-    mkstemp(template);
+    close(mkstemp(template));
     tempfilePath = [[NSFileManager defaultManager]
     stringWithFileSystemRepresentation:template
     length:strlen(template)];
-    
+
     tempfilePath = [tempfilePath stringByAppendingString:@".png"];
 
     [data writeToFile:tempfilePath options:NSAtomicWrite error:&err];

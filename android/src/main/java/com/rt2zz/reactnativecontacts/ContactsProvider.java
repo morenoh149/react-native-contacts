@@ -1,7 +1,7 @@
 package com.rt2zz.reactnativecontacts;
 
-import android.content.Context;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
@@ -13,17 +13,20 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 
-import static android.provider.ContactsContract.CommonDataKinds.*;
+import static android.provider.ContactsContract.CommonDataKinds.Contactables;
+import static android.provider.ContactsContract.CommonDataKinds.Email;
+import static android.provider.ContactsContract.CommonDataKinds.Phone;
+import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
 
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
@@ -192,7 +195,7 @@ public class ContactsProvider {
                             label = "mobile";
                             break;
                         case Email.TYPE_CUSTOM:
-                            if(cursor.getString(cursor.getColumnIndex(Email.LABEL)) != null){
+                            if (cursor.getString(cursor.getColumnIndex(Email.LABEL)) != null) {
                                 label = cursor.getString(cursor.getColumnIndex(Email.LABEL)).toLowerCase();
                             } else {
                                 label = "";

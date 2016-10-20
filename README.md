@@ -206,3 +206,7 @@ On android permission request is done upon install so this function will only sh
 - [ ] migrate iOS from AddressBook to Contacts
 - [ ] implement `get` with options
 - [ ] groups support
+
+## LICENSE
+
+[MIT License](LICENSE)

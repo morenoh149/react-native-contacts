@@ -4,6 +4,7 @@ import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
@@ -30,14 +31,19 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      * queries CommonDataKinds.Contactables to get phones and emails
      */
     @ReactMethod
-    public void getAll(Callback callback) {
-        Context context = getReactApplicationContext();
-        ContentResolver cr = context.getContentResolver();
+    public void getAll(final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
 
-        ContactsProvider contactsProvider = new ContactsProvider(cr, context);
-        WritableArray contacts = contactsProvider.getContacts();
+                ContactsProvider contactsProvider = new ContactsProvider(cr, context);
+                WritableArray contacts = contactsProvider.getContacts();
 
-        callback.invoke(null, contacts);
+                callback.invoke(null, contacts);
+            }
+        });
     }
 
     /*

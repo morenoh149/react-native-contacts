@@ -139,19 +139,15 @@ dependencies {
 }
 ```
 
-* register module (in android/app/src/main/java/[your-app-namespace]/MainActivity.java)
+* register module (in android/app/src/main/java/com/[your-app-name]/MainApplication.java)
 ```java
 	...
 
 	import com.rt2zz.reactnativecontacts.ReactNativeContacts; 	// <--- import module!
 
-	public class MainActivity extends ReactActivity {
-		...
-
-	   	/**
-	   	* A list of packages used by the app. If the app uses additional views
-	   	* or modules besides the default ones, add more packages here.
-	   	*/
+	public class MainApplication extends Application implements ReactApplication {
+	    ...
+		
 	    @Override
 	    protected List<ReactPackage> getPackages() {
 	      return Arrays.<ReactPackage>asList(
@@ -163,7 +159,7 @@ dependencies {
     	...
     }
 ```
-If you are using an older version of MainActivity (i.e. `public class MainActivity extends Activity`) please see the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android)
+If you are using an older version of RN (i.e. `MainApplication.java` does not contain this method (or doesn't exist) and MainActivity.java starts with `public class MainActivity extends Activity`) please see the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android)
 
 * add Contacts permission (in android/app/src/main/AndroidManifest.xml)
 (only add the permissions you need)

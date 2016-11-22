@@ -27,6 +27,7 @@ import static android.provider.ContactsContract.CommonDataKinds.Contactables;
 import static android.provider.ContactsContract.CommonDataKinds.Email;
 import static android.provider.ContactsContract.CommonDataKinds.Phone;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
+import static android.provider.ContactsContract.CommonDataKinds.Organization;
 
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
@@ -46,6 +47,8 @@ public class ContactsProvider {
         add(Email.ADDRESS);
         add(Email.TYPE);
         add(Email.LABEL);
+        add(Organization.COMPANY);
+        add(Organization.TILE);
     }};
 
     private static final List<String> FULL_PROJECTION = new ArrayList<String>() {{
@@ -87,8 +90,8 @@ public class ContactsProvider {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
-                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE},
+                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
+                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE},
                     null
             );
 
@@ -206,6 +209,9 @@ public class ContactsProvider {
                     }
                     contact.emails.add(new Contact.Item(label, email));
                 }
+            } else if (mimeType.equals(Organization.CONTENT_ITEM_TYPE)) {
+                contact.company = cursor.getString(cursor.getColumnIndex(Organization.COMPANY));
+                contact.jobTitle = cursor.getString(cursor.getColumnIndex(Organization.TITLE));
             }
         }
 
@@ -256,6 +262,8 @@ public class ContactsProvider {
         private String givenName = "";
         private String middleName = "";
         private String familyName = "";
+        private String company = "";
+        private String jobTitle ="";
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
@@ -270,6 +278,8 @@ public class ContactsProvider {
             contact.putString("givenName", TextUtils.isEmpty(givenName) ? displayName : givenName);
             contact.putString("middleName", middleName);
             contact.putString("familyName", familyName);
+            contact.putString("company", company);
+            contact.putString("jobTitle", jobTitle);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
 
             WritableArray phoneNumbers = Arguments.createArray();

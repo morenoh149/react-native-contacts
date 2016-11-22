@@ -48,7 +48,7 @@ public class ContactsProvider {
         add(Email.TYPE);
         add(Email.LABEL);
         add(Organization.COMPANY);
-        add(Organization.TILE);
+        add(Organization.TITLE);
     }};
 
     private static final List<String> FULL_PROJECTION = new ArrayList<String>() {{

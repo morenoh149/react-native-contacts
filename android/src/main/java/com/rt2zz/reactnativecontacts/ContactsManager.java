@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
+import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.RawContacts;
 
 import com.facebook.react.bridge.Callback;
@@ -55,6 +56,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
         String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
+        String company = contact.hasKey("company") ? contact.getString("company") : null;
+        String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
 
         // String name = givenName;
         // name += middleName != "" ? " " + middleName : "";
@@ -106,6 +109,13 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 .withValue(StructuredName.FAMILY_NAME, familyName);
         ops.add(op.build());
 
+        op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                .withValue(ContactsContract.Data.MIMETYPE, Organization.CONTENT_ITEM_TYPE)
+                .withValue(Organization.COMPANY, company)
+                .withValue(Organization.TITLE, jobTitle);
+        ops.add(op.build());
+
         //TODO not sure where to allow yields
         op.withYieldAllowed(true);
 
@@ -148,6 +158,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
         String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
+        String company = contact.hasKey("company") ? contact.getString("company") : null;
+        String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -196,6 +208,12 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 .withValue(StructuredName.GIVEN_NAME, givenName)
                 .withValue(StructuredName.MIDDLE_NAME, middleName)
                 .withValue(StructuredName.FAMILY_NAME, familyName);
+        ops.add(op.build());
+
+        op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), Organization.CONTENT_ITEM_TYPE})
+                .withValue(Organization.COMPANY, company)
+                .withValue(Organization.TITLE, jobTitle);
         ops.add(op.build());
 
         op.withYieldAllowed(true);

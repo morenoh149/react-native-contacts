@@ -45,13 +45,15 @@ Contacts.getAll((err, contacts) => {
 ```js
 {
   recordID: 1,
-  familyName: "Jung",
-  givenName: "Carl",
-  middleName: "",
+  company: "",
   emailAddresses: [{
     label: "work",
     email: "carl-jung@example.com",
   }],
+  familyName: "Jung",
+  givenName: "Carl",
+  jobTitle: "",
+  middleName: "",
   phoneNumbers: [{
     label: "mobile",
     number: "(555) 555-5555",
@@ -66,12 +68,12 @@ Contacts.getAll((err, contacts) => {
 Currently all fields from the contact record except for thumbnailPath are supported for writing
 ```js
 var newPerson = {
-  familyName: "Nietzsche",
-  givenName: "Friedrich",
   emailAddresses: [{
     label: "work",
     email: "mrniet@example.com",
   }],
+  familyName: "Nietzsche",
+  givenName: "Friedrich",
 }
 
 Contacts.addContact(newPerson, (err) => { /*...*/ })

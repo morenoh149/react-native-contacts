@@ -121,7 +121,16 @@ withCallback:(RCTResponseSenderBlock) callback
     return nil;
   }
 
-  //handle phone numbers
+  [contact setObject: [self getPhoneNumbersForPerson:person] forKey:@"phoneNumbers"];
+  [contact setObject: [self getEmailAddressesForPerson:person] forKey:@"emailAddresses"];
+  [contact setObject: [self getPostalAddressesForPerson:person] forKey:@"postalAddresses"];
+  [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
+
+  return contact;
+}
+
+- (NSArray *) getPhoneNumbersForPerson:(ABRecordRef) person
+{
   NSMutableArray *phoneNumbers = [[NSMutableArray alloc] init];
 
   ABMultiValueRef multiPhones = ABRecordCopyValue(person, kABPersonPhoneProperty);
@@ -142,10 +151,11 @@ withCallback:(RCTResponseSenderBlock) callback
     [phoneNumbers addObject:phone];
   }
 
-  [contact setObject: phoneNumbers forKey:@"phoneNumbers"];
-  //end phone numbers
+  return phoneNumbers;
+}
 
-  //handle emails
+- (NSArray *) getEmailAddressesForPerson:(ABRecordRef) person
+{
   NSMutableArray *emailAddreses = [[NSMutableArray alloc] init];
 
   ABMultiValueRef multiEmails = ABRecordCopyValue(person, kABPersonEmailProperty);
@@ -165,13 +175,56 @@ withCallback:(RCTResponseSenderBlock) callback
     [email setObject: emailLabel forKey:@"label"];
     [emailAddreses addObject:email];
   }
-  //end emails
 
-  [contact setObject: emailAddreses forKey:@"emailAddresses"];
+  return emailAddreses;
+}
 
-  [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
+- (NSArray *) getPostalAddressesForPerson:(ABRecordRef) person
+{
+  NSMutableArray *postalAddresses = [[NSMutableArray alloc] init];
 
-  return contact;
+  ABMultiValueRef multiAddresses = ABRecordCopyValue(person, kABPersonAddressProperty);
+  for (CFIndex i=0;i<ABMultiValueGetCount(multiAddresses);i++) {
+    NSDictionary *addressDictionary =(__bridge NSDictionary *) ABMultiValueCopyValueAtIndex(multiAddresses, i);
+    CFStringRef addressLabelRef = ABMultiValueCopyLabelAtIndex(multiAddresses, i);
+    NSString *addressLabel = (__bridge_transfer NSString *) ABAddressBookCopyLocalizedLabel(addressLabelRef);
+
+    if (addressLabelRef) {
+      CFRelease(addressLabelRef);
+    }
+
+    NSDictionary *keyMap = @{
+      @"Street": @"street",
+      @"ZIP": @"zipCode",
+      @"City": @"city",
+      @"CountryCode": @"countryCode",
+      @"State": @"state",
+      @"Country": @"country",
+    };
+
+    NSMutableDictionary *postalAddress = [[self mappedDictionary:addressDictionary withNewKeys:keyMap] mutableCopy];
+    [postalAddress setObject: addressLabel forKey:@"label"];
+
+    [postalAddresses addObject:postalAddress];
+  }
+
+  return postalAddresses;
+}
+
+- (NSDictionary *)mappedDictionary:(NSDictionary *)dictionary withNewKeys:(NSDictionary *)keyMap
+{
+  NSMutableDictionary *newDictionary = [dictionary mutableCopy];
+
+  for (NSString *key in keyMap) {
+    NSObject *object = [dictionary objectForKey:key];
+
+    if (object) {
+      [newDictionary setObject:[dictionary objectForKey:key] forKey:[keyMap objectForKey:key]];
+      [newDictionary removeObjectForKey:key];
+    }
+  }
+
+  return newDictionary;
 }
 
 -(NSString *) getABPersonThumbnailFilepath:(ABRecordRef) person

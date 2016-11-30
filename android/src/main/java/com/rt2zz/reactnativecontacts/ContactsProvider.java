@@ -153,7 +153,8 @@ public class ContactsProvider {
 
             String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
             if (!TextUtils.isEmpty(rawPhotoURI)) {
-                contact.photoUri = getPhotoURIFromContactURI(rawPhotoURI, contactId);
+                //contact.photoUri = getPhotoURIFromContactURI(rawPhotoURI, contactId);  // this is slow because it generates new temporary image for each contacts
+				contact.photoUri = Uri.parse(rawPhotoURI).toString(); // fast
             }
 
             if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {

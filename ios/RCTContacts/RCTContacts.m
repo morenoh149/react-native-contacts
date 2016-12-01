@@ -38,29 +38,41 @@ RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
   });
 }
 
+-(void) getAllContacts:(RCTResponseSenderBlock) callback
+        withThumbnails:(BOOL) withThumbnails
+{
+    ABAddressBookRef addressBookRef = ABAddressBookCreateWithOptions(NULL, nil);
+    int authStatus = ABAddressBookGetAuthorizationStatus();
+    if(authStatus != kABAuthorizationStatusAuthorized){
+        ABAddressBookRequestAccessWithCompletion(addressBookRef, ^(bool granted, CFErrorRef error) {
+            if(granted){
+                [self retrieveContactsFromAddressBook:addressBookRef withThumbnails:withThumbnails withCallback:callback];
+            }else{
+                NSDictionary *error = @{
+                                        @"type": @"permissionDenied"
+                                        };
+                callback(@[error, [NSNull null]]);
+            }
+        });
+    }
+    else{
+        [self retrieveContactsFromAddressBook:addressBookRef withThumbnails:withThumbnails withCallback:callback];
+    }
+}
+
 RCT_EXPORT_METHOD(getAll:(RCTResponseSenderBlock) callback)
 {
-  ABAddressBookRef addressBookRef = ABAddressBookCreateWithOptions(NULL, nil);
-  int authStatus = ABAddressBookGetAuthorizationStatus();
-  if(authStatus != kABAuthorizationStatusAuthorized){
-    ABAddressBookRequestAccessWithCompletion(addressBookRef, ^(bool granted, CFErrorRef error) {
-      if(granted){
-        [self retrieveContactsFromAddressBook:addressBookRef withCallback:callback];
-      }else{
-        NSDictionary *error = @{
-          @"type": @"permissionDenied"
-        };
-        callback(@[error, [NSNull null]]);
-      }
-    });
-  }
-  else{
-    [self retrieveContactsFromAddressBook:addressBookRef withCallback:callback];
-  }
+    [self getAllContacts:callback withThumbnails:true];
+}
+
+RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
+{
+    [self getAllContacts:callback withThumbnails:false];
 }
 
 -(void) retrieveContactsFromAddressBook:(ABAddressBookRef)addressBookRef
-withCallback:(RCTResponseSenderBlock) callback
+                         withThumbnails:(BOOL) withThumbnails
+                           withCallback:(RCTResponseSenderBlock) callback
 {
   NSArray *allContacts = (__bridge_transfer NSArray *)ABAddressBookCopyArrayOfAllPeopleInSourceWithSortOrdering(addressBookRef, NULL, kABPersonSortByLastName);
   int totalContacts = (int)[allContacts count];
@@ -70,7 +82,7 @@ withCallback:(RCTResponseSenderBlock) callback
   NSMutableArray *contacts = [[NSMutableArray alloc] init];
 
   while (currentIndex <= maxIndex){
-    NSDictionary *contact = [self dictionaryRepresentationForABPerson: (ABRecordRef)[allContacts objectAtIndex:(long)currentIndex]];
+    NSDictionary *contact = [self dictionaryRepresentationForABPerson: (ABRecordRef)[allContacts objectAtIndex:(long)currentIndex] withThumbnails:withThumbnails];
 
     if(contact){
       [contacts addObject:contact];
@@ -81,6 +93,7 @@ withCallback:(RCTResponseSenderBlock) callback
 }
 
 -(NSDictionary*) dictionaryRepresentationForABPerson:(ABRecordRef) person
+                                      withThumbnails:(BOOL)withThumbnails
 {
   NSMutableDictionary* contact = [NSMutableDictionary dictionary];
 
@@ -208,8 +221,10 @@ withCallback:(RCTResponseSenderBlock) callback
   CFRelease(multiPostalAddresses);
   [contact setObject:postalAddresses forKey:@"postalAddresses"];
 
-  [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
-
+  [contact setValue:[NSNumber numberWithBool:ABPersonHasImageData(person)] forKey:@"hasThumbnail"];
+  if (withThumbnails) {
+    [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
+  }
   return contact;
 }
 
@@ -242,6 +257,36 @@ withCallback:(RCTResponseSenderBlock) callback
   }
   return @"";
 }
+
+RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSNumber *)recordID callback:(RCTResponseSenderBlock)callback)
+{
+    ABAddressBookRef addressBookRef = ABAddressBookCreateWithOptions(NULL, nil);
+    int authStatus = ABAddressBookGetAuthorizationStatus();
+    if(authStatus != kABAuthorizationStatusAuthorized){
+        ABAddressBookRequestAccessWithCompletion(addressBookRef, ^(bool granted, CFErrorRef error) {
+            if(granted){
+                callback(@[[NSNull null], [self getABPersonThumbnailFilepathForId:recordID addressBook:addressBookRef]]);
+            }else{
+                NSDictionary *error = @{
+                                        @"type": @"permissionDenied"
+                                        };
+                callback(@[error, [NSNull null]]);
+            }
+        });
+    }
+    else{
+        callback(@[[NSNull null], [self getABPersonThumbnailFilepathForId:recordID addressBook:addressBookRef]]);
+    }
+}
+
+-(NSString *) getABPersonThumbnailFilepathForId:(NSNumber *)recordID
+                                    addressBook:(ABAddressBookRef)addressBookRef
+{
+    ABRecordID abRecordId = (ABRecordID)[recordID intValue];
+    ABRecordRef person = ABAddressBookGetPersonWithRecordID(addressBookRef, abRecordId);
+    return [self getABPersonThumbnailFilepath:person];
+}
+
 
 RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
 {

@@ -33,6 +33,31 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void getAll(final Callback callback) {
+        getAllImpl(false, callback);
+    }
+
+    /**
+     * Retrieves all contactable records, as {@link #getAll(Callback)} without copying image assets.
+     *
+     * Does not introduce overhead of copying assets.
+     * However, the <code>thumbnailPath</code> will be present, if can be retrieved without much effort.
+     *
+     * Introduced for iOS compatibility.
+     *
+     * @param callback callback
+     */
+    @ReactMethod
+    public void getAllWithoutPhotos(final Callback callback) {
+        getAllImpl(true, callback);
+    }
+
+    /**
+     * Retrieves contacts.
+     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
+     * @param rawUri flag if use raw URI or make resources copy
+     * @param callback callback
+     */
+    private void getAllImpl(final boolean rawUri, final Callback callback) {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -40,9 +65,29 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 ContentResolver cr = context.getContentResolver();
 
                 ContactsProvider contactsProvider = new ContactsProvider(cr, context);
-                WritableArray contacts = contactsProvider.getContacts();
+                WritableArray contacts = contactsProvider.getContacts(rawUri);
 
                 callback.invoke(null, contacts);
+            }
+        });
+    }
+
+    /**
+     * Retrieves <code>thumbnailPath</code> for contact, or <code>null</code> if not available.
+     * @param contactId contact identifier, <code>recordID</code>
+     * @param callback callback
+     */
+    @ReactMethod
+    public void getPhotoForId(final String contactId, final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+                ContactsProvider contactsProvider = new ContactsProvider(cr, context);
+                String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
+
+                callback.invoke(null, photoUri);
             }
         });
     }

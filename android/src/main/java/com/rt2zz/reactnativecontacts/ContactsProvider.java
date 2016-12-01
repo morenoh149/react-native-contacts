@@ -68,6 +68,11 @@ public class ContactsProvider {
         addAll(JUST_ME_PROJECTION);
     }};
 
+    private static final List<String> PHOTO_PROJECTION = new ArrayList<String>() {{
+        add(ContactsContract.Data.CONTACT_ID);
+        add(Contactables.PHOTO_URI);
+    }};
+
     private final ContentResolver contentResolver;
     private final Context context;
 
@@ -76,7 +81,7 @@ public class ContactsProvider {
         this.context = context;
     }
 
-    public WritableArray getContacts() {
+    public WritableArray getContacts(boolean rawUri) {
         Map<String, Contact> justMe;
         {
             Cursor cursor = contentResolver.query(
@@ -88,7 +93,7 @@ public class ContactsProvider {
             );
 
             try {
-                justMe = loadContactsFrom(cursor);
+                justMe = loadContactsFrom(cursor, rawUri);
             } finally {
                 if (cursor != null) {
                     cursor.close();
@@ -107,7 +112,7 @@ public class ContactsProvider {
             );
 
             try {
-                everyoneElse = loadContactsFrom(cursor);
+                everyoneElse = loadContactsFrom(cursor, rawUri);
             } finally {
                 if (cursor != null) {
                     cursor.close();
@@ -127,7 +132,7 @@ public class ContactsProvider {
     }
 
     @NonNull
-    private Map<String, Contact> loadContactsFrom(Cursor cursor) {
+    private Map<String, Contact> loadContactsFrom(Cursor cursor, boolean rawUri) {
 
         Map<String, Contact> map = new LinkedHashMap<>();
 
@@ -164,7 +169,10 @@ public class ContactsProvider {
 
             String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
             if (!TextUtils.isEmpty(rawPhotoURI)) {
-                contact.photoUri = getPhotoURIFromContactURI(rawPhotoURI, contactId);
+                contact.photoUri = rawUri
+                        ? rawPhotoURI
+                        : getPhotoURIFromContactURI(rawPhotoURI, contactId);
+                contact.hasPhoto = true;
             }
 
             if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {
@@ -269,6 +277,31 @@ public class ContactsProvider {
         }
     }
 
+    public String getPhotoUriFromContactId(String contactId, boolean rawUri) {
+        Cursor cursor = contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                PHOTO_PROJECTION.toArray(new String[PHOTO_PROJECTION.size()]),
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                new String[]{contactId + ""},
+                null
+        );
+        try {
+            if (cursor != null && cursor.moveToNext()) {
+                String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
+                if (!TextUtils.isEmpty(rawPhotoURI)) {
+                    return rawUri
+                            ? rawPhotoURI
+                            : getPhotoURIFromContactURI(rawPhotoURI, contactId);
+                }
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return null;
+    }
+
     private static class Contact {
         private String contactId;
         private String displayName;
@@ -277,6 +310,7 @@ public class ContactsProvider {
         private String familyName = "";
         private String company = "";
         private String jobTitle ="";
+        private boolean hasPhoto = false;
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
@@ -294,6 +328,7 @@ public class ContactsProvider {
             contact.putString("familyName", familyName);
             contact.putString("company", company);
             contact.putString("jobTitle", jobTitle);
+            contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
 
             WritableArray phoneNumbers = Arguments.createArray();

@@ -85,7 +85,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 Context context = getReactApplicationContext();
                 ContentResolver cr = context.getContentResolver();
                 ContactsProvider contactsProvider = new ContactsProvider(cr, context);
-                String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
+                String photoUri = contactsProvider.getPhotoUriFromContactId(contactId, true);
 
                 callback.invoke(null, photoUri);
             }

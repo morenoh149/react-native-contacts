@@ -64,7 +64,7 @@ An array of Objects containing email addresses with the following key names:
 |------------|------------|-------------|
 | label      | String     | One of: *home, work, mobile, other*. An unrecognzied label will be added as 'other'|
 | email      | String     | A String containing the email address associated with *label*
-| primary    | boolean    | Default = *false* *(WIP) Indicates this email address is the Contact's primary email address. If more than email address is provided to addContact() the address added as the primary contact email address is undefined*
+| primary    | boolean    | Default = *false* *(WIP) Indicates this email address is the Contact's primary email address. If more than one email address is provided to addContact() the address added as the primary contact email address is undefined*
 
 
 #### websites
@@ -89,6 +89,11 @@ Android
 
 iOS
 >TBD
+
+When calling updateContact():
+
+>If you are updating a contact retrieved from getAll(), remove thumbnailPath from your contact object if the photo should not be updated. The API can not determine if the current profile photo and thumbnailPath are the same and will always copy the thumbnailPath image (which is slow)
+
 
 ## Example Contact Record
 ```js
@@ -135,7 +140,8 @@ iOS
   note: "This is a note",
   birthday: "Jun 8",
   thumbnailPath: "file:///device/path/to/image.jpg",
-}```
+}
+```
 
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.

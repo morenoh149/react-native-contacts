@@ -24,6 +24,117 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 `checkPermission` (callback) - checks permission to access Contacts  
 `requestPermission` (callback) - request permission to access Contacts
 
+## contact object
+The following contact fields are supported on iOS and Android. Where a field label is indicated, the Contact field populates the native field with as the label.
+
+| Key Name   | Value Type | iOS* | Android | Description |
+|------------|------------|------|---------|-------------|
+| recordID   | Integer    | R  | R     | Native contact manger record ID for this contact. Returned by getAll() and used to indicate contact record for updateContact(). Ignored by addContact()
+| familyName | String     | R/W  | R/W     | Family name or "last name"
+| givenName  | String     | R/W  | R/W     | Given name or "first name"
+| middleName | String     | R/W  | R/W     | Middle name or names
+| nickName   | String     | *    | R/W     | Contact's nickname
+| phoneNumbers | Array    | R/W  | R/W     | see [phoneNumbers](#phoneNumbers)
+| emailAddresses | Array  | R/W  | R/W     | see [emailAddresses](#emailAddresses)
+| websites   | Array      | *    | R/W     | see [websites](#websites)
+| postalAddresses| Array  | *    | *       | see [postalAddresses](#postalAddresses)
+| note       | String     | *    | R/W     | Note about contact. Appears in "Notes" on native Contact Manager
+| birthday   | *     | *    | *     | Note about contact. Appears in "Notes" on native Contact Manager
+| thumbnailPath | String  | R/*  | R/W     | A 'file://' URL pointing to the contact's thumbnail image on the native device filesystem. See [Notes on adding and updating thumbnailPath](#notes-on-adding-and-updatring-thumbnailPath)
+\* *Support planned*
+
+##### phoneNumbers
+
+An array of Objects containing phone numbers with the following key names:
+
+| Key Name   | Value Type | Description |
+|------------|------------|-------------|
+| label      | String     | One of: *home, work, mobile, fax, other*. An unrecognzied label will be added as 'other'|
+| number     | String     | A String containing the phone number associated with *label*
+| primary    | boolean    | Default = *false* *(WIP) Indicates this number is the Contact's primary number. If more than one phone number is provided to addContact() the number added as the primary contact number is undefined*
+
+
+##### emailAddresses
+
+An array of Objects containing email addresses with the following key names:
+
+| Key Name   | Value Type | Description |
+|------------|------------|-------------|
+| label      | String     | One of: *home, work, mobile, other*. An unrecognzied label will be added as 'other'|
+| email      | String     | A String containing the email address associated with *label*
+| primary    | boolean    | Default = *false* *(WIP) Indicates this email address is the Contact's primary email address. If more than email address is provided to addContact() the address added as the primary contact email address is undefined*
+
+
+##### websites
+
+An array of Objects containing phone numbers with the following key names:
+
+| Key Name   | Value Type | Description |
+|------------|------------|-------------|
+| label      | String     | One of: *home, work, homepage, profile, blog, other*. An unrecognzied label will be added as 'other'|
+| url     | String     | A String containing the URL associated with *label*
+
+##### postalAddresses
+
+**WIP**
+
+##### Notes on Adding and Updating thumbnailPath
+
+When calling addContact():
+
+Android
+>Should be the full size image for the contact in jpeg format. If the image is high-resoltuion, a low-resolution thumbnail will automatically be generated to be used in conjunction with the contact image.
+
+iOS
+>TBD
+
+## Example Contact Record
+```js
+{
+  recordID: 1,
+
+  familyName: "Jung",
+  givenName: "Carl",
+  middleName: "C.",
+  nickName: "Carl-o",
+
+  company: "Foomatics, Inc.",
+  jobTitle: "Developer",
+
+  phoneNumbers: [{
+    label: "mobile",
+    number: "(555) 555-5555",
+    primary: true,
+  },{
+    label: "work",
+    number: "(555) 555-5556",
+  }],
+
+  emailAddresses: [{
+    label: "work",
+    email: "carl-jung@example.com",
+  }],
+
+  websites: [{
+    label: "homepage",
+    url: "http://www.carljung.com/",
+  }],
+
+  postalAddresses: [{
+    label: "work",
+    unstructuredAddress: "123 N. Main Street, Anytown, NNN 12345-A234, Foolandia",
+    street: "123 N Main Street"
+    city: "Anytown",
+    postCode: "12345-A234",
+    region: "NNN",
+    country: "Foolandia",
+  }],
+
+  note: "This is a note",
+  birthday: "Jun 8",
+  thumbnailPath: "file:///device/path/to/image.jpg",
+}```
+
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
 
@@ -40,29 +151,6 @@ Contacts.getAll((err, contacts) => {
   }
 })
 ```
-
-## Example Contact Record
-```js
-{
-  recordID: 1,
-  company: "",
-  emailAddresses: [{
-    label: "work",
-    email: "carl-jung@example.com",
-  }],
-  familyName: "Jung",
-  givenName: "Carl",
-  jobTitle: "",
-  middleName: "",
-  phoneNumbers: [{
-    label: "mobile",
-    number: "(555) 555-5555",
-  }],
-  thumbnailPath: "",
-}
-```
-**NOTE**
-* on Android the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing
@@ -149,7 +237,7 @@ dependencies {
 
 	public class MainApplication extends Application implements ReactApplication {
 	    ...
-		
+
 	    @Override
 	    protected List<ReactPackage> getPackages() {
 	      return Arrays.<ReactPackage>asList(

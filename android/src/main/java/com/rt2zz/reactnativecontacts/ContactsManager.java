@@ -122,9 +122,9 @@ public class ContactsManager extends ReactContextBaseJavaModule {
           Nicknake: ContactsContract.CommonDataKinds.Nickname
           website[]: ContactsContract.CommonDataKinds.Website
           - IM[]: ContactsContract.CommonDataKinds.Im
-          Relations[]:ContactsContract.CommonDataKinds.Relation
-          Birthday: ContactsContract.CommonDataKinds.Event
-          Anniversary: ContactsContract.CommonDataKinds.Event
+          - Relations[]:ContactsContract.CommonDataKinds.Relation
+          - Birthday: ContactsContract.CommonDataKinds.Event
+          - Anniversary: ContactsContract.CommonDataKinds.Event
 
         */
 

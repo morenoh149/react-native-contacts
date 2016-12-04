@@ -39,7 +39,7 @@ The following contact fields are supported on iOS and Android. Where a field lab
 | websites   | Array      | *    | R/W     | see [websites](#websites)
 | postalAddresses| Array  | *    | *       | see [postalAddresses](#postalAddresses)
 | note       | String     | *    | R/W     | Note about contact. Appears in "Notes" on native Contact Manager
-| birthday   | *     | *    | *     | Note about contact. Appears in "Notes" on native Contact Manager
+| birthday   | *     | *    | *     | The contact's birthday, with or without year, as a String
 | thumbnailPath | String  | R/*  | R/W     | A 'file://' URL pointing to the contact's thumbnail image on the native device filesystem. See [Notes on adding and updating thumbnailPath](#notes-on-adding-and-updatring-thumbnailPath)
 \* *Support planned*
 

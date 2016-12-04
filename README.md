@@ -45,7 +45,7 @@ The following contact fields are supported on iOS and Android. Where a field lab
 | thumbnailPath | String  | R/*  | R/W     | A 'file://' URL pointing to the contact's thumbnail image on the native device filesystem. See [Notes on adding and updating thumbnailPath](#notes-on-adding-and-updatring-thumbnailPath)
 \* *Support planned*
 
-##### phoneNumbers
+#### phoneNumbers
 
 An array of Objects containing phone numbers with the following key names:
 
@@ -56,7 +56,7 @@ An array of Objects containing phone numbers with the following key names:
 | primary    | boolean    | Default = *false* *(WIP) Indicates this number is the Contact's primary number. If more than one phone number is provided to addContact() the number added as the primary contact number is undefined*
 
 
-##### emailAddresses
+#### emailAddresses
 
 An array of Objects containing email addresses with the following key names:
 
@@ -67,7 +67,7 @@ An array of Objects containing email addresses with the following key names:
 | primary    | boolean    | Default = *false* *(WIP) Indicates this email address is the Contact's primary email address. If more than email address is provided to addContact() the address added as the primary contact email address is undefined*
 
 
-##### websites
+#### websites
 
 An array of Objects containing phone numbers with the following key names:
 
@@ -76,11 +76,11 @@ An array of Objects containing phone numbers with the following key names:
 | label      | String     | One of: *home, work, homepage, profile, blog, other*. An unrecognzied label will be added as 'other'|
 | url     | String     | A String containing the URL associated with *label*
 
-##### postalAddresses
+#### postalAddresses
 
 **WIP**
 
-##### Notes on Adding and Updating thumbnailPath
+#### Notes on Adding and Updating thumbnailPath
 
 When calling addContact():
 

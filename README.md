@@ -34,16 +34,16 @@ The following contact fields are supported on iOS and Android. Where a field lab
 | givenName  | String     | R/W  | R/W     | Given name or "first name"
 | middleName | String     | R/W  | R/W     | Middle name or names
 | nickName   | String     | *    | R/W     | Contact's nickname
-| phoneticName | Object   | *    | * [notes](#phoneticName) | see [phoneticName](#phoneticName)
+| phoneticName | Object   | *    | * [notes](#phoneticname) | see [phoneticName](#phoneticname)
 | company    | String     | *    | R/W     | Where the Contact works
 | jobTitle   | String     | R/W  | R/W     | Contact's job title
-| phoneNumbers | Array    | R/W  | R/W     | see [phoneNumbers](#phoneNumbers)
-| emailAddresses | Array  | R/W  | R/W     | see [emailAddresses](#emailAddresses)
+| phoneNumbers | Array    | R/W  | R/W     | see [phoneNumbers](#phonenumbers)
+| emailAddresses | Array  | R/W  | R/W     | see [emailAddresses](#emailaddresses)
 | websites   | Array      | *    | R/W     | see [websites](#websites)
-| postalAddresses| Array  | *    | R/W     | see [postalAddresses](#postalAddresses)
+| postalAddresses| Array  | *    | R/W     | see [postalAddresses](#postaladdresses)
 | note       | String     | *    | R/W     | Note about contact. Appears in "Notes" on native Contact Manager
 | birthday   | Object     | *    | *     | The contact's birthday, with or without year, as ```{ year: int, month: int, day: int }```
-| socialServices | Array  | *    | *       | see [socialServices](#socialServices)
+| socialServices | Array  | *    | *       | see [socialServices](#socialservices)
 | thumbnailPath | String  | R/*  | R/W     | A 'file://' URL pointing to the contact's thumbnail image on the native device filesystem. See [Notes on adding and updating thumbnailPath](#notes-on-adding-and-updatring-thumbnailPath)
 \* *Support planned but implementation pending - comments and suggestions welcome*
 
@@ -51,7 +51,7 @@ The following contact fields are supported on iOS and Android. Where a field lab
 
 ** IMPLEMENTATION PENDING **
 
-An Object containing phonetic representations of the contacts names.
+An Object containing phonetic representations of the contact's names.
 
 Notes:
 
@@ -60,8 +60,8 @@ iOS supports separate phonetic name fields, while Android only supports a single
 | Key Name   | Value Type | Description |
 |------------|------------|-------------|
 | family     | String     | Phonetic representation of contact's family name without spaces (use "-" instead) |
-| given      | String     | Phonetic representation of contact's given name (use "-" instead) |
-| easternOrder | boolean    | Default = *false* If true, Android will concatenate with the family name first and the given name second. *A phonetic name written in Eastern order is not currently guaranteed to be retrieved in correct order on Android.*
+| given      | String     | Phonetic representation of contact's given name without spaces (use "-" instead) |
+| easternOrder | boolean    | [Default = *false*] If true, Android will concatenate with the family name first and the given name second.
 
 #### phoneNumbers
 

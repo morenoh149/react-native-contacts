@@ -38,25 +38,31 @@ RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
   });
 }
 
+RCT_EXPORT_METHOD(get:(NSDictionary*) options resolver:(RCTResponseSenderBlock) callback)
+{
+    //For now, ios doesn't support any of the options arguments. Fails over to 'getAll'
+    return [self getAll:callback];
+}
+
 RCT_EXPORT_METHOD(getAll:(RCTResponseSenderBlock) callback)
 {
-  ABAddressBookRef addressBookRef = ABAddressBookCreateWithOptions(NULL, nil);
-  int authStatus = ABAddressBookGetAuthorizationStatus();
-  if(authStatus != kABAuthorizationStatusAuthorized){
-    ABAddressBookRequestAccessWithCompletion(addressBookRef, ^(bool granted, CFErrorRef error) {
-      if(granted){
+    ABAddressBookRef addressBookRef = ABAddressBookCreateWithOptions(NULL, nil);
+    int authStatus = ABAddressBookGetAuthorizationStatus();
+    if(authStatus != kABAuthorizationStatusAuthorized){
+        ABAddressBookRequestAccessWithCompletion(addressBookRef, ^(bool granted, CFErrorRef error) {
+            if(granted){
+                [self retrieveContactsFromAddressBook:addressBookRef withCallback:callback];
+            }else{
+                NSDictionary *error = @{
+                                        @"type": @"permissionDenied"
+                                        };
+                callback(@[error, [NSNull null]]);
+            }
+        });
+    }
+    else{
         [self retrieveContactsFromAddressBook:addressBookRef withCallback:callback];
-      }else{
-        NSDictionary *error = @{
-          @"type": @"permissionDenied"
-        };
-        callback(@[error, [NSNull null]]);
-      }
-    });
-  }
-  else{
-    [self retrieveContactsFromAddressBook:addressBookRef withCallback:callback];
-  }
+    }
 }
 
 -(void) retrieveContactsFromAddressBook:(ABAddressBookRef)addressBookRef

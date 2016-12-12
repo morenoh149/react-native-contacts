@@ -38,9 +38,39 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             public void run() {
                 Context context = getReactApplicationContext();
                 ContentResolver cr = context.getContentResolver();
-
                 ContactsProvider contactsProvider = new ContactsProvider(cr, context);
-                WritableArray contacts = contactsProvider.getContacts();
+                WritableArray contacts = contactsProvider.getContacts(null);
+
+                callback.invoke(null, contacts);
+            }
+        });
+    }
+
+    /*
+     * Returns records relevant to options passed in.
+     * queries CommonDataKinds.Contactables to get phones and emails
+     * Options that can be passed:
+     * 'contactsWith' - array can be passed to optimize the query,
+     *   to just look contacts with a
+     *   'phone', 'email', 'name', or 'organization' (or any combo)
+     */
+    @ReactMethod
+    public void get(final ReadableMap options, final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+                ReadableArray selections = options.getArray("contactsWith");
+                String[] contactSelections = null;
+                if (selections != null) {
+                    contactSelections = new String[selections.size()];
+                    for (int i = 0; i < selections.size(); i++) {
+                        contactSelections[i] = selections.getString(i);
+                    }
+                }
+                ContactsProvider contactsProvider = new ContactsProvider(cr, context);
+                WritableArray contacts = contactsProvider.getContacts(contactSelections);
 
                 callback.invoke(null, contacts);
             }

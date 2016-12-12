@@ -11,7 +11,7 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 | `addContact` | ✔ | ✔ |
 | `updateContact` | ✔ | ✔ |
 | `deleteContact` | ✔ | 😞 |
-| get with options | 😞 | 😞 |
+| get with options | 😞 | ✔ |
 | groups  | 😞 | 😞 |
 
 
@@ -22,13 +22,18 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 `updateContact` (contact, callback) - where contact is an object with a valid recordID  
 `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
 `checkPermission` (callback) - checks permission to access Contacts  
-`requestPermission` (callback) - request permission to access Contacts
+`requestPermission` (callback) - request permission to access Contacts  
+`get` (options, callback) - returns contacts satisfying options object.  Currently just supports the `contactsWith` key on Android to optimize your query’s performance
 
+```js
+var Contacts = require('react-native-contacts')
+
+Contacts.get(
+   { contactsWith: [‘phone’] }, // Supports [‘phone’, ‘name’, ‘email’, ‘organization’] or any combo
+   (err, contacts) => { console.log(contacts) }
+)
+```
 ## Usage
-`getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
-
-Also there is a lot of room for performance enhancements in both iOS and android. PR's welcome!
-
 ```js
 var Contacts = require('react-native-contacts')
 
@@ -40,6 +45,9 @@ Contacts.getAll((err, contacts) => {
   }
 })
 ```
+**Note** `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because Android is particularly slow, it is recommended you use `get(options, …)` to try to optimize your query, to only fetch contacts that are relevant to your use case. See example above.
+
+Also there is a lot of room for performance enhancements in both iOS and android. PR's welcome!
 
 ## Example Contact Record
 ```js
@@ -202,7 +210,7 @@ On android permission request is done upon install so this function will only sh
 ## Todo
 - [ ] android feature parity
 - [ ] migrate iOS from AddressBook to Contacts
-- [ ] implement `get` with options
+- [ ] implement `get` with options on iOS
 - [ ] groups support
 
 ## LICENSE

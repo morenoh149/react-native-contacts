@@ -18,7 +18,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,13 @@ import static android.provider.ContactsContract.CommonDataKinds.Organization;
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
 
+    //Custom types that can be passed in for 'contactsWith' key.
+    private static final String EMAIL = "email";
+    private static final String PHONE = "phone";
+    private static final String STRUCTURED_NAME = "name";
+    private static final String ORGANIZATION = "organization";
+
+    private static final String[] DEFAULT_SELECTION = {EMAIL, PHONE, STRUCTURED_NAME, ORGANIZATION};
     private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {{
         add(ContactsContract.Contacts.Data.MIMETYPE);
         add(ContactsContract.Profile.DISPLAY_NAME);
@@ -57,6 +66,16 @@ public class ContactsProvider {
         addAll(JUST_ME_PROJECTION);
     }};
 
+
+    //Maps human readable selections to Android SDK content types:
+    private static final Map<String,String> SELECTION_MAP = new HashMap<String, String>();
+    static {
+        SELECTION_MAP.put(EMAIL, Email.CONTENT_ITEM_TYPE);
+        SELECTION_MAP.put(PHONE, Phone.CONTENT_ITEM_TYPE);
+        SELECTION_MAP.put(STRUCTURED_NAME, StructuredName.CONTENT_ITEM_TYPE);
+        SELECTION_MAP.put(ORGANIZATION, Organization.CONTENT_ITEM_TYPE);
+    }
+
     private final ContentResolver contentResolver;
     private final Context context;
 
@@ -65,7 +84,7 @@ public class ContactsProvider {
         this.context = context;
     }
 
-    public WritableArray getContacts() {
+    public WritableArray getContacts(String[] selections) {
         Map<String, Contact> justMe;
         {
             Cursor cursor = contentResolver.query(
@@ -84,14 +103,25 @@ public class ContactsProvider {
                 }
             }
         }
+        if (selections == null) {
+            selections = DEFAULT_SELECTION;
+        }
+        String[] selectionQuery = new String[selections.length];
+        String selectionString = "";
+        for (int i = 0; i < selections.length; i++) {
+            selectionString +=  ContactsContract.Data.MIMETYPE + "=? OR ";
+            selectionQuery[i] = SELECTION_MAP.get(selections[i]);
+        }
+        //Remove final ' OR ' that was appended:
+        selectionString = selectionString.substring(0, selectionString.length() - 4);
 
         Map<String, Contact> everyoneElse;
         {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
-                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE},
+                    selectionString,
+                    selectionQuery,
                     null
             );
 

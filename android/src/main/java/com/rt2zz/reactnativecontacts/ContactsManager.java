@@ -100,12 +100,14 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
      private long writeContact(Boolean update, ReadableMap contact, Callback callback, ReadableMap options) {
 
+   android.util.Log.e("ReactNativeContacts: writeContact update=",String.valueOf(update));
+
        String recordID = contact.hasKey("recordID") ? String.valueOf(contact.getString("recordID")) : null;
 
        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
        ContentProviderOperation.Builder op = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI);
-       if(update) op.withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{recordID});
+       if(update==true) op.withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{recordID});
        op.withValue(RawContacts.ACCOUNT_TYPE, null)
          .withValue(RawContacts.ACCOUNT_NAME, null);
        ops.add(op.build());
@@ -115,7 +117,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
        String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
        String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
        op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
-       if(update) op.withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{recordID});
+       if(update==true) op.withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{recordID});
        else op.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0);
        op.withValue(ContactsContract.Data.MIMETYPE, StructuredName.CONTENT_ITEM_TYPE)
          .withValue(StructuredName.GIVEN_NAME, givenName)
@@ -128,7 +130,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
        if(phoneNumbers != null) {
          for (Map.Entry<String, String> kvpair : phoneNumbers.entrySet()) {
            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
-           if(update) op.withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE});
+           if(update==true) op.withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE});
            else op.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0);
            op.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
              .withValue(CommonDataKinds.Phone.NUMBER, kvpair.getValue())
@@ -142,7 +144,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
        if(emailAddresses != null) {
          for (Map.Entry<String, String> kvpair : emailAddresses.entrySet()) {
            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
-           if(update) op.withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE});
+           if(update==true) op.withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE});
            else op.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0);
            op.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
              .withValue(CommonDataKinds.Email.ADDRESS, kvpair.getValue())
@@ -155,7 +157,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
        String company = contact.hasKey("company") ? contact.getString("company") : null;
        String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
        op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
-       if(update) op.withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, Organization.CONTENT_ITEM_TYPE});
+       if(update==true) op.withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, Organization.CONTENT_ITEM_TYPE});
        else op.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0);
        op.withValue(ContactsContract.Data.MIMETYPE, Organization.CONTENT_ITEM_TYPE)
          .withValue(Organization.COMPANY, company)
@@ -182,7 +184,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
        if(websites != null) {
          for (Map.Entry<String, String> kvpair : websites.entrySet()) {
            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
-           if(update) op.withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE});
+           if(update==true) op.withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE});
            else op.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0);
            op.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Website.CONTENT_ITEM_TYPE)
              .withValue(CommonDataKinds.Website.URL, kvpair.getValue())
@@ -195,7 +197,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
        String note = contact.hasKey("note") ? contact.getString("note") : null;
        if (note != null) {
            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
-           if(update) op.withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE});
+           if(update==true) op.withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE});
            else op.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0);
            op.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Note.CONTENT_ITEM_TYPE)
              .withValue(CommonDataKinds.Note.NOTE, note);
@@ -206,7 +208,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
        String nickname = contact.hasKey("nickName") ? contact.getString("nickName") : null;
        if (nickname != null) {
            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
-           if(update) op.withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE});
+           if(update==true) op.withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{recordID, ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE});
            else op.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0);
            op.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Nickname.CONTENT_ITEM_TYPE)
              .withValue(CommonDataKinds.Nickname.NAME, nickname);
@@ -223,21 +225,27 @@ public class ContactsManager extends ReactContextBaseJavaModule {
            ContentResolver cr = ctx.getContentResolver();
            ContentProviderResult[] results = cr.applyBatch(ContactsContract.AUTHORITY, ops);
            rawContactId = ContentUris.parseId(results[0].uri);
+   android.util.Log.e("ReactNativeContacts: new contact ID =",String.valueOf(rawContactId));
            //callback.invoke(); // success
        } catch (Exception e) {
+    android.util.Log.e("ReactNativeContacts:",e.toString());
            callback.invoke(e.toString());
            return 0;
        }
 
+    android.util.Log.i("ReactNativeContacts","Adding Photo");
        /* Photo */
        //If there is a thumbnailPhoto, add it to the new contact
        String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
-       if(thumbnailPath != null ) {
-         Uri rawContactPhotoUri = Uri.withAppendedPath(
-           ContentUris.withAppendedId(RawContacts.CONTENT_URI, rawContactId),
-           RawContacts.DisplayPhoto.CONTENT_DIRECTORY);
+       if(thumbnailPath != null && thumbnailPath.length() > 0) {
+    android.util.Log.i("ReactNativeContacts",thumbnailPath);
+       Uri rawContactPhotoUri = Uri.withAppendedPath(
+         ContentUris.withAppendedId(RawContacts.CONTENT_URI, rawContactId),
+         RawContacts.DisplayPhoto.CONTENT_DIRECTORY);
          try {
+    android.util.Log.i("ReactNativeContacts","try block");
              File fileIn = new File(thumbnailPath.substring(7)); // remove "file://"
+    android.util.Log.i("ReactNativeContacts",thumbnailPath.substring(7));             
              FileInputStream tnInputStream = new FileInputStream(fileIn);
              AssetFileDescriptor fd =
                  ctx.getContentResolver().openAssetFileDescriptor(rawContactPhotoUri, "rw");
@@ -245,12 +253,14 @@ public class ContactsManager extends ReactContextBaseJavaModule {
              int bytesRead = 0;
              byte[] bbuf = new byte[1024*8];
              while ((bytesRead = tnInputStream.read(bbuf)) != -1) {
+    android.util.Log.i("ReactNativeContacts: bytes read:",String.valueOf(bytesRead));
                os.write(bbuf,0,bytesRead);
              }
              os.close();
              fd.close();
              tnInputStream.close();
          } catch (Exception e) {
+    android.util.Log.e("ReactNativeContacts:",e.toString());
            callback.invoke(e.toString());
            return 0;
          }

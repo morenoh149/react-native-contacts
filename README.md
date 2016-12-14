@@ -55,7 +55,7 @@ An Object containing phonetic representations of the contact's names.
 
 Notes:
 
-iOS supports separate phonetic name fields, while Android only supports a single combined phonetic name field. To make phoneticName bidirectional, no whitespace should appear in either individual field. If a phonetic name field passed to addContact() or writeContact() contains spaces, they will be replaced with hyphens (-).  For example: "CAR el" "YUH ng" will become "CAR-el" "YUH-ng". On iOS the hyphenated version of each name will be added, while on Android they will be concatenated into the single field "CAR-el YUH-ng". When fetched with getAll(), Android will use the space (%20) as a delimiter.
+iOS supports separate phonetic name fields, while Android only supports a single combined phonetic name field. To make phoneticName bidirectional, no whitespace should appear in either individual field. If a phonetic name field passed to addContact() or updateContact() contains spaces, they will be replaced with hyphens (-).  For example: "CAR el" "YUH ng" will become "CAR-el" "YUH-ng". On iOS the hyphenated version of each name will be added, while on Android they will be concatenated into the single field "CAR-el YUH-ng". When fetched with getAll(), Android will use the space (%20) as a delimiter.
 
 | Key Name   | Value Type | Description |
 |------------|------------|-------------|
@@ -119,7 +119,8 @@ Android implementation notes: As of API 25, the native contact manager only supp
 | Key Name   | Value Type | Description |
 |------------|------------|-------------|
 | serviceId  | String     | A label indicating the social media service. iOS currently supports: "facebook", "flickr", linkedin", "myspace", sinaweibo", tencentweibo", "twitter", "yelp", and "gamecenter", and "custom".
-| url | String | A URL associted with the social profile
+| serviceName | String | When serviceId is "custom", a string that represents the name of the service for use in user interfaces.
+| url | String | A URL associated with the social profile
 | uid | String | The user ID for this contact on this service
 | name | String | The name of this user on this service
 
@@ -150,19 +151,21 @@ When calling updateContact():
   nickName: "Carl-o",
   phoenticName: {
     given: "CAR-el",
-    family: "YUH-ng"
+    family: "YUH-ng",
   }
   company: "Foomatics, Inc.",
   jobTitle: "Developer",
 
-  phoneNumbers: [{
-    label: "mobile",
-    number: "(555) 555-5555",
-    primary: true,
-  },{
-    label: "work",
-    number: "(555) 555-5556",
-  }],
+  phoneNumbers: [
+    {
+      label: "mobile",
+      number: "(555) 555-5555",
+      primary: true,
+    },{
+      label: "work",
+      number: "(555) 555-5556",
+    }
+  ],
 
   emailAddresses: [{
     label: "work",
@@ -176,7 +179,7 @@ When calling updateContact():
 
   postalAddresses: [{
     label: "work",
-    street: "123 N Main Street"
+    street: "123 N Main Street",
     city: "Chicago",
     region: "IL", //Illinois in USA
     postcode: "12345-A234",

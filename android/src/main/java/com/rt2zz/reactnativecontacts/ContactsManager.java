@@ -18,6 +18,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
 
 import java.util.ArrayList;
 
@@ -82,6 +83,25 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
 
                 callback.invoke(null, photoUri);
+            }
+        });
+    }
+
+    /*
+     * Returns contact details for a specific phone number
+     */
+    @ReactMethod
+    public void getContactByPhoneNumber(final String phoneNumber, final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+
+                ContactsProvider contactsProvider = new ContactsProvider(cr, context);
+                WritableMap contact = contactsProvider.getContactByPhoneNumber(phoneNumber);
+
+                callback.invoke(null, contact);
             }
         });
     }

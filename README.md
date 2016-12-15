@@ -8,6 +8,7 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 | Feature | iOS | Android |
 | ------- | --- | ------- |
 | `getAll`  | ✔   | ✔ |
+| `getContactByPhoneNumber` | 😞 | ✔ |
 | `addContact` | ✔ | ✔ |
 | `updateContact` | ✔ | ✔ |
 | `deleteContact` | ✔ | 😞 |
@@ -20,6 +21,7 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 `getAll` (callback) - returns *all* contacts as an array of objects  
 `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
 `getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
+`getContactByPhoneNumber` (phoneNumber, callback) - Returns contact details for a specific phone number
 `addContact` (contact, callback) - adds a contact to the AddressBook.  
 `updateContact` (contact, callback) - where contact is an object with a valid recordID  
 `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
@@ -76,6 +78,32 @@ Contacts.getAll((err, contacts) => {
 ```
 **NOTE**
 * on Android the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
+
+## getContactByPhoneNumber
+
+```js
+function lookupContact(phoneNumber, onSuccess, onFailure) {
+    if (!phoneNumber || phoneNumber == '') {
+        onFailure(new Error('phone number is empty'))
+        return
+    }
+    Contacts.getContactByPhoneNumber(phoneNumber, (err, contact) => {
+        if (err) {
+            onFailure(err)
+            return
+        }
+        onSuccess(contact)
+    })
+}
+```
+
+`contact` object
+
+```
+{
+  displayName: "The contact name found"
+}
+```
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing

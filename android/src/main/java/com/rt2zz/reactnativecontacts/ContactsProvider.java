@@ -26,6 +26,7 @@ import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
 
+
     private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {{
         add(ContactsContract.RawContacts.SOURCE_ID);
         add(ContactsContract.Data.LOOKUP_KEY);
@@ -119,6 +120,32 @@ public class ContactsProvider {
         }
 
         return contacts;
+    }
+
+    public WritableMap getContactByPhoneNumber(String phoneNumber) {
+
+        WritableMap contactFound = Arguments.createMap();
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+
+        String[] projection = new String[] {ContactsContract.PhoneLookup.DISPLAY_NAME};
+        Cursor cursor = this.contentResolver.query(uri, projection, null, null, null);
+        if (cursor == null) {
+            return null;
+        }
+
+        try {
+            if (cursor.moveToFirst()) {
+                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
+                contactFound.putString("displayName", name);
+            }
+        } catch(Exception ex) {
+            Log.e("RNContacts", ex.getMessage());
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return contactFound;
     }
 
     @NonNull

@@ -108,7 +108,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
      private long writeContact(Boolean update, ReadableMap contact, Callback callback, ReadableMap options) {
 
-       //android.util.Log.e("ReactNativeContacts: writeContact update=",String.valueOf(update));
+       //android.util.Log.d("ReactNativeContacts: writeContact update=",String.valueOf(update));
 
        String recordID = contact.hasKey("recordID") ? String.valueOf(contact.getString("recordID")) : null;
 
@@ -126,9 +126,12 @@ public class ContactsManager extends ReactContextBaseJavaModule {
        ops.add(op.build());
 
        // Name
-       String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
+       String givenName  = contact.hasKey("givenName") ? contact.getString("givenName") : null;
        String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
        String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
+       String phoneticGivenName  = contact.hasKey("phoneticGivenName") ? contact.getString("phoneticGivenName") : null;
+       String phoneticMiddleName = contact.hasKey("phoneticMiddleName") ? contact.getString("phoneticMiddleName") : null;
+       String phoneticFamilyName = contact.hasKey("phoneticFamilyName") ? contact.getString("phoneticFamilyName") : null;
        if(update==true) {
          op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
           .withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{recordID});
@@ -139,7 +142,10 @@ public class ContactsManager extends ReactContextBaseJavaModule {
        op.withValue(ContactsContract.Data.MIMETYPE, StructuredName.CONTENT_ITEM_TYPE)
          .withValue(StructuredName.GIVEN_NAME, givenName)
          .withValue(StructuredName.MIDDLE_NAME, middleName)
-         .withValue(StructuredName.FAMILY_NAME, familyName);
+         .withValue(StructuredName.FAMILY_NAME, familyName)
+         .withValue(StructuredName.PHONETIC_GIVEN_NAME, phoneticGivenName)
+         .withValue(StructuredName.PHONETIC_MIDDLE_NAME, phoneticMiddleName)
+         .withValue(StructuredName.PHONETIC_FAMILY_NAME, phoneticFamilyName);
        ops.add(op.build());
 
        // Phone Numbers
@@ -218,19 +224,6 @@ public class ContactsManager extends ReactContextBaseJavaModule {
          ops.add(op.build());
        }
 
-       /* ADDED FOR MECARD */
-       /* Mappings:
-
-         Addresses[]: ContactsContract.CommonDataKinds.StructuredPostal
-         Photo: ContactsContract.CommonDataKinds.Photo
-         Note: ContactsContract.CommonDataKinds.Note
-         Nicknake: ContactsContract.CommonDataKinds.Nickname
-         website[]: ContactsContract.CommonDataKinds.Website
-         - Birthday: ContactsContract.CommonDataKinds.Event
-         - Anniversary: ContactsContract.CommonDataKinds.Event
-
-       */
-
        // Websites
        Map<String, String> websites = mapReadableArrayKVS(contact, "websites", "label", "url");
        if(websites != null) {
@@ -262,6 +255,29 @@ public class ContactsManager extends ReactContextBaseJavaModule {
            }
            op.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Note.CONTENT_ITEM_TYPE)
              .withValue(CommonDataKinds.Note.NOTE, note);
+           ops.add(op.build());
+       }
+
+       // Birthday
+       if ( contact.hasKey("birthday") ) {
+           // Event.START_DATE is a string that (seems) to only accept "yyyy-MM-dd" format
+           String birthdayS = new String();
+           ReadableMap bdate = contact.getMap("birthday");
+           if( bdate.hasKey("year" )) birthdayS+=bdate.getInt("year")+"-";
+           else birthdayS+="--"; //no year
+           if( bdate.hasKey("month")) birthdayS+=bdate.getInt("month");
+           if( bdate.hasKey("day"  )) birthdayS+="-"+bdate.getInt("day");
+//android.util.Log.d("ReactNativeContacts: Birthday=",birthdayS);
+           if(update==true) {
+             op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+              .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?",new String[]{recordID, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE});
+           } else {
+             op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+              .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0);
+           }
+           op.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Event.CONTENT_ITEM_TYPE)
+             .withValue(CommonDataKinds.Event.TYPE, CommonDataKinds.Event.TYPE_BIRTHDAY)
+             .withValue(CommonDataKinds.Event.START_DATE, birthdayS);
            ops.add(op.build());
        }
 

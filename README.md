@@ -34,7 +34,9 @@ The following contact fields are supported on iOS and Android. Where a field lab
 | givenName  | String     | R/W  | R/W     | Given name or "first name"
 | middleName | String     | R/W  | R/W     | Middle name or names
 | nickName   | String     | *    | R/W     | Contact's nickname
-| phoneticName | Object   | *    | * [notes](#phoneticname) | see [phoneticName](#phoneticname)
+| phoneticFamilyName | String | *    | R/W | Phonetic representation of familyName
+| phoneticMiddleName | String | *    | R/W | Phonetic representation of middleName
+| phoneticGivenName | String | *    | R/W | Phonetic representation of givenName
 | company    | String     | *    | R/W     | Where the Contact works
 | jobTitle   | String     | R/W  | R/W     | Contact's job title
 | phoneNumbers | Array    | R/W  | R/W     | see [phoneNumbers](#phonenumbers)
@@ -45,23 +47,7 @@ The following contact fields are supported on iOS and Android. Where a field lab
 | birthday   | Object     | *    | *     | The contact's birthday, with or without year, as ```{ year: int, month: int, day: int }```
 | socialServices | Array  | *    | *       | see [socialServices](#socialservices)
 | thumbnailPath | String  | R/*  | R/W     | A 'file://' URL pointing to the contact's thumbnail image on the native device filesystem. See [Notes on adding and updating thumbnailPath](#notes-on-adding-and-updatring-thumbnailPath)
-\* *Support planned but implementation pending - comments and suggestions welcome*
-
-#### phoneticName
-
-** IMPLEMENTATION PENDING **
-
-An Object containing phonetic representations of the contact's names.
-
-Notes:
-
-iOS supports separate phonetic name fields, while Android only supports a single combined phonetic name field. To make phoneticName bidirectional, no whitespace should appear in either individual field. If a phonetic name field passed to addContact() or updateContact() contains spaces, they will be replaced with hyphens (-).  For example: "CAR el" "YUH ng" will become "CAR-el" "YUH-ng". On iOS the hyphenated version of each name will be added, while on Android they will be concatenated into the single field "CAR-el YUH-ng". When fetched with getAll(), Android will use the space (%20) as a delimiter.
-
-| Key Name   | Value Type | Description |
-|------------|------------|-------------|
-| family     | String     | Phonetic representation of contact's family name without spaces (use "-" instead) |
-| given      | String     | Phonetic representation of contact's given name without spaces (use "-" instead) |
-| easternOrder | boolean    | [Default = *false*] If true, Android will concatenate with the family name first and the given name second.
+\* *Support planned / implementation pending*
 
 #### phoneNumbers
 
@@ -149,10 +135,9 @@ When calling updateContact():
   givenName: "Carl",
   middleName: "C.",
   nickName: "Carl-o",
-  phoenticName: {
-    given: "CAR-el",
-    family: "YUH-ng",
-  }
+  phoenticGivenName: "CAR-el",
+  phoneticFamilyName: "YUH-ng",
+
   company: "Foomatics, Inc.",
   jobTitle: "Developer",
 

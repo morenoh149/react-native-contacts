@@ -44,8 +44,8 @@ The following contact fields are supported on iOS and Android. Where a field lab
 | websites   | Array      | *    | R/W     | see [websites](#websites)
 | postalAddresses| Array  | *    | R/W     | see [postalAddresses](#postaladdresses)
 | note       | String     | *    | R/W     | Note about contact. Appears in "Notes" on native Contact Manager
-| birthday   | Object     | *    | *     | The contact's birthday, with or without year, as ```{ year: int, month: int, day: int }```
-| socialServices | Array  | *    | *       | see [socialServices](#socialservices)
+| birthday   | Object     | *    | R/W     | The contact's birthday, with or without year, as ```{ year: int, month: int, day: int }```
+[comment]: <> (| socialServices | Array  | *    | *       | see [socialServices](#socialservices) )
 | thumbnailPath | String  | R/*  | R/W     | A 'file://' URL pointing to the contact's thumbnail image on the native device filesystem. See [Notes on adding and updating thumbnailPath](#notes-on-adding-and-updatring-thumbnailPath)
 \* *Support planned / implementation pending*
 

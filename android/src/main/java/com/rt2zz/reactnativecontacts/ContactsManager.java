@@ -297,6 +297,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
        }
 
        //Yield point comes after all operations on a single contact, but need to figure out where to add to ensure usage
+       //Not sure if needed if we're processing one contact at a time
        //op.withYieldAllowed(true);
 
        //Add the contact and get the new rawContactId
@@ -308,11 +309,13 @@ public class ContactsManager extends ReactContextBaseJavaModule {
            rawContactId = ContentUris.parseId(results[0].uri);
        } catch (Exception e) {
            callback.invoke(e.toString());
+//  android.util.Log.d("ReactNativeContacts: ERROR",e.toString());
            return 0;
        }
 
        // Photo
        String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
+//android.util.Log.d("ReactNativeContacts: thumbnailURL=",thumbnailPath);
        if(thumbnailPath != null && thumbnailPath.length() > 0) {
        Uri rawContactPhotoUri = Uri.withAppendedPath(
          ContentUris.withAppendedId(RawContacts.CONTENT_URI, rawContactId),

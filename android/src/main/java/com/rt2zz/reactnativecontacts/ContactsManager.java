@@ -4,14 +4,14 @@ import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
+import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.RawContacts;
-import android.util.Log;
 
 import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -19,7 +19,6 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class ContactsManager extends ReactContextBaseJavaModule {
@@ -33,31 +32,64 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      * queries CommonDataKinds.Contactables to get phones and emails
      */
     @ReactMethod
-    public void getAll(Callback callback) {
-        Context context = getReactApplicationContext();
-        ContentResolver cr = context.getContentResolver();
-
-        ContactsProvider contactsProvider = new ContactsProvider(cr, context);
-        WritableArray contacts = contactsProvider.getContacts();
-
-        callback.invoke(null, contacts);
+    public void getAll(final Callback callback) {
+        getAllImpl(false, callback);
     }
 
+    /**
+     * Retrieves all contactable records, as {@link #getAll(Callback)} without copying image assets.
+     *
+     * Does not introduce overhead of copying assets.
+     * However, the <code>thumbnailPath</code> will be present, if can be retrieved without much effort.
+     *
+     * Introduced for iOS compatibility.
+     *
+     * @param callback callback
+     */
     @ReactMethod
-    public void getIconUri(String recordID, String iconResourceUri, Promise promise) {
-        Context context = getReactApplicationContext();
-        ContentResolver cr = context.getContentResolver();
+    public void getAllWithoutPhotos(final Callback callback) {
+        getAllImpl(true, callback);
+    }
 
-        ContactsProvider contactsProvider = new ContactsProvider(cr, context);
+    /**
+     * Retrieves contacts.
+     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
+     * @param rawUri flag if use raw URI or make resources copy
+     * @param callback callback
+     */
+    private void getAllImpl(final boolean rawUri, final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
 
-        try {
-            String fileUri = contactsProvider.fileUriForContactIcon(iconResourceUri, recordID);
-            promise.resolve(fileUri);
-        } catch (Exception e) {
-            String message = "Failed to get photo uri for record '" + recordID + "', icon '" + iconResourceUri + "'";
-            Log.w("RNContacts", message, e);
-            promise.reject(message, e);
-        }
+                ContactsProvider contactsProvider = new ContactsProvider(cr, context);
+                WritableArray contacts = contactsProvider.getContacts(rawUri);
+
+                callback.invoke(null, contacts);
+            }
+        });
+    }
+
+    /**
+     * Retrieves <code>thumbnailPath</code> for contact, or <code>null</code> if not available.
+     * @param contactId contact identifier, <code>recordID</code>
+     * @param callback callback
+     */
+    @ReactMethod
+    public void getPhotoForId(final String contactId, final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+                ContactsProvider contactsProvider = new ContactsProvider(cr, context);
+                String photoUri = contactsProvider.getPhotoUriFromContactId(contactId, true);
+
+                callback.invoke(null, photoUri);
+            }
+        });
     }
 
     /*
@@ -69,6 +101,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
         String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
+        String company = contact.hasKey("company") ? contact.getString("company") : null;
+        String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
 
         // String name = givenName;
         // name += middleName != "" ? " " + middleName : "";
@@ -120,6 +154,13 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 .withValue(StructuredName.FAMILY_NAME, familyName);
         ops.add(op.build());
 
+        op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                .withValue(ContactsContract.Data.MIMETYPE, Organization.CONTENT_ITEM_TYPE)
+                .withValue(Organization.COMPANY, company)
+                .withValue(Organization.TITLE, jobTitle);
+        ops.add(op.build());
+
         //TODO not sure where to allow yields
         op.withYieldAllowed(true);
 
@@ -162,6 +203,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
         String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
+        String company = contact.hasKey("company") ? contact.getString("company") : null;
+        String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -210,6 +253,12 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 .withValue(StructuredName.GIVEN_NAME, givenName)
                 .withValue(StructuredName.MIDDLE_NAME, middleName)
                 .withValue(StructuredName.FAMILY_NAME, familyName);
+        ops.add(op.build());
+
+        op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), Organization.CONTENT_ITEM_TYPE})
+                .withValue(Organization.COMPANY, company)
+                .withValue(Organization.TITLE, jobTitle);
         ops.add(op.build());
 
         op.withYieldAllowed(true);

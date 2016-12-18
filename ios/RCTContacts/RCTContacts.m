@@ -273,6 +273,21 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
   CFRelease(multiEmail);
 
   ABAddressBookSave(addressBookRef, &error);
+  
+  //Set Profile Image//
+  NSString *thumbnailPath = [contactData valueForKey:@"thumbnailPath"];
+  UIImage *img = [UIImage imageWithContentsOfFile:thumbnailPath];
+  NSData *dataRef = UIImagePNGRepresentation(img);
+  CFDataRef cfDataRef = CFDataCreate(NULL, [dataRef bytes], [dataRef length]);
+  ABPersonRemoveImageData(record, &error);
+  if (ABAddressBookSave(addressBookRef, &error))
+  {
+    ABPersonSetImageData(record, cfDataRef, &error);
+    ABAddressBookSave(addressBookRef, &error);
+  }
+  CFRelease(addressBookRef);
+  /////////////////////
+
   if (error != NULL)
   {
     CFStringRef errorDesc = CFErrorCopyDescription(error);

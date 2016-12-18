@@ -152,7 +152,7 @@ public class ContactsProvider {
             }
 
             String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
-            if (!TextUtils.isEmpty(rawPhotoURI)) {
+            if (!TextUtils.isEmpty(rawPhotoURI) && TextUtils.isEmpty(contact.photoUri)) {
                 contact.photoUri = getPhotoURIFromContactURI(rawPhotoURI, contactId);
             }
 

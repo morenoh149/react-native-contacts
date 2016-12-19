@@ -18,6 +18,8 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 
 ## API
 `getAll` (callback) - returns *all* contacts as an array of objects  
+`getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
+`getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
 `addContact` (contact, callback) - adds a contact to the AddressBook.  
 `updateContact` (contact, callback) - where contact is an object with a valid recordID  
 `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
@@ -44,7 +46,7 @@ Contacts.getAll((err, contacts) => {
 ## Example Contact Record
 ```js
 {
-  recordID: 1,
+  recordID: '6b2237ee0df85980',
   company: "",
   emailAddresses: [{
     label: "work",
@@ -58,7 +60,18 @@ Contacts.getAll((err, contacts) => {
     label: "mobile",
     number: "(555) 555-5555",
   }],
-  thumbnailPath: "",
+  thumbnailPath: 'content://com.android.contacts/display_photo/3',
+  postalAddresses: 
+    [ 
+      {
+        postCode: 'Postcooode',
+        city: 'City',
+        neighborhood: 'neighborhood',
+        street: 'Home Street',
+        formattedAddress: 'Home Street\nneighborhood\nCity Postcooode',
+        label: 'work' 
+      }
+    ]
 }
 ```
 **NOTE**

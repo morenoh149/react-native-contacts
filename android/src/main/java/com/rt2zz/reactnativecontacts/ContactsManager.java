@@ -7,8 +7,8 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
-import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.CommonDataKinds.Organization;
+import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.RawContacts;
 
 import com.facebook.react.bridge.Callback;
@@ -33,16 +33,55 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void getAll(final Callback callback) {
+        getAllContacts(callback);
+    }
+
+    /**
+     * Introduced for iOS compatibility.  Same as getAll
+     *
+     * @param callback callback
+     */
+    @ReactMethod
+    public void getAllWithoutPhotos(final Callback callback) {
+        getAllContacts(callback);
+    }
+
+    /**
+     * Retrieves contacts.
+     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
+     * @param callback callback
+     */
+    private void getAllContacts(final Callback callback) {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 Context context = getReactApplicationContext();
                 ContentResolver cr = context.getContentResolver();
 
-                ContactsProvider contactsProvider = new ContactsProvider(cr, context);
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContacts();
 
                 callback.invoke(null, contacts);
+            }
+        });
+    }
+
+    /**
+     * Retrieves <code>thumbnailPath</code> for contact, or <code>null</code> if not available.
+     * @param contactId contact identifier, <code>recordID</code>
+     * @param callback callback
+     */
+    @ReactMethod
+    public void getPhotoForId(final String contactId, final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
+                String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
+
+                callback.invoke(null, photoUri);
             }
         });
     }
@@ -220,7 +259,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
         for (int i = 0; i < numOfPhones; i++) {
             op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE})
+                    .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Phone.CONTENT_ITEM_TYPE})
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
                     .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
@@ -229,7 +268,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
         for (int i = 0; i < numOfEmails; i++) {
             op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE})
+                    .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Email.CONTENT_ITEM_TYPE})
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
                     .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);

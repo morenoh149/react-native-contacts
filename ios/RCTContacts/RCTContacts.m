@@ -230,11 +230,11 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
 
 -(NSString *) getABPersonThumbnailFilepath:(ABRecordRef) person
 {
-    NSString* dir = [self getPathForDirectory:NSCachesDirectory];
-    NSString* filepath = [NSString stringWithFormat:@"%@/contact_%@.png", dir, recordID.stringValue];
-    
     if (ABPersonHasImageData(person)){
-        
+
+        NSNumber *recordID = [NSNumber numberWithInteger:(ABRecordGetRecordID(person))];
+        NSString* filepath = [NSString stringWithFormat:@"%@/contact_%@.png", [self getPathForDirectory:NSCachesDirectory], recordID];
+
         NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
         BOOL success = [[NSFileManager defaultManager] createFileAtPath:filepath contents:contactImageData attributes:nil];
         

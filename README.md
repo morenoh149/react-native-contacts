@@ -11,7 +11,7 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 | `getAll`  | ✔   | ✔ |
 | `addContact` | ✔ | ✔ |
 | `updateContact` | ✔ | ✔ |
-| `deleteContact` | ✔ | 😞 |
+| `deleteContact` | ✔ | ✔ |
 | get with options | 😞 | 😞 |
 | groups  | 😞 | 😞 |
 
@@ -30,24 +30,24 @@ The following contact fields are supported on iOS and Android. Where a field lab
 
 | Key Name   | Value Type | iOS* | Android | Description |
 |------------|------------|------|---------|-------------|
-| recordID   | Integer    | R  | R     | Native contact manger record ID for this contact. Returned by getAll() and used to indicate contact record for updateContact(). Ignored by addContact()
+| recordID   | Integer    | R  | R     | Native contact manger record ID for this contact. Returned by getAll() and used to indicate contact record for updateContact(). Ignored by addContact(). Value is native platform dependent.
 | familyName | String     | R/W  | R/W     | Family name or "last name"
 | givenName  | String     | R/W  | R/W     | Given name or "first name"
 | middleName | String     | R/W  | R/W     | Middle name or names
-| nickName   | String     | *    | R/W     | Contact's nickname
-| phoneticFamilyName | String | *    | R/W | Phonetic representation of familyName
-| phoneticMiddleName | String | *    | R/W | Phonetic representation of middleName
-| phoneticGivenName | String | *    | R/W | Phonetic representation of givenName
+| nickName   | String     | R/W     | R/W     | Contact's nickname
+| phoneticFamilyName | String | R/W | R/W | Phonetic representation of familyName
+| phoneticMiddleName | String | R/W | R/W | Phonetic representation of middleName
+| phoneticGivenName | String | R/W  | R/W | Phonetic representation of givenName
 | company    | String     | R/W  | R/W     | Where the Contact works
 | jobTitle   | String     | R/W  | R/W     | Contact's job title
 | phoneNumbers | Array    | R/W  | R/W     | see [phoneNumbers](#phonenumbers)
 | emailAddresses | Array  | R/W  | R/W     | see [emailAddresses](#emailaddresses)
-| websites   | Array      | *    | R/W     | see [websites](#websites)
-| postalAddresses| Array  | *    | R/W     | see [postalAddresses](#postaladdresses)
-| note       | String     | *    | R/W     | Note about contact. Appears in "Notes" on native Contact Manager
-| birthday   | Object     | *    | R/W     | The contact's birthday, with or without year, as ```{ year: int, month: int, day: int }```[1]
-| thumbnailPath | String  | R/*  | R/W     | A 'file://' URL pointing to the contact's thumbnail image on the native device filesystem. See [Notes on adding and updating thumbnailPath](#notes-on-adding-and-updatring-thumbnailPath)
-\* *Support planned / implementation pending*
+| websites   | Array      | R/W  | R/W     | see [websites](#websites)
+| postalAddresses| Array  | R/W  | R/W     | see [postalAddresses](#postaladdresses)
+| note       | String     | R/W  | R/W     | Note about contact. Appears in "Notes" on native Contact Manager
+| birthday   | Object     | R/W    | R/W     | The contact's birthday, with or without year, as ```{ year: int, month: int, day: int }```[1]
+| thumbnailPath | String  | R/W  | R/W     | A 'file://' URL pointing to the contact's thumbnail image on the native device filesystem. See [Notes on adding and updating thumbnailPath](#notes-on-adding-and-updatring-thumbnailPath)
+
 
 [1] Android: Not all contact managers show birthday, however value can be written, read, and synced
 
@@ -59,7 +59,7 @@ An array of Objects containing phone numbers with the following key names:
 |------------|------------|-------------|
 | label      | String     | One of: *home, work, mobile, fax, other*. An unrecognzied label will be added as 'other'|
 | number     | String     | A String containing the phone number associated with *label*
-| primary    | boolean    | Default = *false* *(WIP) Indicates this number is the Contact's primary number. If more than one phone number is provided to addContact() in the array, and none or more than one have primary set to *true*, the number added as the primary contact number is undefined*
+| primary    | boolean    | Default = *false* *(WIP) Indicates this number is the Contact's primary number. If more than one phone number is provided to addContact() in the array, and none or more than one have primary set to *true*, the number added as the primary contact number is undefined
 
 
 #### emailAddresses
@@ -70,7 +70,7 @@ An array of Objects containing email addresses with the following key names:
 |------------|------------|-------------|
 | label      | String     | One of: *home, work, mobile, other*. An unrecognzied label will be added as 'other'|
 | email      | String     | A String containing the email address associated with *label*
-| primary    | boolean    | Default = *false* *(WIP) Indicates this email address is the Contact's primary email address. If more than one email address is provided to addContact() in the array, and none or more than one have primary set to *true*, the address added as the primary contact email address is undefined*
+| primary    | boolean    | Default = *false* *(WIP) Indicates this email address is the Contact's primary email address. If more than one email address is provided to addContact() in the array, and none or more than one have primary set to *true*, the address added as the primary contact email address is undefined
 
 
 #### websites
@@ -91,10 +91,10 @@ An array of Objects containing postal (physical) addresses with the following ke
 | label      | String     | One of: *home, work, other*. An unrecognzied label will be added as 'other'|
 | street     | String     | The complete street address ("123 N. Main Street Suite 500") associated with *label*
 | city       | String     | The city in which the address resides.
-| region     | String     | A location designation between *city* and *country*, if customary or necessary. For addresses in the USA this would be the "state", in Canada the "province", etc. *Platform note: Maps to "REGION" on Android and "STATE" on iOS.*
+| region     | String     | A location designation between *city* and *country*, if customary or necessary. For addresses in the USA this is the "state", in Canada the "province", etc. *Platform note: Maps to "REGION" on Android and "STATE" on iOS.*
 | country    | String     | The *ISO 3166-1 ALPHA-2* country code. (Multilingual JSON files can be found at https://github.com/umpirsky/country-list)
 | postcode   | String     | The postal code (zip code) for this address.
-| primary    | boolean    | Default = *false* *(WIP) Indicates this postal address is the Contact's primary postal address. If more than one postal address is provided to addContact() in the array, and none or more than one have primary set to *true*, the address added as the primary postal address is undefined*
+| primary    | boolean    | Default = *false* *(WIP) Indicates this postal address is the Contact's primary postal address. If more than one postal address is provided to addContact() in the array, and none or more than one have primary set to *true*, the address added as the primary postal address is undefined
 
 #### socialServices
 

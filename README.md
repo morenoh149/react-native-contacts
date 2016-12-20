@@ -117,11 +117,7 @@ Android implementation notes: As of API 25, the native contact manager only supp
 
 When calling addContact():
 
-Android
 >Should be the full size image for the contact in jpeg format. If the image is high-resoltuion, a low-resolution thumbnail will automatically be generated to be used in conjunction with the contact image.
-
-iOS
->TBD
 
 When calling updateContact():
 

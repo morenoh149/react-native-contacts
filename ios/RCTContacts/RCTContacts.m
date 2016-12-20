@@ -1,6 +1,7 @@
 #import <AddressBook/AddressBook.h>
 #import <UIKit/UIKit.h>
 #import "RCTContacts.h"
+#import "RCTLog.h"
 
 @implementation RCTContacts
 
@@ -88,8 +89,6 @@ withCallback:(RCTResponseSenderBlock) callback
   NSString *givenName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonFirstNameProperty));
   NSString *familyName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonLastNameProperty));
   NSString *middleName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonMiddleNameProperty));
-  NSString *company = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonOrganizationProperty));
-  NSString *jobTitle = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonJobTitleProperty));
 
   [contact setObject: recordID forKey: @"recordID"];
 
@@ -106,14 +105,6 @@ withCallback:(RCTResponseSenderBlock) callback
 
   if(middleName){
     [contact setObject: (middleName) ? middleName : @"" forKey:@"middleName"];
-  }
-
-  if(company){
-    [contact setObject: (company) ? company : @"" forKey:@"company"];
-  }
-
-  if(jobTitle){
-    [contact setObject: (jobTitle) ? jobTitle : @"" forKey:@"jobTitle"];
   }
 
   if(!hasName){
@@ -147,7 +138,6 @@ withCallback:(RCTResponseSenderBlock) callback
 
   //handle emails
   NSMutableArray *emailAddreses = [[NSMutableArray alloc] init];
-
   ABMultiValueRef multiEmails = ABRecordCopyValue(person, kABPersonEmailProperty);
   for(CFIndex i=0;i<ABMultiValueGetCount(multiEmails);i++) {
     CFStringRef emailAddressRef = ABMultiValueCopyValueAtIndex(multiEmails, i);
@@ -165,12 +155,92 @@ withCallback:(RCTResponseSenderBlock) callback
     [email setObject: emailLabel forKey:@"label"];
     [emailAddreses addObject:email];
   }
-  //end emails
-
   [contact setObject: emailAddreses forKey:@"emailAddresses"];
-
+  //end emails
+  
   [contact setObject: [self getABPersonThumbnailFilepath:person] forKey:@"thumbnailPath"];
 
+  //handle birthday from contacts//
+  CFDateRef birthDate = ABRecordCopyValue(person, kABPersonBirthdayProperty);
+  NSDateFormatter *dateFormatter = nil;
+  if(birthDate)
+  {
+    if (dateFormatter == nil) {
+      dateFormatter = [[NSDateFormatter alloc] init];
+      [dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
+      [dateFormatter setDateStyle:NSDateFormatterMediumStyle];
+    }
+    NSString* strBirthday = [dateFormatter stringFromDate:(__bridge_transfer NSDate *)birthDate ];
+    [contact setObject: strBirthday forKey:@"birthday"];
+  }
+  CFRelease(birthDate);
+  ///////////////////////////////////
+
+  //handle websites
+  NSMutableArray *websites = [[NSMutableArray alloc] init];
+  ABMultiValueRef multiUrls = ABRecordCopyValue(person, kABPersonURLProperty);
+  for(CFIndex i=0;i<ABMultiValueGetCount(multiUrls);i++) {
+    CFStringRef urlAddressRef = ABMultiValueCopyValueAtIndex(multiUrls, i);
+    CFStringRef urlLabelRef = ABMultiValueCopyLabelAtIndex(multiUrls, i);
+    NSString *urlAddress = (__bridge_transfer NSString *) urlAddressRef;
+    NSString *urlLabel = (__bridge_transfer NSString *) ABAddressBookCopyLocalizedLabel(urlLabelRef);
+    if(urlAddressRef){
+      CFRelease(urlAddressRef);
+    }
+    if(urlLabelRef){
+      CFRelease(urlLabelRef);
+    }
+    NSMutableDictionary* url = [NSMutableDictionary dictionary];
+    [url setObject: urlAddress forKey:@"url"];
+    [url setObject: urlLabel forKey:@"label"];
+    [websites addObject:url];
+  }
+  [contact setObject: websites forKey:@"websites"];
+  //end websites
+  
+  //handle postalAddresses
+  NSMutableArray *postalAddresses = [[NSMutableArray alloc] init];
+  ABMultiValueRef multiAddresses = ABRecordCopyValue(person, kABPersonAddressProperty);
+  for(CFIndex i=0;i<ABMultiValueGetCount(multiAddresses);i++) {
+    CFStringRef addrLabelRef = ABMultiValueCopyLabelAtIndex(multiAddresses, i);
+    NSString *addrLabel = (__bridge_transfer NSString *) ABAddressBookCopyLocalizedLabel(addrLabelRef);
+    if(addrLabelRef){
+      CFRelease(addrLabelRef);
+    }
+    CFDictionaryRef dict = ABMultiValueCopyValueAtIndex(multiAddresses, i);
+    NSString * street = CFDictionaryGetValue(dict, kABPersonAddressStreetKey);
+    NSString * city = CFDictionaryGetValue(dict, kABPersonAddressCityKey);
+    NSString * region = CFDictionaryGetValue(dict, kABPersonAddressStateKey);
+    NSString * postcode = CFDictionaryGetValue(dict, kABPersonAddressZIPKey);
+    NSString * country = CFDictionaryGetValue(dict, kABPersonAddressCountryKey);
+    NSMutableDictionary* address = [NSMutableDictionary dictionary];
+    [address setObject: addrLabel forKey:@"label"];
+    [address setObject: street forKey:@"street"];
+    [address setObject: city forKey:@"city"];
+    [address setObject: region forKey:@"region"];
+    [address setObject: postcode forKey:@"postcode"];
+    [address setObject: country forKey:@"country"];
+    [postalAddresses addObject:address];
+  }
+  [contact setObject: postalAddresses forKey:@"postalAddresses"];
+  //end postalAddresses
+  
+  //handle note, nickName, phoneticGivenName, phoneticFamilyName, phoneticMiddleName, company, jobTitle//
+  NSString *note = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonNoteProperty));
+  NSString *nickName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonNicknameProperty));
+  NSString *phoneticGivenName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonFirstNamePhoneticProperty));
+  NSString *phoneticFamilyName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonLastNamePhoneticProperty));
+  NSString *phoneticMiddleName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonMiddleNamePhoneticProperty));
+  NSString *company = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonOrganizationProperty));
+  NSString *jobTitle = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonJobTitleProperty));
+  if(note)               [contact setObject: note forKey:@"note"];
+  if(nickName)           [contact setObject: nickName forKey:@"nickName"];
+  if(phoneticGivenName)  [contact setObject: phoneticGivenName forKey:@"phoneticGivenName"];
+  if(phoneticFamilyName) [contact setObject: phoneticFamilyName forKey:@"phoneticFamilyName"];
+  if(phoneticMiddleName) [contact setObject: phoneticMiddleName forKey:@"phoneticMiddleName"];
+  if(company)            [contact setObject: company forKey:@"company"];
+  if(jobTitle)           [contact setObject: jobTitle forKey:@"jobTitle"];
+  ////////////
   return contact;
 }
 
@@ -231,13 +301,9 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
   NSString *givenName = [contactData valueForKey:@"givenName"];
   NSString *familyName = [contactData valueForKey:@"familyName"];
   NSString *middleName = [contactData valueForKey:@"middleName"];
-  NSString *company = [contactData valueForKey:@"company"];
-  NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
   ABRecordSetValue(record, kABPersonFirstNameProperty, (__bridge CFStringRef) givenName, &error);
   ABRecordSetValue(record, kABPersonLastNameProperty, (__bridge CFStringRef) familyName, &error);
   ABRecordSetValue(record, kABPersonMiddleNameProperty, (__bridge CFStringRef) middleName, &error);
-  ABRecordSetValue(record, kABPersonOrganizationProperty, (__bridge CFStringRef) company, &error);
-  ABRecordSetValue(record, kABPersonJobTitleProperty, (__bridge CFStringRef) jobTitle, &error);
 
   ABMutableMultiValueRef multiPhone = ABMultiValueCreateMutable(kABMultiStringPropertyType);
   NSArray* phoneNumbers = [contactData valueForKey:@"phoneNumbers"];
@@ -271,10 +337,9 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
   }
   ABRecordSetValue(record, kABPersonEmailProperty, multiEmail, nil);
   CFRelease(multiEmail);
-
   ABAddressBookSave(addressBookRef, &error);
-  
-  //Set Profile Image//
+ 
+  //Add Profile Image//
   NSString *thumbnailPath = [contactData valueForKey:@"thumbnailPath"];
   UIImage *img = [UIImage imageWithContentsOfFile:thumbnailPath];
   NSData *dataRef = UIImagePNGRepresentation(img);
@@ -285,9 +350,79 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     ABPersonSetImageData(record, cfDataRef, &error);
     ABAddressBookSave(addressBookRef, &error);
   }
-  CFRelease(addressBookRef);
   /////////////////////
-
+  
+  //Add Birthday//
+  id objBirthday = [contactData valueForKey:@"birthday"];
+  NSString *strMonth = [objBirthday valueForKey:@"month"];
+  NSString *strDay = [objBirthday valueForKey:@"day"];
+  strDay = [NSString stringWithFormat:@"%i", strDay.intValue + 1];
+  
+  NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
+  [formatter setDateFormat:@"dd.MM.yyyy"];
+  NSDate *birthday = [formatter dateFromString:[NSString stringWithFormat:@"%@.%@.1604",strDay, strMonth]];
+  
+  ABRecordSetValue(record, kABPersonBirthdayProperty,(__bridge CFDateRef)birthday, &error);
+  ABAddressBookSave (addressBookRef,&error);
+  ////////////////
+  
+  //Add Website URLs//
+  ABMutableMultiValueRef multiURL = ABMultiValueCreateMutable(kABMultiStringPropertyType);
+  NSArray* urlArray = [contactData valueForKey:@"websites"];
+  for (id urlData in urlArray) {
+    NSString *label = [urlData valueForKey:@"label"];
+    NSString *url = [urlData valueForKey:@"url"];
+    
+    ABMultiValueAddValueAndLabel(multiURL, (__bridge CFStringRef) url, (__bridge CFStringRef) label, NULL);
+  }
+  ABRecordSetValue(record, kABPersonURLProperty, multiURL, nil);
+  CFRelease(multiURL);
+  ABAddressBookSave(addressBookRef, &error);
+  ////////////////////
+  
+  //Add Address//
+  ABMultiValueRef addresses = ABMultiValueCreateMutable(kABMultiDictionaryPropertyType);
+  NSArray* addressArray = [contactData valueForKey:@"postalAddresses"];
+  for (id addressData in addressArray) {
+    NSString *label = [addressData valueForKey:@"label"];
+    NSString *street = [addressData valueForKey:@"street"];
+    NSString *city = [addressData valueForKey:@"city"];
+    NSString *region = [addressData valueForKey:@"region"];
+    NSString *postcode = [addressData valueForKey:@"postcode"];
+    NSString *country = [addressData valueForKey:@"country"];
+    NSDictionary *values = [NSDictionary dictionaryWithObjectsAndKeys:
+                            street, (NSString *)kABPersonAddressStreetKey,
+                            city, (NSString *)kABPersonAddressCityKey,
+                            region, (NSString *)kABPersonAddressStateKey,
+                            postcode, (NSString *)kABPersonAddressZIPKey,
+                            country, (NSString *)kABPersonAddressCountryKey,
+                            nil];
+    ABMultiValueAddValueAndLabel(addresses, (__bridge CFDictionaryRef)values, (__bridge CFStringRef)(label), NULL);
+  }
+  ABRecordSetValue(record, kABPersonAddressProperty, addresses, &error);
+  CFRelease(addresses);
+  ABAddressBookSave(addressBookRef, &error);
+  ////////////////////
+  
+  //Add note, nickName, phoneticGivenName, phoneticFamilyName, phoneticMiddleName, company, jobTitle//
+  NSString *note = [contactData valueForKey:@"note"];
+  NSString *nickName = [contactData valueForKey:@"nickName"];
+  NSString *phoneticGivenName = [contactData valueForKey:@"phoneticGivenName"];
+  NSString *phoneticFamilyName = [contactData valueForKey:@"phoneticFamilyName"];
+  NSString *phoneticMiddleName = [contactData valueForKey:@"phoneticMiddleName"];
+  NSString *company = [contactData valueForKey:@"company"];
+  NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
+  ABRecordSetValue(record, kABPersonNoteProperty, (__bridge CFStringRef) note, &error);
+  ABRecordSetValue(record, kABPersonNicknameProperty, (__bridge CFStringRef) nickName, &error);
+  ABRecordSetValue(record, kABPersonFirstNamePhoneticProperty, (__bridge CFStringRef) phoneticGivenName, &error);
+  ABRecordSetValue(record, kABPersonLastNamePhoneticProperty, (__bridge CFStringRef) phoneticFamilyName, &error);
+  ABRecordSetValue(record, kABPersonMiddleNamePhoneticProperty, (__bridge CFStringRef) phoneticMiddleName, &error);
+  ABRecordSetValue(record, kABPersonOrganizationProperty, (__bridge CFStringRef) company, &error);
+  ABRecordSetValue(record, kABPersonJobTitleProperty, (__bridge CFStringRef) jobTitle, &error);
+  ABAddressBookSave(addressBookRef, &error);
+  ////////////
+  
+  CFRelease(addressBookRef);
   if (error != NULL)
   {
     CFStringRef errorDesc = CFErrorCopyDescription(error);

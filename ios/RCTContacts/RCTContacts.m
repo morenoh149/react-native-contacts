@@ -230,32 +230,29 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
 
 -(NSString *) getABPersonThumbnailFilepath:(ABRecordRef) person
 {
-  if (ABPersonHasImageData(person)){
-    CFDataRef photoDataRef = ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
-    if(!photoDataRef){
-      return @"";
+    if (ABPersonHasImageData(person)){
+
+        NSNumber *recordID = [NSNumber numberWithInteger:(ABRecordGetRecordID(person))];
+        NSString* filepath = [NSString stringWithFormat:@"%@/contact_%@.png", [self getPathForDirectory:NSCachesDirectory], recordID];
+
+        NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
+        BOOL success = [[NSFileManager defaultManager] createFileAtPath:filepath contents:contactImageData attributes:nil];
+        
+        if (!success) {
+            NSLog(@"Unable to copy image");
+            return @"";
+        }
+        
+        return filepath;
     }
+    
+    return @"";
+}
 
-    NSData* data = (__bridge_transfer NSData*)photoDataRef;
-    NSString* tempPath = [NSTemporaryDirectory()stringByStandardizingPath];
-    NSError* err = nil;
-    NSString* tempfilePath = [NSString stringWithFormat:@"%@/thumbimage_XXXXX", tempPath];
-    char template[tempfilePath.length + 1];
-    strcpy(template, [tempfilePath cStringUsingEncoding:NSASCIIStringEncoding]);
-    close(mkstemp(template));
-    tempfilePath = [[NSFileManager defaultManager]
-    stringWithFileSystemRepresentation:template
-    length:strlen(template)];
-
-    tempfilePath = [tempfilePath stringByAppendingString:@".png"];
-
-    [data writeToFile:tempfilePath options:NSAtomicWrite error:&err];
-    CFRelease(photoDataRef);
-    if(!err){
-      return tempfilePath;
-    }
-  }
-  return @"";
+- (NSString *)getPathForDirectory:(int)directory
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(directory, NSUserDomainMask, YES);
+    return [paths firstObject];
 }
 
 RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSNumber *)recordID callback:(RCTResponseSenderBlock)callback)

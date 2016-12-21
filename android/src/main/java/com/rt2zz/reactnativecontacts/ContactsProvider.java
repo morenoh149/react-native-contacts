@@ -27,7 +27,7 @@ public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
 
     private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {{
-        add(ContactsContract.RawContacts.SOURCE_ID);
+        add(ContactsContract.Data.CONTACT_ID);
         add(ContactsContract.Data.LOOKUP_KEY);
         add(ContactsContract.Contacts.Data.MIMETYPE);
         add(ContactsContract.Profile.DISPLAY_NAME);
@@ -128,14 +128,13 @@ public class ContactsProvider {
 
         while (cursor != null && cursor.moveToNext()) {
 
-            String contactId = null;
-            int columnIndex = cursor.getColumnIndex(ContactsContract.RawContacts.SOURCE_ID);
+            int columnIndex = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
+            String contactId;
             if (columnIndex != -1) {
                 contactId = cursor.getString(columnIndex);
-            }
-
-            if(contactId == null) {
-                contactId = String.valueOf(ID_FOR_PROFILE_CONTACT);// there is no sourceid for 'ME' user, as a result it can't (currently) be updated
+            } else {
+                //todo - double check this, it may not be necessary any more
+                contactId = String.valueOf(ID_FOR_PROFILE_CONTACT);//no contact id for 'ME' user
             }
 
             if (!map.containsKey(contactId)) {
@@ -227,7 +226,7 @@ public class ContactsProvider {
         Cursor cursor = contentResolver.query(
                 ContactsContract.Data.CONTENT_URI,
                 PHOTO_PROJECTION.toArray(new String[PHOTO_PROJECTION.size()]),
-                ContactsContract.RawContacts.SOURCE_ID + " = ?",
+                ContactsContract.RawContacts.CONTACT_ID + " = ?",
                 new String[]{contactId},
                 null
         );

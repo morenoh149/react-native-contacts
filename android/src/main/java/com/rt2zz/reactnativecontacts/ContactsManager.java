@@ -70,10 +70,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void addContact(ReadableMap contact, Callback callback) { //, ReadableMap options) {
-
         long rawContactId = writeContact(false, contact, callback, null);
-        return;
-
     }
 
     /*
@@ -81,10 +78,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void updateContact(ReadableMap contact, Callback callback) {
-
         long rawContactId = writeContact(true, contact, callback, null);
-        return;
-
     }
 
     /*
@@ -101,6 +95,22 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     @ReactMethod
     public void requestPermission(Callback callback) {
         callback.invoke(null, isPermissionGranted());
+    }
+
+    @ReactMethod
+    public void deleteContact(ReadableMap contact, Callback callback) {
+        Context context = getReactApplicationContext();
+
+        String contactId = contact.hasKey("recordID") ? String.valueOf(contact.getString("recordID")) : null;
+        if(contactId == null) {
+          callback.invoke("deleteContact: No recordID provided in contact object");
+          return;
+        }
+        Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,contactId);
+        int deleted = context.getContentResolver().delete(uri,null,null);
+        if( deleted<=0 ) {
+          callback.invoke("deleteContact: Failed for recordID "+contactId);
+        }
     }
 
     /*

@@ -10,8 +10,8 @@ import android.content.res.AssetFileDescriptor;
 
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
-import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.CommonDataKinds.Organization;
+import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.RawContacts;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -51,18 +51,57 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void getAll(final Callback callback) {
+        getAllContacts(callback);
+    }
+
+    /**
+     * Introduced for iOS compatibility.  Same as getAll
+     *
+     * @param callback callback
+     */
+    @ReactMethod
+    public void getAllWithoutPhotos(final Callback callback) {
+        getAllContacts(callback);
+    }
+
+    /**
+     * Retrieves contacts.
+     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
+     * @param callback callback
+     */
+    private void getAllContacts(final Callback callback) {
       AsyncTask.execute(new Runnable() {
           @Override
           public void run() {
               Context context = getReactApplicationContext();
               ContentResolver cr = context.getContentResolver();
 
-              ContactsProvider contactsProvider = new ContactsProvider(cr, context);
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
               WritableArray contacts = contactsProvider.getContacts();
 
               callback.invoke(null, contacts);
           }
       });
+    }
+
+    /**
+     * Retrieves <code>thumbnailPath</code> for contact, or <code>null</code> if not available.
+     * @param contactId contact identifier, <code>recordID</code>
+     * @param callback callback
+     */
+    @ReactMethod
+    public void getPhotoForId(final String contactId, final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
+                String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
+
+                callback.invoke(null, photoUri);
+            }
+        });
     }
 
     /*

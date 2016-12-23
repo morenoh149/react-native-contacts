@@ -19,6 +19,8 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 
 ## API
 `getAll` (callback) - returns *all* contacts as an array of objects  
+`getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
+`getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
 `addContact` (contact, callback) - adds a contact to the AddressBook.  
 `updateContact` (contact, callback) - where contact is an object with a valid recordID  
 `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
@@ -28,25 +30,25 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 ## contact object
 The following contact fields are supported on iOS and Android. Where a field label is indicated, the Contact field populates the native field with as the label.
 
-| Key Name   | Value Type | iOS* | Android | Description |
-|------------|------------|------|---------|-------------|
-| recordID   | Integer    | R  | R     | Native contact manger record ID for this contact. Returned by getAll() and used to indicate contact record for updateContact(). Ignored by addContact(). Value is native platform dependent.
-| familyName | String     | R/W  | R/W     | Family name or "last name"
-| givenName  | String     | R/W  | R/W     | Given name or "first name"
-| middleName | String     | R/W  | R/W     | Middle name or names
-| nickName   | String     | R/W     | R/W     | Contact's nickname
-| phoneticFamilyName | String | R/W | R/W | Phonetic representation of familyName
-| phoneticMiddleName | String | R/W | R/W | Phonetic representation of middleName
-| phoneticGivenName | String | R/W  | R/W | Phonetic representation of givenName
-| company    | String     | R/W  | R/W     | Where the Contact works
-| jobTitle   | String     | R/W  | R/W     | Contact's job title
-| phoneNumbers | Array    | R/W  | R/W     | see [phoneNumbers](#phonenumbers)
-| emailAddresses | Array  | R/W  | R/W     | see [emailAddresses](#emailaddresses)
-| websites   | Array      | R/W  | R/W     | see [websites](#websites)
-| postalAddresses| Array  | R/W  | R/W     | see [postalAddresses](#postaladdresses)
-| note       | String     | R/W  | R/W     | Note about contact. Appears in "Notes" on native Contact Manager
-| birthday   | Object     | R/W    | R/W     | The contact's birthday, with or without year, as ```{ year: int, month: int, day: int }```[1]
-| thumbnailPath | String  | R/W  | R/W     | A 'file://' URL pointing to the contact's thumbnail image on the native device filesystem. See [Notes on adding and updating thumbnailPath](#notes-on-adding-and-updatring-thumbnailPath)
+| Key Name   | Value Type | Description |
+|------------|------------|-------------|
+| recordID   | Integer    | (Read-only) Native contact manger record ID for this contact. Returned by getAll() and used to indicate contact record for updateContact(). Ignored by addContact(). Value is native platform dependent.
+| familyName | String     | Family name or "last name"
+| givenName  | String     | Given name or "first name"
+| middleName | String     | Middle name or names
+| nickName   | String     | Contact's nickname
+| phoneticFamilyName | String | Phonetic representation of familyName
+| phoneticMiddleName | String | Phonetic representation of middleName
+| phoneticGivenName | String | Phonetic representation of givenName
+| company    | String     | Where the Contact works
+| jobTitle   | String     | Contact's job title
+| phoneNumbers | Array    | see [phoneNumbers](#phonenumbers)
+| emailAddresses | Array  | see [emailAddresses](#emailaddresses)
+| websites   | Array      | see [websites](#websites)
+| postalAddresses| Array  | see [postalAddresses](#postaladdresses)
+| note       | String     | Note about contact. Appears in "Notes" on native Contact Manager
+| birthday   | Object     | The contact's birthday, with or without year, as ```{ year: int, month: int, day: int }```[1]
+| thumbnailPath | String  | A 'file://' URL pointing to the contact's thumbnail image on the native device filesystem. See [Notes on adding and updating thumbnailPath](#notes-on-adding-and-updatring-thumbnailPath)
 
 
 [1] Android: Not all contact managers show birthday, however value can be written, read, and synced
@@ -197,6 +199,17 @@ Contacts.getAll((err, contacts) => {
 })
 ```
 
+  postalAddresses:
+    [
+      {
+        postCode: 'Postcooode',
+        city: 'City',
+        neighborhood: 'neighborhood',
+        street: 'Home Street',
+        formattedAddress: 'Home Street\nneighborhood\nCity Postcooode',
+        label: 'work'
+      }
+    ]
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing
 ```js

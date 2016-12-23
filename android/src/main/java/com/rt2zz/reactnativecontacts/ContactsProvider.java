@@ -1,23 +1,16 @@
 package com.rt2zz.reactnativecontacts;
 
 import android.content.ContentResolver;
-import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,9 +18,10 @@ import java.util.Map;
 
 import static android.provider.ContactsContract.CommonDataKinds.Contactables;
 import static android.provider.ContactsContract.CommonDataKinds.Email;
+import static android.provider.ContactsContract.CommonDataKinds.Organization;
 import static android.provider.ContactsContract.CommonDataKinds.Phone;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
-import static android.provider.ContactsContract.CommonDataKinds.Organization;
+import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import static android.provider.ContactsContract.CommonDataKinds.Website;
 import static android.provider.ContactsContract.CommonDataKinds.Note;
@@ -38,6 +32,8 @@ public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
 
     private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {{
+        add(ContactsContract.RawContacts.SOURCE_ID);
+        add(ContactsContract.Data.LOOKUP_KEY);
         add(ContactsContract.Contacts.Data.MIMETYPE);
         add(ContactsContract.Profile.DISPLAY_NAME);
         add(Contactables.PHOTO_URI);
@@ -69,20 +65,24 @@ public class ContactsProvider {
         add(Event.TYPE);
         add(Event.START_DATE);
         add(Nickname.NAME);
+        add(StructuredPostal.CITY);
+        add(StructuredPostal.REGION);
+        add(StructuredPostal.POSTCODE);
+        add(StructuredPostal.COUNTRY);
     }};
 
     private static final List<String> FULL_PROJECTION = new ArrayList<String>() {{
-        add(ContactsContract.Data.CONTACT_ID);
-        add(ContactsContract.RawContacts.SOURCE_ID);
         addAll(JUST_ME_PROJECTION);
     }};
 
-    private final ContentResolver contentResolver;
-    private final Context context;
+    private static final List<String> PHOTO_PROJECTION = new ArrayList<String>() {{
+        add(Contactables.PHOTO_URI);
+    }};
 
-    public ContactsProvider(ContentResolver contentResolver, Context context) {
+    private final ContentResolver contentResolver;
+
+    public ContactsProvider(ContentResolver contentResolver) {
         this.contentResolver = contentResolver;
-        this.context = context;
     }
 
     public WritableArray getContacts() {
@@ -160,20 +160,14 @@ public class ContactsProvider {
 
         while (cursor != null && cursor.moveToNext()) {
 
-            int columnIndex = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
-            String contactId;
+            String contactId = null;
+            int columnIndex = cursor.getColumnIndex(ContactsContract.RawContacts.SOURCE_ID);
             if (columnIndex != -1) {
-                contactId = String.valueOf(cursor.getInt(columnIndex));
-            } else {
-                contactId = String.valueOf(ID_FOR_PROFILE_CONTACT);//no contact id for 'ME' user
+                contactId = cursor.getString(columnIndex);
             }
 
-            columnIndex = cursor.getColumnIndex(ContactsContract.RawContacts.SOURCE_ID);
-            if (columnIndex != -1) {
-                String uid = cursor.getString(columnIndex);
-                if (uid != null) {
-                    contactId = uid;
-                }
+            if(contactId == null) {
+                contactId = String.valueOf(ID_FOR_PROFILE_CONTACT);// there is no sourceid for 'ME' user, as a result it can't (currently) be updated
             }
 
             if (!map.containsKey(contactId)) {
@@ -189,9 +183,12 @@ public class ContactsProvider {
                 contact.displayName = name;
             }
 
-            String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
-            if (!TextUtils.isEmpty(rawPhotoURI) && TextUtils.isEmpty(contact.photoUri)) {
-                contact.photoUri = getPhotoURIFromContactURI(rawPhotoURI, contactId);
+            if(TextUtils.isEmpty(contact.photoUri)) {
+                String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
+                if (!TextUtils.isEmpty(rawPhotoURI)) {
+                    contact.photoUri = rawPhotoURI;
+                    contact.hasPhoto = true;
+                }
             }
 
             if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {
@@ -323,42 +320,27 @@ public class ContactsProvider {
         return map;
     }
 
-    private String getPhotoURIFromContactURI(String contactURIString, String contactId) {
-        Uri contactURI = Uri.parse(contactURIString);
-
+    public String getPhotoUriFromContactId(String contactId) {
+        Cursor cursor = contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                PHOTO_PROJECTION.toArray(new String[PHOTO_PROJECTION.size()]),
+                ContactsContract.RawContacts.SOURCE_ID + " = ?",
+                new String[]{contactId},
+                null
+        );
         try {
-            InputStream photoStream = contentResolver.openInputStream(contactURI);
-
-            if (photoStream == null)
-                return "";
-
-            try {
-                BufferedInputStream in = new BufferedInputStream(photoStream);
-                File outputDir = context.getCacheDir(); // context being the Activity pointer
-                File outputFile = File.createTempFile("contact" + contactId, ".jpg", outputDir);
-                FileOutputStream output = new FileOutputStream(outputFile);
-
-                try {
-                    int count;
-                    byte[] buffer = new byte[4098];
-
-                    while ((count = in.read(buffer)) > 0) {
-                        output.write(buffer, 0, count);
-                    }
-                } catch (IOException e) {
-                    output.close();
+            if (cursor != null && cursor.moveToNext()) {
+                String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
+                if (!TextUtils.isEmpty(rawPhotoURI)) {
+                    return rawPhotoURI;
                 }
-
-                in.close();
-
-                return "file://" + outputFile.getAbsolutePath();
-            } finally {
-                photoStream.close();
             }
-        } catch (IOException e) {
-            Log.w("RNContacts", "Failed to get photo uri", e);
-            return "";
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
+        return null;
     }
 
     private static class Contact {
@@ -374,6 +356,7 @@ public class ContactsProvider {
         private String company = "";
         private String jobTitle ="";
         private String note = "";
+        private boolean hasPhoto = false;
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
@@ -399,6 +382,7 @@ public class ContactsProvider {
             contact.putString("company", company);
             contact.putString("jobTitle", jobTitle);
             contact.putString("note", note);
+            contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
 
             WritableArray phoneNumbers = Arguments.createArray();
@@ -462,6 +446,43 @@ public class ContactsProvider {
             }
         }
 
+        public static class PostalAddressItem {
+            public final WritableMap map;
+
+            public PostalAddressItem(Cursor cursor) {
+                map = Arguments.createMap();
+
+                map.putString("label", getLabel(cursor));
+                putString(cursor, "formattedAddress", StructuredPostal.FORMATTED_ADDRESS);
+                putString(cursor, "street", StructuredPostal.STREET);
+                putString(cursor, "pobox", StructuredPostal.POBOX);
+                putString(cursor, "neighborhood", StructuredPostal.NEIGHBORHOOD);
+                putString(cursor, "city", StructuredPostal.CITY);
+                putString(cursor, "region", StructuredPostal.REGION);
+                putString(cursor, "postCode", StructuredPostal.POSTCODE);
+                putString(cursor, "country", StructuredPostal.COUNTRY);
+            }
+
+            private void putString(Cursor cursor, String key, String androidKey) {
+                final String value = cursor.getString(cursor.getColumnIndex(androidKey));
+                if (!TextUtils.isEmpty(value))
+                  map.putString(key, value);
+            }
+
+            static String getLabel(Cursor cursor) {
+                switch (cursor.getInt(cursor.getColumnIndex(StructuredPostal.TYPE))) {
+                    case StructuredPostal.TYPE_HOME:
+                        return "home";
+                    case StructuredPostal.TYPE_WORK:
+                        return "work";
+                    case StructuredPostal.TYPE_CUSTOM:
+                        final String label = cursor.getString(cursor.getColumnIndex(StructuredPostal.LABEL));
+                        return label != null ? label : "";
+                }
+                return "other";
+            }
+        }
+
         public static class SimpleDate {
             public int year;
             public int month;
@@ -481,7 +502,7 @@ public class ContactsProvider {
                   idx++;
                   if(!TextUtils.isEmpty(vals[idx])) this.day   = Integer.parseInt(vals[idx]);
                 } catch (Exception e) {
-                  Log.e("ContactsProvider: date tokenize failed:",e.toString());
+                  android.util.Log.e("ContactsProvider: date tokenize failed:",e.toString());
                 }
             }
 

@@ -79,7 +79,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
               WritableArray contacts = contactsProvider.getContacts();
 
-              callback.invoke(null, contacts);
+              if(callback != null) callback.invoke(null, contacts);
           }
       });
     }
@@ -99,7 +99,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
 
-                callback.invoke(null, photoUri);
+                if(callback != null) callback.invoke(null, photoUri);
             }
         });
     }
@@ -125,7 +125,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void checkPermission(Callback callback) {
-        callback.invoke(null, isPermissionGranted());
+        if(callback != null) callback.invoke(null, isPermissionGranted());
     }
 
     /*
@@ -133,7 +133,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void requestPermission(Callback callback) {
-        callback.invoke(null, isPermissionGranted());
+        if(callback != null) callback.invoke(null, isPermissionGranted());
     }
 
     @ReactMethod
@@ -142,13 +142,13 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
         String contactId = contact.hasKey("recordID") ? String.valueOf(contact.getString("recordID")) : null;
         if(contactId == null) {
-          callback.invoke("deleteContact: No recordID provided in contact object");
+          if(callback != null) callback.invoke("deleteContact: No recordID provided in contact object");
           return;
         }
         Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,contactId);
         int deleted = context.getContentResolver().delete(uri,null,null);
         if( deleted<=0 ) {
-          callback.invoke("deleteContact: Failed for recordID "+contactId);
+          if(callback != null) callback.invoke("deleteContact: Failed for recordID "+contactId);
         }
     }
 
@@ -358,7 +358,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             ContentProviderResult[] results = cr.applyBatch(ContactsContract.AUTHORITY, ops);
             rawContactId = ContentUris.parseId(results[0].uri);
         } catch (Exception e) {
-            callback.invoke(e.toString());
+            if(callback != null) callback.invoke(e.toString());
             return 0;
         }
 
@@ -383,7 +383,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 fd.close();
                 tnInputStream.close();
             } catch (Exception e) {
-                callback.invoke(e.toString());
+                if(callback != null) callback.invoke(e.toString());
                 return 0;
             }
         }

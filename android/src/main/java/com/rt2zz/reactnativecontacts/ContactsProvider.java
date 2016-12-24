@@ -22,6 +22,11 @@ import static android.provider.ContactsContract.CommonDataKinds.Organization;
 import static android.provider.ContactsContract.CommonDataKinds.Phone;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import static android.provider.ContactsContract.CommonDataKinds.Website;
+import static android.provider.ContactsContract.CommonDataKinds.Note;
+import static android.provider.ContactsContract.CommonDataKinds.Event;
+import static android.provider.ContactsContract.CommonDataKinds.Nickname;
 
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
@@ -36,6 +41,9 @@ public class ContactsProvider {
         add(StructuredName.GIVEN_NAME);
         add(StructuredName.MIDDLE_NAME);
         add(StructuredName.FAMILY_NAME);
+        add(StructuredName.PHONETIC_GIVEN_NAME);
+        add(StructuredName.PHONETIC_MIDDLE_NAME);
+        add(StructuredName.PHONETIC_FAMILY_NAME);
         add(Phone.NUMBER);
         add(Phone.TYPE);
         add(Phone.LABEL);
@@ -43,14 +51,20 @@ public class ContactsProvider {
         add(Email.ADDRESS);
         add(Email.TYPE);
         add(Email.LABEL);
+        add(StructuredPostal.TYPE);
+        add(StructuredPostal.STREET);
+        add(StructuredPostal.CITY);
+        add(StructuredPostal.REGION);
+        add(StructuredPostal.POSTCODE);
+        add(StructuredPostal.COUNTRY);
         add(Organization.COMPANY);
         add(Organization.TITLE);
-        add(StructuredPostal.FORMATTED_ADDRESS);
-        add(StructuredPostal.TYPE);
-        add(StructuredPostal.LABEL);
-        add(StructuredPostal.STREET);
-        add(StructuredPostal.POBOX);
-        add(StructuredPostal.NEIGHBORHOOD);
+        add(Website.URL);
+        add(Website.TYPE);
+        add(Note.NOTE);
+        add(Event.TYPE);
+        add(Event.START_DATE);
+        add(Nickname.NAME);
         add(StructuredPostal.CITY);
         add(StructuredPostal.REGION);
         add(StructuredPostal.POSTCODE);
@@ -96,8 +110,26 @@ public class ContactsProvider {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
-                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE},
+                    ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=?",
+                    new String[]{
+                        Email.CONTENT_ITEM_TYPE,
+                        Phone.CONTENT_ITEM_TYPE,
+                        StructuredName.CONTENT_ITEM_TYPE,
+                        StructuredPostal.CONTENT_ITEM_TYPE,
+                        Organization.CONTENT_ITEM_TYPE,
+                        Website.CONTENT_ITEM_TYPE,
+                        Note.CONTENT_ITEM_TYPE,
+                        Event.CONTENT_ITEM_TYPE,
+                        Nickname.CONTENT_ITEM_TYPE
+                      },
                     null
             );
 
@@ -159,9 +191,12 @@ public class ContactsProvider {
             }
 
             if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {
-                contact.givenName = cursor.getString(cursor.getColumnIndex(StructuredName.GIVEN_NAME));
+                contact.givenName  = cursor.getString(cursor.getColumnIndex(StructuredName.GIVEN_NAME));
                 contact.middleName = cursor.getString(cursor.getColumnIndex(StructuredName.MIDDLE_NAME));
                 contact.familyName = cursor.getString(cursor.getColumnIndex(StructuredName.FAMILY_NAME));
+                contact.phoneticGivenName  = cursor.getString(cursor.getColumnIndex(StructuredName.PHONETIC_GIVEN_NAME));
+                contact.phoneticMiddleName = cursor.getString(cursor.getColumnIndex(StructuredName.PHONETIC_MIDDLE_NAME));
+                contact.phoneticFamilyName = cursor.getString(cursor.getColumnIndex(StructuredName.PHONETIC_FAMILY_NAME));
             } else if (mimeType.equals(Phone.CONTENT_ITEM_TYPE)) {
                 String phoneNumber = cursor.getString(cursor.getColumnIndex(Phone.NUMBER));
                 int type = cursor.getInt(cursor.getColumnIndex(Phone.TYPE));
@@ -211,12 +246,74 @@ public class ContactsProvider {
                     }
                     contact.emails.add(new Contact.Item(label, email));
                 }
+            } else if (mimeType.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
+                Contact.PostalAddress address = new Contact.PostalAddress();
+                address.street   = cursor.getString(cursor.getColumnIndex(StructuredPostal.STREET));
+                address.city     = cursor.getString(cursor.getColumnIndex(StructuredPostal.CITY));
+                address.region   = cursor.getString(cursor.getColumnIndex(StructuredPostal.REGION));
+                address.postcode = cursor.getString(cursor.getColumnIndex(StructuredPostal.POSTCODE));
+                address.country  = cursor.getString(cursor.getColumnIndex(StructuredPostal.COUNTRY));
+
+                int type = cursor.getInt(cursor.getColumnIndex(StructuredPostal.TYPE));
+
+                String label;
+                switch (type) {
+                    case StructuredPostal.TYPE_HOME:
+                        label = "home";
+                        break;
+                    case StructuredPostal.TYPE_WORK:
+                        label = "work";
+                        break;
+                    default:
+                        label = "other";
+                }
+                address.label = label;
+                contact.postalAddresses.add(address);
+            } else if (mimeType.equals(Website.CONTENT_ITEM_TYPE)) {
+                String url = cursor.getString(cursor.getColumnIndex(Website.URL));
+                int type = cursor.getInt(cursor.getColumnIndex(Website.TYPE));
+
+                if (!TextUtils.isEmpty(url)) {
+                    String label;
+                    switch (type) {
+                        case Website.TYPE_HOMEPAGE:
+                            label = "hompagee";
+                            break;
+                        case Website.TYPE_BLOG:
+                            label = "blog";
+                            break;
+                        case Website.TYPE_PROFILE:
+                            label = "profile";
+                            break;
+                        case Website.TYPE_HOME:
+                            label = "home";
+                            break;
+                        case Website.TYPE_WORK:
+                            label = "work";
+                            break;
+                        case Website.TYPE_CUSTOM:
+                            if (cursor.getString(cursor.getColumnIndex(Website.LABEL)) != null) {
+                                label = cursor.getString(cursor.getColumnIndex(Website.LABEL)).toLowerCase();
+                            } else {
+                                label = "";
+                            }
+                            break;
+                        default:
+                            label = "other";
+                    }
+                    contact.websites.add(new Contact.Item(label, url));
+                }
             } else if (mimeType.equals(Organization.CONTENT_ITEM_TYPE)) {
                 contact.company = cursor.getString(cursor.getColumnIndex(Organization.COMPANY));
                 contact.jobTitle = cursor.getString(cursor.getColumnIndex(Organization.TITLE));
-            } else if (mimeType.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
-                contact.postalAddresses.add(new Contact.PostalAddressItem(cursor));
+            } else if (mimeType.equals(Note.CONTENT_ITEM_TYPE)) {
+                contact.note = cursor.getString(cursor.getColumnIndex(Note.NOTE));
+            } else if (mimeType.equals(Event.CONTENT_ITEM_TYPE)) {
+                contact.birthday.setDate("birthday",cursor.getString(cursor.getColumnIndex(Event.START_DATE)));
+            } else if (mimeType.equals(Nickname.CONTENT_ITEM_TYPE)) {
+                contact.nickName = cursor.getString(cursor.getColumnIndex(Nickname.NAME));
             }
+
         }
 
         return map;
@@ -251,13 +348,20 @@ public class ContactsProvider {
         private String givenName = "";
         private String middleName = "";
         private String familyName = "";
+        private String phoneticGivenName = "";
+        private String phoneticMiddleName = "";
+        private String phoneticFamilyName = "";
+        private String nickName = "";
         private String company = "";
         private String jobTitle ="";
+        private String note = "";
         private boolean hasPhoto = false;
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
-        private List<PostalAddressItem> postalAddresses = new ArrayList<>();
+        private List<Item> websites = new ArrayList<>();
+        private List<PostalAddress> postalAddresses = new ArrayList<>();
+        private SimpleDate birthday = new SimpleDate();
 
         public Contact(String contactId) {
             this.contactId = contactId;
@@ -269,8 +373,14 @@ public class ContactsProvider {
             contact.putString("givenName", TextUtils.isEmpty(givenName) ? displayName : givenName);
             contact.putString("middleName", middleName);
             contact.putString("familyName", familyName);
+            contact.putString("phoneticGivenName", phoneticGivenName);
+            contact.putString("phoneticMiddleName", phoneticMiddleName);
+            contact.putString("phoneticFamilyName", phoneticFamilyName);
+            contact.putString("nickName", nickName);
+
             contact.putString("company", company);
             contact.putString("jobTitle", jobTitle);
+            contact.putString("note", note);
             contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
 
@@ -292,12 +402,36 @@ public class ContactsProvider {
             }
             contact.putArray("emailAddresses", emailAddresses);
 
-            WritableArray postalAddresses = Arguments.createArray();
-            for (PostalAddressItem item : this.postalAddresses) {
-              postalAddresses.pushMap(item.map);
+            WritableArray websitesArray = Arguments.createArray();
+            for (Item item : websites) {
+                WritableMap map = Arguments.createMap();
+                map.putString("url", item.value);
+                map.putString("label", item.label);
+                websitesArray.pushMap(map);
             }
-            contact.putArray("postalAddresses", postalAddresses);
+            contact.putArray("websites", websitesArray);
 
+            //TODO: postal addresses
+            WritableArray postalArray = Arguments.createArray();
+            for (PostalAddress address : postalAddresses) {
+                WritableMap map = Arguments.createMap();
+                map.putString("label", address.label);
+                map.putString("street", address.street);
+                map.putString("city", address.city);
+                map.putString("region", address.region);
+                map.putString("country", address.country);
+                map.putString("postcode", address.postcode);
+                postalArray.pushMap(map);
+            }
+            contact.putArray("postalAddresses", postalArray);
+
+            if(this.birthday != null ) {
+                WritableMap map = Arguments.createMap();
+                map.putInt("year",this.birthday.year);
+                map.putInt("month",this.birthday.month);
+                map.putInt("day",this.birthday.day);
+                contact.putMap("birthday",map);
+            }
             return contact;
         }
 
@@ -347,5 +481,45 @@ public class ContactsProvider {
                 return "other";
             }
         }
+
+        public static class SimpleDate {
+            public int year;
+            public int month;
+            public int day;
+            public String label;
+
+            public void setDate(String label, String androidDateString) {
+                String[] vals = androidDateString.split("-");
+                int idx = 0;
+                if (androidDateString.startsWith("--")) idx = 1; // no year in date
+                this.label = label;
+
+                try {
+                  if(!TextUtils.isEmpty(vals[idx])) this.year  = Integer.parseInt(vals[idx]);
+                  idx++;
+                  if(!TextUtils.isEmpty(vals[idx])) this.month = Integer.parseInt(vals[idx]);
+                  idx++;
+                  if(!TextUtils.isEmpty(vals[idx])) this.day   = Integer.parseInt(vals[idx]);
+                } catch (Exception e) {
+                  android.util.Log.e("ContactsProvider: date tokenize failed:",e.toString());
+                }
+            }
+
+            public SimpleDate() {
+                this.label = "";
+                this.year = this.month = this.day = 0;
+            }
+
+        }
+
+        public static class PostalAddress {
+            public String label;
+            public String street;
+            public String city;
+            public String region;
+            public String country;
+            public String postcode;
+        }
+
     }
 }

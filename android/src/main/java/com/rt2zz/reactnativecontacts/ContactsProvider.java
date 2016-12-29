@@ -36,6 +36,8 @@ public class ContactsProvider {
         add(StructuredName.GIVEN_NAME);
         add(StructuredName.MIDDLE_NAME);
         add(StructuredName.FAMILY_NAME);
+        add(StructuredName.PREFIX);
+        add(StructuredName.SUFFIX);
         add(Phone.NUMBER);
         add(Phone.TYPE);
         add(Phone.LABEL);
@@ -45,6 +47,7 @@ public class ContactsProvider {
         add(Email.LABEL);
         add(Organization.COMPANY);
         add(Organization.TITLE);
+        add(Organization.DEPARTMENT);
         add(StructuredPostal.FORMATTED_ADDRESS);
         add(StructuredPostal.TYPE);
         add(StructuredPostal.LABEL);
@@ -162,6 +165,8 @@ public class ContactsProvider {
                 contact.givenName = cursor.getString(cursor.getColumnIndex(StructuredName.GIVEN_NAME));
                 contact.middleName = cursor.getString(cursor.getColumnIndex(StructuredName.MIDDLE_NAME));
                 contact.familyName = cursor.getString(cursor.getColumnIndex(StructuredName.FAMILY_NAME));
+                contact.prefix = cursor.getString(cursor.getColumnIndex(StructuredName.PREFIX));
+                contact.suffix = cursor.getString(cursor.getColumnIndex(StructuredName.SUFFIX));
             } else if (mimeType.equals(Phone.CONTENT_ITEM_TYPE)) {
                 String phoneNumber = cursor.getString(cursor.getColumnIndex(Phone.NUMBER));
                 int type = cursor.getInt(cursor.getColumnIndex(Phone.TYPE));
@@ -214,6 +219,7 @@ public class ContactsProvider {
             } else if (mimeType.equals(Organization.CONTENT_ITEM_TYPE)) {
                 contact.company = cursor.getString(cursor.getColumnIndex(Organization.COMPANY));
                 contact.jobTitle = cursor.getString(cursor.getColumnIndex(Organization.TITLE));
+                contact.department = cursor.getString(cursor.getColumnIndex(Organization.DEPARTMENT));
             } else if (mimeType.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
                 contact.postalAddresses.add(new Contact.PostalAddressItem(cursor));
             }
@@ -251,8 +257,11 @@ public class ContactsProvider {
         private String givenName = "";
         private String middleName = "";
         private String familyName = "";
+        private String prefix = "";
+        private String suffix = "";
         private String company = "";
         private String jobTitle ="";
+        private String department ="";
         private boolean hasPhoto = false;
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
@@ -269,8 +278,11 @@ public class ContactsProvider {
             contact.putString("givenName", TextUtils.isEmpty(givenName) ? displayName : givenName);
             contact.putString("middleName", middleName);
             contact.putString("familyName", familyName);
+            contact.putString("prefix", prefix);
+            contact.putString("suffix", suffix);
             contact.putString("company", company);
             contact.putString("jobTitle", jobTitle);
+            contact.putString("department", department);
             contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
 

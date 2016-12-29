@@ -101,8 +101,13 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
   NSString *givenName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonFirstNameProperty));
   NSString *familyName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonLastNameProperty));
   NSString *middleName = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonMiddleNameProperty));
+  NSString *prefix = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonPrefixProperty));
+  NSString *suffix = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonSuffixProperty));
+  NSString *nickname = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonNicknameProperty));
   NSString *company = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonOrganizationProperty));
+  NSString *department = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonDepartmentProperty));
   NSString *jobTitle = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonJobTitleProperty));
+  NSString *note = (__bridge_transfer NSString *)(ABRecordCopyValue(person, kABPersonNoteProperty));
 
   [contact setObject: recordID forKey: @"recordID"];
 
@@ -121,12 +126,32 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     [contact setObject: (middleName) ? middleName : @"" forKey:@"middleName"];
   }
 
+  if(prefix){
+    [contact setObject: (prefix) ? prefix : @"" forKey:@"prefix"];
+  }
+
+  if(suffix){
+    [contact setObject: (suffix) ? suffix : @"" forKey:@"suffix"];
+  }
+
+  if(nickname){
+    [contact setObject: (nickname) ? nickname : @"" forKey:@"nickname"];
+  }
+
   if(company){
     [contact setObject: (company) ? company : @"" forKey:@"company"];
   }
 
+  if(department){
+    [contact setObject: (department) ? department : @"" forKey:@"department"];
+  }
+
   if(jobTitle){
     [contact setObject: (jobTitle) ? jobTitle : @"" forKey:@"jobTitle"];
+  }
+
+  if(note){
+    [contact setObject: (note) ? note : @"" forKey:@"note"];
   }
 
   if(!hasName){
@@ -312,13 +337,23 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
   NSString *givenName = [contactData valueForKey:@"givenName"];
   NSString *familyName = [contactData valueForKey:@"familyName"];
   NSString *middleName = [contactData valueForKey:@"middleName"];
+  NSString *prefix = [contactData valueForKey:@"prefix"];
+  NSString *suffix = [contactData valueForKey:@"suffix"];
+  NSString *nickname = [contactData valueForKey:@"nickname"];
   NSString *company = [contactData valueForKey:@"company"];
+  NSString *department = [contactData valueForKey:@"department"];
   NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
+  NSString *note = [contactData valueForKey:@"note"];
   ABRecordSetValue(record, kABPersonFirstNameProperty, (__bridge CFStringRef) givenName, &error);
   ABRecordSetValue(record, kABPersonLastNameProperty, (__bridge CFStringRef) familyName, &error);
   ABRecordSetValue(record, kABPersonMiddleNameProperty, (__bridge CFStringRef) middleName, &error);
+  ABRecordSetValue(record, kABPersonPrefixProperty, (__bridge CFStringRef) prefix, &error);
+  ABRecordSetValue(record, kABPersonSuffixProperty, (__bridge CFStringRef) suffix, &error);
+  ABRecordSetValue(record, kABPersonNicknameProperty, (__bridge CFStringRef) nickname, &error);
   ABRecordSetValue(record, kABPersonOrganizationProperty, (__bridge CFStringRef) company, &error);
+  ABRecordSetValue(record, kABPersonDepartmentProperty, (__bridge CFStringRef) department, &error);
   ABRecordSetValue(record, kABPersonJobTitleProperty, (__bridge CFStringRef) jobTitle, &error);
+  ABRecordSetValue(record, kABPersonNoteProperty, (__bridge CFStringRef) note, &error);
 
   ABMutableMultiValueRef multiPhone = ABMultiValueCreateMutable(kABMultiStringPropertyType);
   NSArray* phoneNumbers = [contactData valueForKey:@"phoneNumbers"];

@@ -95,8 +95,11 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
         String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
+        String prefix = contact.hasKey("prefix") ? contact.getString("prefix") : null;
+        String suffix = contact.hasKey("suffix") ? contact.getString("suffix") : null;
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
+        String department = contact.hasKey("department") ? contact.getString("department") : null;
 
         // String name = givenName;
         // name += middleName != "" ? " " + middleName : "";
@@ -145,14 +148,17 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 // .withValue(StructuredName.DISPLAY_NAME, name)
                 .withValue(StructuredName.GIVEN_NAME, givenName)
                 .withValue(StructuredName.MIDDLE_NAME, middleName)
-                .withValue(StructuredName.FAMILY_NAME, familyName);
+                .withValue(StructuredName.FAMILY_NAME, familyName)
+                .withValue(StructuredName.PREFIX, prefix)
+                .withValue(StructuredName.SUFFIX, suffix);
         ops.add(op.build());
 
         op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                 .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                 .withValue(ContactsContract.Data.MIMETYPE, Organization.CONTENT_ITEM_TYPE)
                 .withValue(Organization.COMPANY, company)
-                .withValue(Organization.TITLE, jobTitle);
+                .withValue(Organization.TITLE, jobTitle)
+                .withValue(Organization.DEPARTMENT, department);
         ops.add(op.build());
 
         //TODO not sure where to allow yields
@@ -197,8 +203,11 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
         String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
+        String prefix = contact.hasKey("prefix") ? contact.getString("prefix") : null;
+        String suffix = contact.hasKey("suffix") ? contact.getString("suffix") : null;
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
+        String department = contact.hasKey("department") ? contact.getString("department") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -246,13 +255,16 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 .withValue(ContactsContract.Data.MIMETYPE, StructuredName.CONTENT_ITEM_TYPE)
                 .withValue(StructuredName.GIVEN_NAME, givenName)
                 .withValue(StructuredName.MIDDLE_NAME, middleName)
-                .withValue(StructuredName.FAMILY_NAME, familyName);
+                .withValue(StructuredName.FAMILY_NAME, familyName)
+                .withValue(StructuredName.PREFIX, prefix)
+                .withValue(StructuredName.SUFFIX, suffix);
         ops.add(op.build());
 
         op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
                 .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), Organization.CONTENT_ITEM_TYPE})
                 .withValue(Organization.COMPANY, company)
-                .withValue(Organization.TITLE, jobTitle);
+                .withValue(Organization.TITLE, jobTitle)
+                .withValue(Organization.DEPARTMENT, department);
         ops.add(op.build());
 
         op.withYieldAllowed(true);

@@ -15,16 +15,16 @@ Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/reac
 | groups  | 😞 | 😞 |
 
 
-
 ## API
-`getAll` (callback) - returns *all* contacts as an array of objects
-`getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
-`getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
-`addContact` (contact, callback) - adds a contact to the AddressBook.  
-`updateContact` (contact, callback) - where contact is an object with a valid recordID  
-`deleteContact` (contact, callback) - where contact is an object with a valid recordID  
-`checkPermission` (callback) - checks permission to access Contacts  
-`requestPermission` (callback) - request permission to access Contacts
+
+ * `getAll` (callback) - returns *all* contacts as an array of objects
+ * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
+ * `getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
+ * `addContact` (contact, callback) - adds a contact to the AddressBook.  
+ * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
+ * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
+ * `checkPermission` (callback) - checks permission to access Contacts  
+ * `requestPermission` (callback) - request permission to access Contacts
 
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.

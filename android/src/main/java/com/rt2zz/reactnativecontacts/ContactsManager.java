@@ -166,10 +166,12 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             numOfPhones = phoneNumbers.size();
             phones = new String[numOfPhones];
             phonesLabels = new Integer[numOfPhones];
+            phonesLabelsTypes = new Integer[numOfPhones];
             for (int i = 0; i < numOfPhones; i++) {
                 phones[i] = phoneNumbers.getMap(i).getString("number");
                 String label = phoneNumbers.getMap(i).getString("label");
-                phonesLabels[i] = mapStringToPhoneType(label);
+                phonesLabels[i] = label;
+                phonesLabelsTypes[i] = mapStringToPhoneType(label);
             }
         }
 
@@ -180,11 +182,13 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         if (emailAddresses != null) {
             numOfEmails = emailAddresses.size();
             emails = new String[numOfEmails];
-            emailsLabels = new Integer[numOfEmails];
+            emailsLabels = new String[numOfEmails];
+            emailsLabelsTypes = new Integer[numOfEmails];
             for (int i = 0; i < numOfEmails; i++) {
                 emails[i] = emailAddresses.getMap(i).getString("email");
                 String label = emailAddresses.getMap(i).getString("label");
-                emailsLabels[i] = mapStringToEmailType(label);
+                emailsLabels = label;
+                emailsLabelsTypes[i] = mapStringToEmailType(label);
             }
         }
 
@@ -354,7 +358,11 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-                    .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+                    .withValue(CommonDataKinds.Phone.TYPE, phonesLabelsTypes[i]);
+            if (phonesLabelsTypes[i] == CommonDataKinds.Phone.TYPE_CUSTOM) {
+              op = op.withValue(CommonDataKinds.Phone.LABEL, phonesLabels[i]);
+            }
+
             ops.add(op.build());
         }
 
@@ -363,7 +371,10 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-                    .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
+                    .withValue(CommonDataKinds.Email.TYPE, emailsLabelsTypes[i]);
+            if (emailsLabelsTypes[i] == CommonDataKinds.Email.TYPE_CUSTOM) {
+              op = op.withValue(CommonDataKinds.Email.LABEL, emailsLabels[i]);
+            }
             ops.add(op.build());
         }
 
@@ -694,8 +705,9 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             case "mobile":
                 phoneType = CommonDataKinds.Phone.TYPE_MOBILE;
                 break;
+              
             default:
-                phoneType = CommonDataKinds.Phone.TYPE_OTHER;
+                phoneType = CommonDataKinds.Phone.TYPE_CUSTOM;
                 break;
         }
         return phoneType;
@@ -718,7 +730,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 emailType = CommonDataKinds.Email.TYPE_MOBILE;
                 break;
             default:
-                emailType = CommonDataKinds.Email.TYPE_OTHER;
+                emailType = CommonDataKinds.Email.TYPE_CUSTOM;
                 break;
         }
         return emailType;

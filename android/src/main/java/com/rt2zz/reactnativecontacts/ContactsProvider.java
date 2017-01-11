@@ -289,6 +289,13 @@ public class ContactsProvider {
                         case Phone.TYPE_MOBILE:
                             label = "mobile";
                             break;
+                        case Phone.TYPE_CUSTOM:
+                            if (cursor.getString(cursor.getColumnIndex(Phone.LABEL)) != null) {
+                                label = cursor.getString(cursor.getColumnIndex(Phone.LABEL)).toLowerCase();
+                            } else {
+                                label = "";
+                            }
+                            break;
                         default:
                             label = "other";
                     }

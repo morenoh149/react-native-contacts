@@ -4,7 +4,9 @@
 #import <Contacts/Contacts.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
-@implementation RCTContacts
+@implementation RCTContacts {
+    CNContactStore * contactStore;
+}
 
 RCT_EXPORT_MODULE();
 
@@ -43,7 +45,10 @@ RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
 -(void) getAllContacts:(RCTResponseSenderBlock) callback
         withThumbnails:(BOOL) withThumbnails
 {
-    CNContactStore * contactStore = [[CNContactStore alloc] init];
+    if(!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
     CNEntityType entityType = CNEntityTypeContacts;
     if( [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusNotDetermined)
     {
@@ -267,7 +272,10 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
 
 RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID callback:(RCTResponseSenderBlock)callback)
 {
-    CNContactStore * contactStore = [[CNContactStore alloc] init];
+    if(!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
     CNEntityType entityType = CNEntityTypeContacts;
     if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusNotDetermined)
     {
@@ -302,18 +310,23 @@ RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID callback:(RCTRespon
 
 RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
 {
-    CNContactStore * store = [CNContactStore new];
+    if(!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
 
-    CNMutableContact * contact = [CNMutableContact new];
+    CNMutableContact * contact = [[CNMutableContact alloc] init];
 
-    [self updateRecord:contact withData:contactData completionCallback:callback];
+    [self updateRecord:contact withData:contactData];
 
     @try {
         CNSaveRequest *request = [[CNSaveRequest alloc] init];
         [request addContact:contact toContainerWithIdentifier:nil];
 
-        [store executeSaveRequest:request error:nil];
-        callback(@[[NSNull null], [NSNull null]]);
+        [contactStore executeSaveRequest:request error:nil];
+
+        NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:false];
+
+        callback(@[[NSNull null], contactDict]);
     }
     @catch (NSException *exception) {
         callback(@[[exception description], [NSNull null]]);
@@ -322,7 +335,9 @@ RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData callback:(RCTResponseSe
 
 RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
 {
-    CNContactStore * store = [CNContactStore new];
+    if(!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
 
     NSError* contactError;
     NSString* recordID = [contactData valueForKey:@"recordID"];
@@ -341,20 +356,23 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
                              ];
 
     @try {
-        CNMutableContact* record = [[store unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError] mutableCopy];
-        [self updateRecord:record withData:contactData completionCallback:callback];
+        CNMutableContact* record = [[contactStore unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError] mutableCopy];
+        [self updateRecord:record withData:contactData];
         CNSaveRequest *request = [[CNSaveRequest alloc] init];
         [request updateContact:record];
 
-        [store executeSaveRequest:request error:nil];
-        callback(@[[NSNull null], [NSNull null]]);
+        [contactStore executeSaveRequest:request error:nil];
+
+        NSDictionary *contactDict = [self contactToDictionary:record withThumbnails:false];
+
+        callback(@[[NSNull null], contactDict]);
     }
     @catch (NSException *exception) {
         callback(@[[exception description], [NSNull null]]);
     }
 }
 
--(void) updateRecord:(CNMutableContact *)contact withData:(NSDictionary *)contactData completionCallback:(RCTResponseSenderBlock)callback
+-(void) updateRecord:(CNMutableContact *)contact withData:(NSDictionary *)contactData
 {
     NSString *givenName = [contactData valueForKey:@"givenName"];
     NSString *familyName = [contactData valueForKey:@"familyName"];
@@ -462,7 +480,10 @@ enum { WDASSETURL_PENDINGREADS = 1, WDASSETURL_ALLFINISHED = 0};
 
 RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
 {
-    CNContactStore * contactStore = [[CNContactStore alloc] init];
+    if(!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
     NSString* recordID = [contactData valueForKey:@"recordID"];
 
     NSArray *keys = @[CNContactIdentifierKey];

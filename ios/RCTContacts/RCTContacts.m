@@ -128,7 +128,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     NSString *company = person.organizationName;
     NSString *jobTitle = person.jobTitle;
     
-    [output setObject: recordID forKey: @"recordID"];
+    [output setObject:recordID forKey: @"recordID"];
     
     BOOL hasName = false;
     if (givenName) {
@@ -159,10 +159,10 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     for (CNLabeledValue<CNPhoneNumber*>* labeledValue in person.phoneNumbers) {
         NSMutableDictionary* phone = [NSMutableDictionary dictionary];
         NSString * label = [CNLabeledValue localizedStringForLabel:[labeledValue label]];
+        NSString* value = [[labeledValue value] stringValue];
         
-        if(label) {
-            CNPhoneNumber* cnPhoneNumber = [labeledValue value];
-            [phone setObject: cnPhoneNumber.stringValue forKey:@"number"];
+        if(label && value) {
+            [phone setObject: value forKey:@"number"];
             [phone setObject: label forKey:@"label"];
             [phoneNumbers addObject:phone];
         }
@@ -176,11 +176,12 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     
     for (CNLabeledValue<NSString*>* labeledValue in person.emailAddresses) {
         NSMutableDictionary* email = [NSMutableDictionary dictionary];
-        NSString* type = [CNLabeledValue localizedStringForLabel:[labeledValue label]];
+        NSString* label = [CNLabeledValue localizedStringForLabel:[labeledValue label]];
+        NSString* value = [labeledValue value];
         
-        if(type) {
-            [email setObject: [labeledValue value] forKey:@"email"];
-            [email setObject: type forKey:@"label"];
+        if(label && value) {
+            [email setObject: value forKey:@"email"];
+            [email setObject: label forKey:@"label"];
             [emailAddreses addObject:email];
         }
     }
@@ -216,10 +217,12 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
             [address setObject:country forKey:@"country"];
         }
         
-        NSString *addressLabel = labeledValue.label;
-        [address setObject:[CNLabeledValue localizedStringForLabel:addressLabel] forKey:@"label"];
-        
-        [postalAddresses addObject:address];
+        NSString* label = [CNLabeledValue localizedStringForLabel:labeledValue.label];
+        if(label) {
+            [address setObject:label forKey:@"label"];
+            
+            [postalAddresses addObject:address];
+        }
     }
     
     [output setObject:postalAddresses forKey:@"postalAddresses"];
@@ -227,7 +230,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     
     [output setValue:[NSNumber numberWithBool:person.imageDataAvailable] forKey:@"hasThumbnail"];
     if (withThumbnails) {
-        [output setObject: [self getFilePathForThumbnailImage:person recordID:recordID] forKey:@"thumbnailPath"];
+        [output setObject:[self getFilePathForThumbnailImage:person recordID:recordID] forKey:@"thumbnailPath"];
     }
     
     return output;
@@ -416,10 +419,11 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
         NSString *label = [emailData valueForKey:@"label"];
         NSString *email = [emailData valueForKey:@"email"];
         
-        CNLabeledValue *labelledEmail = [[CNLabeledValue alloc] initWithLabel:label value:email];
-        
-        [emails addObject:labelledEmail];
+        if(label && email) {
+            [emails addObject:[[CNLabeledValue alloc] initWithLabel:label value:email]];
+        }
     }
+    
     contact.emailAddresses = emails;
     
     //todo - update postal addresses

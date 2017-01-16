@@ -174,7 +174,7 @@ dependencies {
     	...
     }
 ```
-If you are using an older version of RN (i.e. `MainApplication.java` does not contain this method (or doesn't exist) and MainActivity.java starts with `public class MainActivity extends Activity`) please see the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android). This changed in [RN v0.21.0](https://github.com/facebook/react-native/releases/tag/v0.21.0).
+If you are using a version of RN before [v0.21.0](https://github.com/facebook/react-native/releases/tag/v0.21.0) please see the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android).
 
 * add Contacts permission (in android/app/src/main/AndroidManifest.xml)
 (only add the permissions you need)

@@ -130,15 +130,12 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     
     [output setObject:recordID forKey: @"recordID"];
     
-    BOOL hasName = false;
     if (givenName) {
         [output setObject: (givenName) ? givenName : @"" forKey:@"givenName"];
-        hasName = true;
     }
     
     if (familyName) {
         [output setObject: (familyName) ? familyName : @"" forKey:@"familyName"];
-        hasName = true;
     }
     
     if(middleName){

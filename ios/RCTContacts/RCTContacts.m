@@ -175,11 +175,16 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         NSMutableDictionary* email = [NSMutableDictionary dictionary];
         NSString* label = [CNLabeledValue localizedStringForLabel:[labeledValue label]];
         NSString* value = [labeledValue value];
-        
-        if(label && value) {
+
+        if(value) {
+            if(!label) {
+                label = [CNLabeledValue localizedStringForLabel:@"other"];
+            }
             [email setObject: value forKey:@"email"];
             [email setObject: label forKey:@"label"];
             [emailAddreses addObject:email];
+        } else {
+            NSLog(@"ignoring blank email");
         }
     }
     

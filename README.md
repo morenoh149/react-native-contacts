@@ -57,6 +57,7 @@ Contacts.getAll((err, contacts) => {
   familyName: "Jung",
   givenName: "Carl",
   jobTitle: "",
+  note: "",
   middleName: "",
   phoneNumbers: [{
     label: "mobile",

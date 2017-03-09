@@ -99,6 +99,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
                                        CNContactPostalAddressesKey,
                                        CNContactOrganizationNameKey,
                                        CNContactJobTitleKey,
+                                       CNContactNoteKey,
                                        CNContactImageDataAvailableKey
                                        ]];
     
@@ -127,6 +128,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     NSString *middleName = person.middleName;
     NSString *company = person.organizationName;
     NSString *jobTitle = person.jobTitle;
+    NSString *note = person.note;
     
     [output setObject:recordID forKey: @"recordID"];
     
@@ -150,6 +152,9 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         [output setObject: (jobTitle) ? jobTitle : @"" forKey:@"jobTitle"];
     }
     
+    if(note){
+        [output setObject: (note) ? note : @"" forKey:@"note"];
+    }
     //handle phone numbers
     NSMutableArray *phoneNumbers = [[NSMutableArray alloc] init];
     
@@ -355,6 +360,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
                              CNContactPostalAddressesKey,
                              CNContactOrganizationNameKey,
                              CNContactJobTitleKey,
+                             CNContactNoteKey,
                              CNContactImageDataAvailableKey,
                              CNContactThumbnailImageDataKey,
                              CNContactImageDataKey
@@ -384,12 +390,14 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     NSString *middleName = [contactData valueForKey:@"middleName"];
     NSString *company = [contactData valueForKey:@"company"];
     NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
+    NSString *note = [contactData valueForKey:@"note"];
     
     contact.givenName = givenName;
     contact.familyName = familyName;
     contact.middleName = middleName;
     contact.organizationName = company;
     contact.jobTitle = jobTitle;
+    contact.note = note;
     
     NSMutableArray *phoneNumbers = [[NSMutableArray alloc]init];
     

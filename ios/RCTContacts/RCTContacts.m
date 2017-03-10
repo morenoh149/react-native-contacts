@@ -487,7 +487,7 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData callback:(RCTRespons
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];
 
-        if(!contactStore.defaultContainerIdentifier) {
+        if(!store.defaultContainerIdentifier) {
             NSLog(@"warn - no contact store container id");
 
             CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];

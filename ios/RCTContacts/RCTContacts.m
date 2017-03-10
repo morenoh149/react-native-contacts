@@ -33,6 +33,10 @@ RCT_EXPORT_METHOD(checkPermission:(RCTResponseSenderBlock) callback)
 
 RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
 {
+    if(!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
     [contactStore requestAccessForEntityType:CNEntityTypeContacts completionHandler:^(BOOL granted, NSError * _Nullable error) {
         [self checkPermission:callback];
     }];

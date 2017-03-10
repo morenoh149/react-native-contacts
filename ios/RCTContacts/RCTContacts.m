@@ -21,25 +21,21 @@ RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(checkPermission:(RCTResponseSenderBlock) callback)
 {
-    int authStatus = ABAddressBookGetAuthorizationStatus();
-    if ( authStatus == kABAuthorizationStatusDenied || authStatus == kABAuthorizationStatusRestricted){
+    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
+    if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
         callback(@[[NSNull null], @"denied"]);
-    } else if (authStatus == kABAuthorizationStatusAuthorized){
+    } else if (authStatus == CNAuthorizationStatusAuthorized){
         callback(@[[NSNull null], @"authorized"]);
-    } else { //ABAddressBookGetAuthorizationStatus() == kABAuthorizationStatusNotDetermined
+    } else {
         callback(@[[NSNull null], @"undefined"]);
     }
 }
 
 RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
 {
-    ABAddressBookRequestAccessWithCompletion(ABAddressBookCreateWithOptions(NULL, nil), ^(bool granted, CFErrorRef error) {
-        if (!granted){
-            [self checkPermission:callback];
-            return;
-        }
+    [contactStore requestAccessForEntityType:CNEntityTypeContacts completionHandler:^(BOOL granted, NSError * _Nullable error) {
         [self checkPermission:callback];
-    });
+    }];
 }
 
 -(void) getAllContacts:(RCTResponseSenderBlock) callback
@@ -48,24 +44,23 @@ RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
     if(!contactStore) {
         contactStore = [[CNContactStore alloc] init];
     }
-    
-    CNEntityType entityType = CNEntityTypeContacts;
-    if( [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusNotDetermined)
+
+    CNAuthorizationStatus status = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
+    if(status == CNAuthorizationStatusNotDetermined)
     {
-        [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
+        [contactStore requestAccessForEntityType:CNEntityTypeContacts completionHandler:^(BOOL granted, NSError * _Nullable error) {
             if(granted){
                 [self retrieveContactsFromAddressBook:contactStore withThumbnails:withThumbnails withCallback:callback];
-            }else{
-                NSDictionary *error = @{
-                                        @"type": @"permissionDenied"
-                                        };
-                callback(@[error, [NSNull null]]);
+            } else {
+                callback(@[@{@"type": @"denied"}, [NSNull null]]);
             }
         }];
     }
-    else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
+    else if(status == CNAuthorizationStatusAuthorized)
     {
         [self retrieveContactsFromAddressBook:contactStore withThumbnails:withThumbnails withCallback:callback];
+    } else if (status == CNAuthorizationStatusDenied || status == CNAuthorizationStatusRestricted) {
+        callback(@[@{@"type": @"denied"}, [NSNull null]]);
     }
 }
 

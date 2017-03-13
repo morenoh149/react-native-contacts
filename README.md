@@ -1,4 +1,6 @@
 # React Native Contacts
+To contribute read [CONTRIBUTING.md](https://github.com/rt2zz/react-native-contacts).
+
 Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
 
 ## Status
@@ -138,6 +140,9 @@ You have to add the key "Privacy - Contacts Usage Description".
 <img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
 ### Android
+
+_For versions of RN before [v0.21.0](https://github.com/facebook/react-native/releases/tag/v0.21.0) use the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android)._
+
 * In `android/settings.gradle`
 ```gradle
 ...
@@ -174,15 +179,15 @@ dependencies {
     	...
     }
 ```
-If you are using a version of RN before [v0.21.0](https://github.com/facebook/react-native/releases/tag/v0.21.0) please see the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android).
 
 * add Contacts permission (in android/app/src/main/AndroidManifest.xml)
-(only add the permissions you need)
+  * only add the permissions you need
+  * `READ_PROFILE` may be a required for other permissions
 ```xml
 ...
+  <uses-permission android:name="android.permission.READ_PROFILE" />
   <uses-permission android:name="android.permission.READ_CONTACTS" />
   <uses-permission android:name="android.permission.WRITE_CONTACTS" />
-  <uses-permission android:name="android.permission.READ_PROFILE" />
 ...
 ```
 

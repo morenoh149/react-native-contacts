@@ -139,7 +139,10 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         NSString * label = [CNLabeledValue localizedStringForLabel:[labeledValue label]];
         NSString* value = [[labeledValue value] stringValue];
 
-        if(label && value) {
+        if(value) {
+            if(!label) {
+                label = [CNLabeledValue localizedStringForLabel:@"other"];
+            }
             [phone setObject: value forKey:@"number"];
             [phone setObject: label forKey:@"label"];
             [phoneNumbers addObject:phone];

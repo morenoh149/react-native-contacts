@@ -191,6 +191,29 @@ dependencies {
 ...
 ```
 
+#### Permissions on Android M and greater
+
+Because permissions need to be granted at time of use in Android M, use [`react-native-android-permissions`](https://github.com/lucasferreira/react-native-android-permissions) to request permissions if you support Android M or above.
+
+Example:
+```javascript
+import Contacts from 'react-native-contacts';
+import {requestPermission} from 'react-native-android-permissions';
+requestPermission('android.permission.READ_CONTACTS')
+  .then(() => {
+    Contacts.getAll((err, contacts) => {
+      if (err) {
+        return Promise.reject('Ouch! Something went wrong');
+      } else {
+        console.log(contacts);
+        return Promise.resolve(contacts);
+      }
+    });
+  }, () => {
+    //Didn't give permission.
+  });
+```
+
 ## Permissions Methods (optional)
 `checkPermission` (callback) - checks permission to access Contacts.  
 `requestPermission` (callback) - request permission to access Contacts.  

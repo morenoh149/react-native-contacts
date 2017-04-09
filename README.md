@@ -12,7 +12,7 @@ Also there is a lot of room for performance enhancements in both iOS and android
 var Contacts = require('react-native-contacts')
 
 Contacts.getAll((err, contacts) => {
-  if(err && err.type === 'permissionDenied'){
+  if(err === 'denied'){
     // x.x
   } else {
     console.log(contacts)

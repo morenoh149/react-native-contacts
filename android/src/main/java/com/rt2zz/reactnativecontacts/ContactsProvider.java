@@ -74,6 +74,56 @@ public class ContactsProvider {
         this.contentResolver = contentResolver;
     }
 
+    public WritableArray getContactsMatchingString(String searchString) {
+        Map<String, Contact> justMe;
+        {
+            Cursor cursor = contentResolver.query(
+                    Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI, ContactsContract.Contacts.Data.CONTENT_DIRECTORY),
+                    JUST_ME_PROJECTION.toArray(new String[JUST_ME_PROJECTION.size()]),
+                    null,
+                    null,
+                    null
+            );
+
+            try {
+                justMe = loadContactsFrom(cursor);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+
+        Map<String, Contact> everyoneElse;
+        {
+            Cursor cursor = contentResolver.query(
+                    ContactsContract.Data.CONTENT_URI,
+                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                    ContactsContract.Contacts.DISPLAY_NAME + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
+                    new String[]{searchString, Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE},
+                    null
+            );
+
+            try {
+                everyoneElse = loadContactsFrom(cursor);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+
+        WritableArray contacts = Arguments.createArray();
+        for (Contact contact : justMe.values()) {
+            contacts.pushMap(contact.toMap());
+        }
+        for (Contact contact : everyoneElse.values()) {
+            contacts.pushMap(contact.toMap());
+        }
+
+        return contacts;
+    }
+
     public WritableArray getContacts() {
         Map<String, Contact> justMe;
         {

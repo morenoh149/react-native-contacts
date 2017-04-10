@@ -40,6 +40,32 @@ RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
     }];
 }
 
+RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResponseSenderBlock) callback)
+{
+    CNContactStore *contactStore = [[CNContactStore alloc] init];
+    if (!contactStore)
+        return;
+    [self getContactsFromAddressBook:contactStore matchingString:string callback:callback];
+}
+
+-(void) getContactsFromAddressBook:(CNContactStore *)store
+                    matchingString:(NSString *)searchString
+                       callback:(RCTResponseSenderBlock)callback
+{
+    NSMutableArray *contacts = [[NSMutableArray alloc] init];
+    NSError *error = nil;
+    contacts = [contactStore unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingName:searchString]
+                                       keysToFetch:@[
+                                                     CNContactGivenNameKey,
+                                                     CNContactFamilyNameKey,
+                                                     CNContactEmailAddressesKey,
+                                                     CNContactMiddleNameKey
+                                                     ]
+                                             error:&error];
+    
+    callback(@[[NSNull null], contacts]);
+}
+
 -(void) getAllContacts:(RCTResponseSenderBlock) callback
         withThumbnails:(BOOL) withThumbnails
 {

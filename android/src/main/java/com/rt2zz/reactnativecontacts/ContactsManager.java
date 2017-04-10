@@ -71,15 +71,15 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void getContactsMatchingString(String searchString, final Callback callback) {
-        getContactsMatchingString(searchString, callback);
+        getAllContactsMatchingString(searchString, callback);
     }
     /**
      * Retrieves contacts matching String.
      * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
-     * @param string String to match
+     * @param searchString String to match
      * @param callback callback
      */
-    private void getContactsMatchingString(String searchString, final Callback callback) {
+    private void getAllContactsMatchingString(String searchString, final Callback callback) {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {

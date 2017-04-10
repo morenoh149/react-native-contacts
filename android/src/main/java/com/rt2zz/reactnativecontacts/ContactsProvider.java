@@ -75,26 +75,7 @@ public class ContactsProvider {
     }
 
     public WritableArray getContactsMatchingString(String searchString) {
-        Map<String, Contact> justMe;
-        {
-            Cursor cursor = contentResolver.query(
-                    Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI, ContactsContract.Contacts.Data.CONTENT_DIRECTORY),
-                    JUST_ME_PROJECTION.toArray(new String[JUST_ME_PROJECTION.size()]),
-                    null,
-                    null,
-                    null
-            );
-
-            try {
-                justMe = loadContactsFrom(cursor);
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
-            }
-        }
-
-        Map<String, Contact> everyoneElse;
+        Map<String, Contact> matchingContacts;
         {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
@@ -105,7 +86,7 @@ public class ContactsProvider {
             );
 
             try {
-                everyoneElse = loadContactsFrom(cursor);
+                matchingContacts = loadContactsFrom(cursor);
             } finally {
                 if (cursor != null) {
                     cursor.close();
@@ -114,10 +95,7 @@ public class ContactsProvider {
         }
 
         WritableArray contacts = Arguments.createArray();
-        for (Contact contact : justMe.values()) {
-            contacts.pushMap(contact.toMap());
-        }
-        for (Contact contact : everyoneElse.values()) {
+        for (Contact contact : matchingContacts.values()) {
             contacts.pushMap(contact.toMap());
         }
 

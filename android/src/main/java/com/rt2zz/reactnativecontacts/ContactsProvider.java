@@ -22,6 +22,7 @@ import static android.provider.ContactsContract.CommonDataKinds.Organization;
 import static android.provider.ContactsContract.CommonDataKinds.Phone;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import static android.provider.ContactsContract.CommonDataKinds.Event;
 
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
@@ -58,6 +59,9 @@ public class ContactsProvider {
         add(StructuredPostal.REGION);
         add(StructuredPostal.POSTCODE);
         add(StructuredPostal.COUNTRY);
+        add(Event.START_DATE);
+        add(Event.TYPE);
+        add(Event.LABEL);
     }};
 
     private static final List<String> FULL_PROJECTION = new ArrayList<String>() {{
@@ -99,8 +103,8 @@ public class ContactsProvider {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
-                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE},
+                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
+                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE, Event.CONTENT_ITEM_TYPE},
                     null
             );
 
@@ -222,6 +226,28 @@ public class ContactsProvider {
                 contact.department = cursor.getString(cursor.getColumnIndex(Organization.DEPARTMENT));
             } else if (mimeType.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
                 contact.postalAddresses.add(new Contact.PostalAddressItem(cursor));
+            } else if (mimeType.equals(Event.CONTENT_ITEM_TYPE)) {
+                String date = cursor.getString(cursor.getColumnIndex(Event.START_DATE));
+                int type = cursor.getInt(cursor.getColumnIndex(Event.TYPE));
+                String label = cursor.getString(cursor.getColumnIndex(Event.LABEL));
+                String typeName;
+                switch (type) {
+                    case Event.TYPE_ANNIVERSARY:
+                        typeName = "anniversary";
+                        break;
+                    case Event.TYPE_BIRTHDAY:
+                        typeName = "birthday";
+                        break;
+                    case Event.TYPE_OTHER:
+                        typeName = "other";
+                        break;
+                    case Event.TYPE_CUSTOM:
+                        typeName = label;
+                        break;
+                    default:
+                        typeName = "other";
+                }
+                contact.dates.add(new Contact.Item(typeName, date));
             }
         }
 
@@ -266,6 +292,7 @@ public class ContactsProvider {
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
+        private List<Item> dates = new ArrayList<>();
         private List<PostalAddressItem> postalAddresses = new ArrayList<>();
 
         public Contact(String contactId) {
@@ -303,6 +330,15 @@ public class ContactsProvider {
                 emailAddresses.pushMap(map);
             }
             contact.putArray("emailAddresses", emailAddresses);
+
+            WritableArray dateList = Arguments.createArray();
+            for (Item item : dates) {
+              WritableMap map = Arguments.createMap();
+              map.putString("date", item.value);
+              map.putString("label", item.label);
+              dateList.pushMap(map);
+            }
+            contact.putArray("dates", dateList);
 
             WritableArray postalAddresses = Arguments.createArray();
             for (PostalAddressItem item : this.postalAddresses) {

@@ -31,7 +31,7 @@ run `npm install react-native-contacts`
 #### Permissions
 As of Xcode 8 and React Native 0.33 it is now **necessary to add kit specific "permission" keys** to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission. I discovered this after days of frustration.
 
-Open Xcode > Info.plist > Add a key (starting with "Privacy - ...") with your kit specific permission. The value for the key is optional.
+Open Xcode > Info.plist > Add a key (starting with "Privacy - ...") with your kit specific permission. The value for the key is optional in development. If you submit to the App Store the value must explain why you need this permission.
 
 You have to add the key "Privacy - Contacts Usage Description".
 
@@ -65,7 +65,7 @@ dependencies {
 
 	public class MainApplication extends Application implements ReactApplication {
 	    ...
-		
+
 	    @Override
 	    protected List<ReactPackage> getPackages() {
 	      return Arrays.<ReactPackage>asList(
@@ -132,15 +132,15 @@ dependencies {
     number: "(555) 555-5555",
   }],
   thumbnailPath: 'content://com.android.contacts/display_photo/3',
-  postalAddresses: 
-    [ 
+  postalAddresses:
+    [
       {
         postCode: 'Postcooode',
         city: 'City',
         neighborhood: 'neighborhood',
         street: 'Home Street',
         formattedAddress: 'Home Street\nneighborhood\nCity Postcooode',
-        label: 'work' 
+        label: 'work'
       }
     ]
 }

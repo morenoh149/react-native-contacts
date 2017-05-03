@@ -190,7 +190,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         if(city){
             [address setObject:city forKey:@"city"];
         }
-        NSString* region = postalAddress.city;
+        NSString* region = postalAddress.state;
         if(region){
             [address setObject:region forKey:@"region"];
         }

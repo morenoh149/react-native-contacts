@@ -13,7 +13,7 @@ closed issues as well.
   * **detail of the expected change(s) in behaviour**
   * how to test it (if it's not obvious)
   
-Ask someone to test it (offer to test someone else's PR in exchange for testing yours).  The contributors don't always have time to test so it's great when the community can help out.
+Ask someone to test it (offer to test someone else's PR in exchange for testing yours). The contributors don't always have time to test so it's great when the community can help out.
 
 Things to note:
 

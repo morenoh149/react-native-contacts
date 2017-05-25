@@ -77,6 +77,16 @@ dependencies {
     	...
     }
 ```
+* handling `onRequestPermissionsResult` when requesting `android.permission.READ_CONTACTS`
+```java
+    ...
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+        @NonNull int[] grantResults) {
+        ReactNativeContacts.onRequestPermissionsResult(requestCode, permissions, grantResults);   // <--- 
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+```
 
 * add Contacts permission (in android/app/src/main/AndroidManifest.xml)
   * only add the permissions you need

@@ -1,8 +1,13 @@
 package com.rt2zz.reactnativecontacts;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
@@ -11,6 +16,9 @@ import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.RawContacts;
 
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -20,8 +28,16 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 public class ContactsManager extends ReactContextBaseJavaModule {
+
+    private static final String PERMISSION_DENIED = "denied";
+    private static final String PERMISSION_AUTHORIZED = "authorized";
+    private static final String PERMISSION_READ_CONTACTS = Manifest.permission.READ_CONTACTS;
+    private static final int PERMISSION_REQUEST_CODE = 888;
+
+    private static Callback requestCallback;
 
     public ContactsManager(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -310,17 +326,57 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void requestPermission(Callback callback) {
-        callback.invoke(null, isPermissionGranted());
+        requestReadContactsPermission(callback);
+    }
+
+    private void requestReadContactsPermission(Callback callback) {
+        Activity currentActivity = getCurrentActivity();
+        if (currentActivity == null) {
+            callback.invoke(null, PERMISSION_DENIED);
+            return;
+        }
+
+        if (isPermissionGranted().equals(PERMISSION_AUTHORIZED)) {
+            callback.invoke(null, PERMISSION_AUTHORIZED);
+            return;
+        }
+
+        requestCallback = callback;
+        ActivityCompat.requestPermissions(currentActivity, new String[]{PERMISSION_READ_CONTACTS}, PERMISSION_REQUEST_CODE);
+    }
+
+    protected static void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+        @NonNull int[] grantResults) {
+        if (requestCallback == null) {
+            return;
+        }
+
+        if (requestCode != PERMISSION_REQUEST_CODE) {
+            requestCallback.invoke(null, PERMISSION_DENIED);
+            return;
+        }
+
+        Hashtable<String, Boolean> results = new Hashtable<>();
+        for (int i=0; i < permissions.length; i++) {
+            results.put(permissions[i], grantResults[i] == PackageManager.PERMISSION_GRANTED);
+        }
+
+        if (results.containsKey(PERMISSION_READ_CONTACTS) && results.get(PERMISSION_READ_CONTACTS)) {
+            requestCallback.invoke(null, PERMISSION_AUTHORIZED);
+        } else {
+            requestCallback.invoke(null, PERMISSION_DENIED);
+        }
+
+        requestCallback = null;
     }
 
     /*
      * Check if READ_CONTACTS permission is granted
      */
     private String isPermissionGranted() {
-        String permission = "android.permission.READ_CONTACTS";
         // return -1 for denied and 1
-        int res = getReactApplicationContext().checkCallingOrSelfPermission(permission);
-        return (res == PackageManager.PERMISSION_GRANTED) ? "authorized" : "denied";
+        int res = getReactApplicationContext().checkCallingOrSelfPermission(PERMISSION_READ_CONTACTS);
+        return (res == PackageManager.PERMISSION_GRANTED) ? PERMISSION_AUTHORIZED : PERMISSION_DENIED;
     }
 
     /*

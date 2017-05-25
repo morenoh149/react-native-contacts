@@ -1,5 +1,6 @@
 package com.rt2zz.reactnativecontacts;
 
+import android.support.annotation.NonNull;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
@@ -30,5 +31,9 @@ public class ReactNativeContacts implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList();
+    }
+
+    public static void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        ContactsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

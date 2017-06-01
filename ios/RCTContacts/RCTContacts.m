@@ -40,6 +40,41 @@ RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
     }];
 }
 
+RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResponseSenderBlock) callback)
+{
+    CNContactStore *contactStore = [[CNContactStore alloc] init];
+    if (!contactStore)
+        return;
+    [self getContactsFromAddressBook:contactStore matchingString:string callback:callback];
+}
+
+-(void) getContactsFromAddressBook:(CNContactStore *)store
+                    matchingString:(NSString *)searchString
+                       callback:(RCTResponseSenderBlock)callback
+{
+    NSMutableArray *contacts = [[NSMutableArray alloc] init];
+    NSError *contactError = nil;
+    NSArray *keys = @[
+                      CNContactEmailAddressesKey,
+                      CNContactPhoneNumbersKey,
+                      CNContactFamilyNameKey,
+                      CNContactGivenNameKey,
+                      CNContactMiddleNameKey,
+                      CNContactPostalAddressesKey,
+                      CNContactOrganizationNameKey,
+                      CNContactJobTitleKey,
+                      CNContactImageDataAvailableKey
+                      ];
+    NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingName:searchString]
+                                                           keysToFetch:keys
+                                                                 error:&contactError];
+    [arrayOfContacts enumerateObjectsUsingBlock:^(CNContact * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *contactDictionary = [self contactToDictionary:obj withThumbnails:NO];
+        [contacts addObject:contactDictionary];
+    }];
+    callback(@[[NSNull null], contacts]);
+}
+
 -(void) getAllContacts:(RCTResponseSenderBlock) callback
         withThumbnails:(BOOL) withThumbnails
 {
@@ -90,7 +125,6 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     CNContactFetchRequest * request = [[CNContactFetchRequest alloc]initWithKeysToFetch:keysToFetch];
     BOOL success = [contactStore enumerateContactsWithFetchRequest:request error:&contactError usingBlock:^(CNContact * __nonnull contact, BOOL * __nonnull stop){
         NSDictionary *contactDict = [self contactToDictionary: contact withThumbnails:withThumbnails];
-
         [contacts addObject:contactDict];
     }];
 

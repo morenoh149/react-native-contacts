@@ -13,13 +13,27 @@ var Contacts = require('react-native-contacts')
 
 Contacts.getAll((err, contacts) => {
   if(err === 'denied'){
-    // x.x
+    // error
   } else {
-    console.log(contacts)
+    // contacts returned in []
   }
 })
 ```
 
+`getContactMatchingString` is meant to alleviate the amount of time it takes to get all contacts, by filtering on the native side based on a string.
+
+```js
+var Contacts = require('react-native-contacts')
+
+Contacts.getContactsMatchingString("filter", (err, contacts) => {
+  if(err === 'denied'){
+    // x.x
+  } else {
+    // Contains only contacts matching "filter"
+    console.log(contacts)
+  }
+})
+```
 ## Installation
 run `npm install react-native-contacts`
 
@@ -99,6 +113,7 @@ dependencies {
 | `addContact` | ✔ | ✔ |
 | `updateContact` | ✔ | ✔ |
 | `deleteContact` | ✔ | 😞 |
+| `getContactsMatchingString` | ✔ | ✔ |
 | get with options | 😞 | 😞 |
 | groups  | 😞 | 😞 |
 
@@ -111,6 +126,7 @@ dependencies {
  * `addContact` (contact, callback) - adds a contact to the AddressBook.  
  * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
  * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
+ * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
  * `checkPermission` (callback) - checks permission to access Contacts  
  * `requestPermission` (callback) - request permission to access Contacts
 

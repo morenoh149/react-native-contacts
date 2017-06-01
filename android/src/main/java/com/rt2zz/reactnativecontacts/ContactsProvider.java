@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import static android.provider.ContactsContract.CommonDataKinds.Contactables;
 import static android.provider.ContactsContract.CommonDataKinds.Email;
 import static android.provider.ContactsContract.CommonDataKinds.Organization;
@@ -72,6 +71,33 @@ public class ContactsProvider {
 
     public ContactsProvider(ContentResolver contentResolver) {
         this.contentResolver = contentResolver;
+    }
+
+    public WritableArray getContactsMatchingString(String searchString) {
+        Map<String, Contact> matchingContacts;
+        {
+            Cursor cursor = contentResolver.query(
+                    ContactsContract.Data.CONTENT_URI,
+                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ?",
+                    new String[]{"%" + searchString + "%"},
+                    null
+            );
+
+            try {
+                matchingContacts = loadContactsFrom(cursor);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+
+        WritableArray contacts = Arguments.createArray();
+        for (Contact contact : matchingContacts.values()) {
+            contacts.pushMap(contact.toMap());
+        }
+        return contacts;
     }
 
     public WritableArray getContacts() {

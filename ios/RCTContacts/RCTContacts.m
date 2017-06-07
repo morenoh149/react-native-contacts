@@ -115,7 +115,8 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
                                        CNContactPostalAddressesKey,
                                        CNContactOrganizationNameKey,
                                        CNContactJobTitleKey,
-                                       CNContactImageDataAvailableKey
+                                       CNContactImageDataAvailableKey,
+                                       CNContactNoteKey
                                        ]];
 
     if(withThumbnails) {
@@ -127,7 +128,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         NSDictionary *contactDict = [self contactToDictionary: contact withThumbnails:withThumbnails];
         [contacts addObject:contactDict];
     }];
-
+    
     callback(@[[NSNull null], contacts]);
 }
 
@@ -142,7 +143,8 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     NSString *middleName = person.middleName;
     NSString *company = person.organizationName;
     NSString *jobTitle = person.jobTitle;
-
+    NSString *note = person.note;
+                          
     [output setObject:recordID forKey: @"recordID"];
 
     if (givenName) {
@@ -164,6 +166,11 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     if(jobTitle){
         [output setObject: (jobTitle) ? jobTitle : @"" forKey:@"jobTitle"];
     }
+                          
+    if(note){
+        [output setObject: (note) ? note : @"" forKey:@"note"];
+    }
+
 
     //handle phone numbers
     NSMutableArray *phoneNumbers = [[NSMutableArray alloc] init];
@@ -375,7 +382,8 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
                              CNContactJobTitleKey,
                              CNContactImageDataAvailableKey,
                              CNContactThumbnailImageDataKey,
-                             CNContactImageDataKey
+                             CNContactImageDataKey,
+                             CNContactNoteKey
                              ];
 
     @try {
@@ -402,12 +410,14 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     NSString *middleName = [contactData valueForKey:@"middleName"];
     NSString *company = [contactData valueForKey:@"company"];
     NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
+    NSString *note = [contactData valueForKey:@"note"];
 
     contact.givenName = givenName;
     contact.familyName = familyName;
     contact.middleName = middleName;
     contact.organizationName = company;
     contact.jobTitle = jobTitle;
+    contact.note = note;
 
     NSMutableArray *phoneNumbers = [[NSMutableArray alloc]init];
 

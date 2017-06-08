@@ -11,6 +11,10 @@ import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.RawContacts;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -20,6 +24,14 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 
 import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import android.util.Log;
+import android.net.Uri;
+
+
 
 public class ContactsManager extends ReactContextBaseJavaModule {
 
@@ -49,7 +61,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     /**
      * Retrieves contacts.
      * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
-     * @param callback user provided callback to run at completion
+     * @param callback callback
      */
     private void getAllContacts(final Callback callback) {
         AsyncTask.execute(new Runnable() {
@@ -60,33 +72,6 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContacts();
-
-                callback.invoke(null, contacts);
-            }
-        });
-    }
-
-    /*
-     * Returns all contacts matching string
-     */
-    @ReactMethod
-    public void getContactsMatchingString(final String searchString, final Callback callback) {
-        getAllContactsMatchingString(searchString, callback);
-    }
-    /**
-     * Retrieves contacts matching String.
-     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
-     * @param searchString String to match
-     * @param callback user provided callback to run at completion
-     */
-    private void getAllContactsMatchingString(final String searchString, final Callback callback) {
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
-                ContactsProvider contactsProvider = new ContactsProvider(cr);
-                WritableArray contacts = contactsProvider.getContactsMatchingString(searchString);
 
                 callback.invoke(null, contacts);
             }
@@ -127,6 +112,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
+        String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         // String name = givenName;
         // name += middleName != "" ? " " + middleName : "";
@@ -209,15 +195,33 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             ops.add(op.build());
         }
 
+        if(thumbnailPath != null) {
+            Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
+            Log.e("ReactNativeContacts", "after decoding");
+            ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    .withValue(ContactsContract.Data.MIMETYPE,ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, toByteArray(photo))
+                    .build());
+        }
+    
         Context ctx = getReactApplicationContext();
         try {
             ContentResolver cr = ctx.getContentResolver();
             cr.applyBatch(ContactsContract.AUTHORITY, ops);
             callback.invoke(); // success
         } catch (Exception e) {
+            Log.e("ReactNativeContacts", e.toString());
             callback.invoke(e.toString());
         }
     }
+
+    public byte[] toByteArray(Bitmap bitmap) {
+          Log.e("ReactNativeContacts", "Entering toByteArray");
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+        return stream.toByteArray();       
+    }    
 
     /*
      * Update contact to phone's addressbook
@@ -324,6 +328,30 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         }
     }
 
+    /*
+     * Update contact to phone's addressbook
+     */
+    @ReactMethod
+    public void deleteContact(ReadableMap contact, Callback callback) {
+
+        String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
+      
+        try {
+               Context ctx = getReactApplicationContext();
+
+               Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,recordID);
+               ContentResolver cr = ctx.getContentResolver();
+               int deleted = cr.delete(uri,null,null);
+
+               if(deleted > 0)
+                 callback.invoke(null, recordID); // success
+               else
+                 callback.invoke(null, null); // something was wrong
+
+        } catch (Exception e) {
+            callback.invoke(e.toString(), null);
+        }
+    }
     /*
      * Check permission
      */

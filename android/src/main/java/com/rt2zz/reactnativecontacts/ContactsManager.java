@@ -61,7 +61,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     /**
      * Retrieves contacts.
      * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
-     * @param callback callback
+     * @param callback user provided callback to run at completion
      */
     private void getAllContacts(final Callback callback) {
         AsyncTask.execute(new Runnable() {
@@ -72,6 +72,33 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContacts();
+
+                callback.invoke(null, contacts);
+            }
+        });
+    }
+
+    /*
+     * Returns all contacts matching string
+     */
+    @ReactMethod
+    public void getContactsMatchingString(final String searchString, final Callback callback) {
+        getAllContactsMatchingString(searchString, callback);
+    }
+    /**
+     * Retrieves contacts matching String.
+     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
+     * @param searchString String to match
+     * @param callback user provided callback to run at completion
+     */
+    private void getAllContactsMatchingString(final String searchString, final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
+                WritableArray contacts = contactsProvider.getContactsMatchingString(searchString);
 
                 callback.invoke(null, contacts);
             }

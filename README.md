@@ -1,5 +1,5 @@
 # React Native Contacts
-To contribute read [CONTRIBUTING.md](https://github.com/rt2zz/react-native-contacts).
+To contribute read [CONTRIBUTING.md](https://github.com/rt2zz/react-native-contacts/CONTRIBUTING.md).
 
 Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
 

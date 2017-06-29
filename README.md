@@ -109,6 +109,7 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
     label: "mobile",
     number: "(555) 555-5555",
   }],
+  hasThumbnail: true,
   thumbnailPath: 'content://com.android.contacts/display_photo/3',
   postalAddresses:
     [

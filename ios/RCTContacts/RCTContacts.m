@@ -457,6 +457,11 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 
 + (NSData*) imageData:(NSString*)sourceUri
 {
+    if ([sourceUri isEqualToString:@"LOCALL_CONTACT"]) {
+        sourceUri = [[NSBundle mainBundle] pathForResource:@"locall_contact" ofType:@"png"];
+        //NSLog(@"Contact image uri %@", sourceUri);
+    }
+
     if([sourceUri hasPrefix:@"assets-library"]){
         return [RCTContacts loadImageAsset:[NSURL URLWithString:sourceUri]];
     } else if ([sourceUri isAbsolutePath]) {

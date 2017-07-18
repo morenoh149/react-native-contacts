@@ -1,9 +1,13 @@
 package com.rt2zz.reactnativecontacts;
 
+
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
@@ -20,6 +24,9 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 
 import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.IOException;
 
 public class ContactsManager extends ReactContextBaseJavaModule {
 
@@ -113,12 +120,25 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         });
     }
 
+    private Bitmap getBitmapFromAsset(String filePath) {
+        AssetManager assetManager = getReactApplicationContext().getAssets();
+
+        InputStream istr;
+        Bitmap bitmap = null;
+        try {
+            istr = assetManager.open(filePath);
+            bitmap = BitmapFactory.decodeStream(istr);
+        } catch (IOException e) {
+            // handle exception
+        }
+
+        return bitmap;
+    }
     /*
      * Adds contact to phone's addressbook
      */
     @ReactMethod
     public void addContact(ReadableMap contact, Callback callback) {
-
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
         String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
@@ -127,6 +147,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
+        String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         // String name = givenName;
         // name += middleName != "" ? " " + middleName : "";
@@ -136,14 +157,17 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         int numOfPhones = 0;
         String[] phones = null;
         Integer[] phonesLabels = null;
+        String[] phonesCustomLabels = null;
         if (phoneNumbers != null) {
             numOfPhones = phoneNumbers.size();
             phones = new String[numOfPhones];
             phonesLabels = new Integer[numOfPhones];
+            phonesCustomLabels = new String[numOfPhones];
             for (int i = 0; i < numOfPhones; i++) {
                 phones[i] = phoneNumbers.getMap(i).getString("number");
                 String label = phoneNumbers.getMap(i).getString("label");
                 phonesLabels[i] = mapStringToPhoneType(label);
+                phonesCustomLabels[i] = label;
             }
         }
 
@@ -197,6 +221,9 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
                     .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+            if (phonesLabels[i] == CommonDataKinds.Phone.TYPE_CUSTOM) {
+                op = op.withValue(CommonDataKinds.Phone.LABEL, phonesCustomLabels[i]);
+            }
             ops.add(op.build());
         }
 
@@ -207,6 +234,32 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
                     .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
             ops.add(op.build());
+        }
+
+        // Read locall contact image
+        Bitmap bitmap = null;
+        if ("LOCALL_CONTACT".equals(thumbnailPath)) {
+            bitmap = getBitmapFromAsset("locall_contact.png");
+        }
+
+        if(bitmap!=null){    // If an image is selected successfully
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG , 75, stream);
+
+            // Adding insert operation to operations list
+            // to insert Photo in the table ContactsContract.Data
+            ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1)
+                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, stream.toByteArray())
+                    .build());
+
+            try {
+                stream.flush();
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         Context ctx = getReactApplicationContext();
@@ -224,7 +277,6 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void updateContact(ReadableMap contact, Callback callback) {
-
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
 
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
@@ -235,21 +287,25 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
+        String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
         String[] phones = null;
         Integer[] phonesLabels = null;
+        String[] phonesCustomLabels = null;
         if (phoneNumbers != null) {
             numOfPhones = phoneNumbers.size();
             phones = new String[numOfPhones];
             phonesLabels = new Integer[numOfPhones];
+            phonesCustomLabels = new String[numOfPhones];
             for (int i = 0; i < numOfPhones; i++) {
                 ReadableMap phoneMap = phoneNumbers.getMap(i);
                 String phoneNumber = phoneMap.getString("number");
                 String phoneLabel = phoneMap.getString("label");
                 phones[i] = phoneNumber;
                 phonesLabels[i] = mapStringToPhoneType(phoneLabel);
+                phonesCustomLabels[i] = phoneLabel;
             }
         }
 
@@ -297,11 +353,24 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         op.withYieldAllowed(true);
 
         for (int i = 0; i < numOfPhones; i++) {
-            op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Phone.CONTENT_ITEM_TYPE})
-                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                    .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-                    .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+            if (i == 0) {
+                // first delete old numbers
+                op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Phone.CONTENT_ITEM_TYPE});
+
+                ops.add(op.build());
+                // op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        // .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Phone.CONTENT_ITEM_TYPE});
+            }
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValue(ContactsContract.Data.RAW_CONTACT_ID, recordID)
+                .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
+                .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+
+            if (phonesLabels[i] == CommonDataKinds.Phone.TYPE_CUSTOM) {
+                op = op.withValue(CommonDataKinds.Phone.LABEL, phonesCustomLabels[i]);
+            }
             ops.add(op.build());
         }
 
@@ -313,6 +382,33 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
             ops.add(op.build());
         }
+
+        // Read locall contact image
+        Bitmap bitmap = null;
+        if ("LOCALL_CONTACT".equals(thumbnailPath)) {
+            bitmap = getBitmapFromAsset("locall_contact.png");
+        }
+
+        if(bitmap!=null){    // If an image is selected successfully
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG , 75, stream);
+
+            // Adding insert operation to operations list
+            // to insert Photo in the table ContactsContract.Data
+            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Photo.CONTENT_ITEM_TYPE})
+                    .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1)
+                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, stream.toByteArray())
+                    .build());
+
+            try {
+                stream.flush();
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
 
         Context ctx = getReactApplicationContext();
         try {

@@ -336,6 +336,7 @@ public class ContactsProvider {
                 putString(cursor, "neighborhood", StructuredPostal.NEIGHBORHOOD);
                 putString(cursor, "city", StructuredPostal.CITY);
                 putString(cursor, "region", StructuredPostal.REGION);
+                putString(cursor, "state", StructuredPostal.REGION);
                 putString(cursor, "postCode", StructuredPostal.POSTCODE);
                 putString(cursor, "country", StructuredPostal.COUNTRY);
             }

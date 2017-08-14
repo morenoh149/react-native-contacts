@@ -311,6 +311,7 @@ public class ContactsProvider {
             contact.putString("department", department);
             contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
+            contact.putString("displayName", displayName);
 
             WritableArray phoneNumbers = Arguments.createArray();
             for (Item item : phones) {

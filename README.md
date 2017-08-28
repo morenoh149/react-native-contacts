@@ -1,5 +1,5 @@
 # React Native Contacts
-To contribute read [CONTRIBUTING.md](https://github.com/rt2zz/react-native-contacts).
+To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
 
@@ -13,22 +13,38 @@ var Contacts = require('react-native-contacts')
 
 Contacts.getAll((err, contacts) => {
   if(err === 'denied'){
-    // x.x
+    // error
   } else {
-    console.log(contacts)
+    // contacts returned in []
   }
 })
 ```
 
+`getContactMatchingString` is meant to alleviate the amount of time it takes to get all contacts, by filtering on the native side based on a string.
+
+```js
+var Contacts = require('react-native-contacts')
+
+Contacts.getContactsMatchingString("filter", (err, contacts) => {
+  if(err === 'denied'){
+    // x.x
+  } else {
+    // Contains only contacts matching "filter"
+    console.log(contacts)
+  }
+})
+```
 ## Installation
-run `npm install react-native-contacts`
 
-### iOS
-1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-2. add `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj`
-3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTContacts.a**
+run:
 
-#### Permissions
+    npm install react-native-contacts
+    react-native link react-native-contacts
+
+_For versions of RN before [v0.21.0](https://github.com/facebook/react-native/releases/tag/v0.21.0) use the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android)._
+
+#### iOS Permissions 
+
 As of Xcode 8 and React Native 0.33 it is now **necessary to add kit specific "permission" keys** to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission. I discovered this after days of frustration.
 
 Open Xcode > Info.plist > Add a key (starting with "Privacy - ...") with your kit specific permission. The value for the key is optional in development. If you submit to the App Store the value must explain why you need this permission.
@@ -37,60 +53,10 @@ You have to add the key "Privacy - Contacts Usage Description".
 
 <img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
-### Android
+#### Android Permissions 
+Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add only the permissions you need (i.e. if you don't need the _WRITE_CONTACTS_ permission then there's no need to add it).
 
-_For versions of RN before [v0.21.0](https://github.com/facebook/react-native/releases/tag/v0.21.0) use the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android)._
 
-* In `android/settings.gradle`
-```gradle
-...
-include ':react-native-contacts'
-project(':react-native-contacts').projectDir = new File(settingsDir, '../node_modules/react-native-contacts/android')
-```
-
-* In `android/app/build.gradle`
-```gradle
-...
-dependencies {
-    ...
-    compile project(':react-native-contacts')
-}
-```
-
-* register module (in android/app/src/main/java/com/[your-app-name]/MainApplication.java)
-```java
-	...
-
-	import com.rt2zz.reactnativecontacts.ReactNativeContacts; 	// <--- import module!
-
-	public class MainApplication extends Application implements ReactApplication {
-	    ...
-
-	    @Override
-	    protected List<ReactPackage> getPackages() {
-	      return Arrays.<ReactPackage>asList(
-	        new MainReactPackage(),
-	        new ReactNativeContacts() 	// <--- and add package
-	      );
-	    }
-
-    	...
-    }
-```
-* handling `onRequestPermissionsResult` when requesting `android.permission.READ_CONTACTS`
-```java
-    ...
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-        @NonNull int[] grantResults) {
-        ReactNativeContacts.onRequestPermissionsResult(requestCode, permissions, grantResults);   // <--- 
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-```
-
-* add Contacts permission (in android/app/src/main/AndroidManifest.xml)
-  * only add the permissions you need
-  * `READ_PROFILE` may be a required for other permissions
 ```xml
 ...
   <uses-permission android:name="android.permission.READ_PROFILE" />
@@ -109,6 +75,7 @@ dependencies {
 | `addContact` | ✔ | ✔ |
 | `updateContact` | ✔ | ✔ |
 | `deleteContact` | ✔ | 😞 |
+| `getContactsMatchingString` | ✔ | ✔ |
 | get with options | 😞 | 😞 |
 | groups  | 😞 | 😞 |
 
@@ -121,6 +88,7 @@ dependencies {
  * `addContact` (contact, callback) - adds a contact to the AddressBook.  
  * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
  * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
+ * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
  * `checkPermission` (callback) - checks permission to access Contacts  
  * `requestPermission` (callback) - request permission to access Contacts
 
@@ -141,6 +109,7 @@ dependencies {
     label: "mobile",
     number: "(555) 555-5555",
   }],
+  hasThumbnail: true,
   thumbnailPath: 'content://com.android.contacts/display_photo/3',
   postalAddresses:
     [

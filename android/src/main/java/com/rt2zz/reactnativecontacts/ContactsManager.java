@@ -277,7 +277,13 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void updateContact(ReadableMap contact, Callback callback) {
+        String rawContactID = contact.hasKey("rawContactID") ? contact.getString("rawContactID") : null;
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
+
+        if (rawContactID == null || recordID == null) {
+            callback.invoke("Invalid recordId or rawContactId");
+            return;
+        }
 
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
@@ -363,7 +369,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                         // .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Phone.CONTENT_ITEM_TYPE});
             }
             op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                .withValue(ContactsContract.Data.RAW_CONTACT_ID, recordID)
+                .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawContactID)
                 .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                 .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
                 .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
@@ -376,7 +382,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
         for (int i = 0; i < numOfEmails; i++) {
             op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Email.CONTENT_ITEM_TYPE})
+                    .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Email.CONTENT_ITEM_TYPE})
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
                     .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);

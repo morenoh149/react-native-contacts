@@ -26,6 +26,7 @@ public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
 
     private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {{
+        add(ContactsContract.Data.RAW_CONTACT_ID);
         add(ContactsContract.Data.CONTACT_ID);
         add(ContactsContract.Data.LOOKUP_KEY);
         add(ContactsContract.Contacts.Data.MIMETYPE);
@@ -172,6 +173,9 @@ public class ContactsProvider {
 
             Contact contact = map.get(contactId);
 
+            // RH get rawContactID
+            contact.rawContactID = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.RAW_CONTACT_ID));
+
             String mimeType = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.MIMETYPE));
 
             String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
@@ -278,6 +282,7 @@ public class ContactsProvider {
     }
 
     private static class Contact {
+        private String rawContactID;
         private String contactId;
         private String displayName;
         private String givenName = "";
@@ -300,6 +305,7 @@ public class ContactsProvider {
 
         public WritableMap toMap() {
             WritableMap contact = Arguments.createMap();
+            contact.putString("rawContactID", rawContactID);
             contact.putString("recordID", contactId);
             contact.putString("givenName", TextUtils.isEmpty(givenName) ? displayName : givenName);
             contact.putString("middleName", middleName);

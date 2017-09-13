@@ -450,7 +450,29 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 
     contact.emailAddresses = emails;
 
-    //todo - update postal addresses
+    NSMutableArray *postalAddresses = [[NSMutableArray alloc]init];
+    
+    for (id addressData in [contactData valueForKey:@"postalAddresses"]) {
+        NSString *label = [addressData valueForKey:@"label"];
+        NSString *street = [addressData valueForKey:@"street"];
+        NSString *region = [addressData valueForKey:@"region"];
+        NSString *postalCode = [addressData valueForKey:@"postalCode"];
+        NSString *city = [addressData valueForKey:@"city"];
+        NSString *country = [addressData valueForKey:@"country"];
+        NSString *state = [addressData valueForKey:@"state"];
+        
+        if(label && street) {
+            CNMutablePostalAddress *postalAddr = [[CNMutablePostalAddress alloc] init];
+            postalAddr.street = street;
+            postalAddr.postalCode = postalCode;
+            postalAddr.city = city;
+            postalAddr.country = country;
+            postalAddr.state = state;
+            [postalAddresses addObject:[[CNLabeledValue alloc] initWithLabel:label value: postalAddr]];
+        }
+    }
+    
+    contact.postalAddresses = postalAddresses;
 
     NSString *thumbnailPath = [contactData valueForKey:@"thumbnailPath"];
 

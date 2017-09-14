@@ -114,17 +114,17 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
   }],
   hasThumbnail: true,
   thumbnailPath: 'content://com.android.contacts/display_photo/3',
-  postalAddresses:
-    [
-      {
-        postCode: 'Postcooode',
-        city: 'City',
-        neighborhood: 'neighborhood',
-        street: 'Home Street',
-        formattedAddress: 'Home Street\nneighborhood\nCity Postcooode',
-        label: 'work'
-      }
-    ]
+  postalAddresses: [
+    {
+      street: '123 Fake Street',
+      city: 'Sample City',
+      state: 'CA',
+      region: 'CA',
+      postCode: '90210',
+      country: 'USA',
+      label: 'home'
+    }
+  ]
 }
 ```
 **NOTE**

@@ -3,6 +3,9 @@ To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
 
+Latest version is available on [npm](https://www.npmjs.com/package/react-native-contacts)
+the [releases](https://github.com/rt2zz/react-native-contacts/releases) tab is not always updated.
+
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
 

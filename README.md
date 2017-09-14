@@ -70,7 +70,7 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
 
 ## Status
 * Preliminary iOS and Android support
-* API subject to revision, changelog in release notes  
+* API subject to revision, changelog in release notes
 
 | Feature | iOS | Android |
 | ------- | --- | ------- |
@@ -88,11 +88,11 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
  * `getAll` (callback) - returns *all* contacts as an array of objects
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
  * `getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
- * `addContact` (contact, callback) - adds a contact to the AddressBook.  
- * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
- * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
+ * `addContact` (contact, callback) - adds a contact to the AddressBook.
+ * `updateContact` (contact, callback) - where contact is an object with a valid recordID
+ * `deleteContact` (contact, callback) - where contact is an object with a valid recordID
  * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
- * `checkPermission` (callback) - checks permission to access Contacts  
+ * `checkPermission` (callback) - checks permission to access Contacts
  * `requestPermission` (callback) - request permission to access Contacts
 
 ## Example Contact Record
@@ -114,6 +114,7 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
   }],
   hasThumbnail: true,
   thumbnailPath: 'content://com.android.contacts/display_photo/3',
+  note: 'some text',
   postalAddresses:
     [
       {
@@ -174,8 +175,8 @@ The thumbnailPath is the direct URI for the temp location of the contact's cropp
 ```
 
 ## Permissions Methods (optional)
-`checkPermission` (callback) - checks permission to access Contacts.  
-`requestPermission` (callback) - request permission to access Contacts.  
+`checkPermission` (callback) - checks permission to access Contacts.
+`requestPermission` (callback) - request permission to access Contacts.
 
 Usage as follows:
 ```js

@@ -415,6 +415,22 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         return emailType;
     }
 
+    private int mapStringToPostalAddressType(String label) {
+        int postalAddressType;
+        switch (label) {
+            case "home":
+                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_HOME;
+                break;
+            case "work":
+                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_WORK;
+                break;
+            default:
+                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_OTHER;
+                break;
+        }
+        return postalAddressType;
+    }
+
     @Override
     public String getName() {
         return "Contacts";

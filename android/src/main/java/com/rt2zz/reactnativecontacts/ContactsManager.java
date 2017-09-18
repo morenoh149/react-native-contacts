@@ -262,6 +262,25 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             }
         }
 
+        ReadableArray postalAddresses = contact.hasKey("postalAddresses") ? contact.getArray("postalAddresses") : null;
+        if (postalAddresses != null) {
+            for (int i = 0; i <  postalAddresses.size() ; i++) {
+                ReadableMap address = postalAddresses.getMap(i);
+
+                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE)
+                        .withValue(CommonDataKinds.StructuredPostal.TYPE, mapStringToPostalAddressType(address.getString("label")))
+                        .withValue(CommonDataKinds.StructuredPostal.STREET, address.getString("street"))
+                        .withValue(CommonDataKinds.StructuredPostal.CITY, address.getString("city"))
+                        .withValue(CommonDataKinds.StructuredPostal.REGION, address.getString("state"))
+                        .withValue(CommonDataKinds.StructuredPostal.POSTCODE, address.getString("postCode"))
+                        .withValue(CommonDataKinds.StructuredPostal.COUNTRY, address.getString("country"));
+
+                ops.add(op.build());
+            }
+        }
+
         Context ctx = getReactApplicationContext();
         try {
             ContentResolver cr = ctx.getContentResolver();
@@ -496,6 +515,22 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 break;
         }
         return emailType;
+    }
+
+    private int mapStringToPostalAddressType(String label) {
+        int postalAddressType;
+        switch (label) {
+            case "home":
+                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_HOME;
+                break;
+            case "work":
+                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_WORK;
+                break;
+            default:
+                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_OTHER;
+                break;
+        }
+        return postalAddressType;
     }
 
     @Override

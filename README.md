@@ -57,8 +57,8 @@ You have to add the key "Privacy - Contacts Usage Description".
 <img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
 #### Android Permissions 
-
 Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add only the permissions you need (i.e. if you don't need the _WRITE_CONTACTS_ permission then there's no need to add it).
+
 
 ```xml
 ...

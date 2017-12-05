@@ -43,6 +43,11 @@ run:
 
     npm install react-native-contacts
     react-native link react-native-contacts
+    
+or if you you use yarn:
+
+    yarn add react-native-contacts
+    react-native link react-native contacts
 
 _For versions of RN before [v0.21.0](https://github.com/facebook/react-native/releases/tag/v0.21.0) use the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android)._
 

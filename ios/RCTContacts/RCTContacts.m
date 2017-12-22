@@ -50,7 +50,7 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResp
 
 -(void) getContactsFromAddressBook:(CNContactStore *)store
                     matchingString:(NSString *)searchString
-                       callback:(RCTResponseSenderBlock)callback
+                          callback:(RCTResponseSenderBlock)callback
 {
     NSMutableArray *contacts = [[NSMutableArray alloc] init];
     NSError *contactError = nil;
@@ -63,7 +63,8 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResp
                       CNContactPostalAddressesKey,
                       CNContactOrganizationNameKey,
                       CNContactJobTitleKey,
-                      CNContactImageDataAvailableKey
+                      CNContactImageDataAvailableKey,
+                      CNContactBirthdayKey
                       ];
     NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingName:searchString]
                                                            keysToFetch:keys
@@ -115,7 +116,8 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
                                        CNContactPostalAddressesKey,
                                        CNContactOrganizationNameKey,
                                        CNContactJobTitleKey,
-                                       CNContactImageDataAvailableKey
+                                       CNContactImageDataAvailableKey,
+                                       CNContactBirthdayKey
                                        ]];
 
     if(withThumbnails) {
@@ -142,7 +144,8 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     NSString *middleName = person.middleName;
     NSString *company = person.organizationName;
     NSString *jobTitle = person.jobTitle;
-
+    NSDateComponents *birthday = person.birthday;
+    
     [output setObject:recordID forKey: @"recordID"];
 
     if (givenName) {
@@ -165,6 +168,17 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         [output setObject: (jobTitle) ? jobTitle : @"" forKey:@"jobTitle"];
     }
 
+    
+    if (birthday) {
+        if (birthday.month != NSDateComponentUndefined && birthday.day != NSDateComponentUndefined) {
+            if (birthday.year != NSDateComponentUndefined) {
+                [output setObject:@{@"year": @(birthday.year), @"month": @(birthday.month), @"day": @(birthday.day)} forKey:@"birthday"];
+            } else {
+                [output setObject:@{@"month": @(birthday.month), @"day":@(birthday.day)} forKey:@"birthday"];
+            }
+        }
+    }
+    
     //handle phone numbers
     NSMutableArray *phoneNumbers = [[NSMutableArray alloc] init];
 
@@ -379,7 +393,8 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
                              CNContactJobTitleKey,
                              CNContactImageDataAvailableKey,
                              CNContactThumbnailImageDataKey,
-                             CNContactImageDataKey
+                             CNContactImageDataKey,
+                             CNContactBirthdayKey
                              ];
 
     @try {
@@ -406,13 +421,32 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     NSString *middleName = [contactData valueForKey:@"middleName"];
     NSString *company = [contactData valueForKey:@"company"];
     NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
-
+    NSDictionary *birthday = [contactData valueForKey:@"birthday"];
+    
     contact.givenName = givenName;
     contact.familyName = familyName;
     contact.middleName = middleName;
     contact.organizationName = company;
     contact.jobTitle = jobTitle;
+    
+    if (birthday) {
+        NSDateComponents *components;
+        if (contact.birthday != nil) {
+            components = contact.birthday;
+        } else {
+            components = [[NSDateComponents alloc] init];
+        }
+        if (birthday[@"month"] && birthday[@"day"]) {
+            if (birthday[@"year"]) {
+                components.year = [birthday[@"year"] intValue];
+            }
+            components.month = [birthday[@"month"] intValue];
+            components.day = [birthday[@"day"] intValue];
+        }
 
+        contact.birthday = components;
+    }
+    
     NSMutableArray *phoneNumbers = [[NSMutableArray alloc]init];
 
     for (id phoneData in [contactData valueForKey:@"phoneNumbers"]) {

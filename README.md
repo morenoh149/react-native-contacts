@@ -130,7 +130,7 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
       label: 'home'
     }
   ],
-  birthday: "1987-1-21"
+  birthday: {"year": 1988, "month": 1, "day": 1 }
 }
 ```
 **NOTE**

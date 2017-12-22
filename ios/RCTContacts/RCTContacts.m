@@ -171,10 +171,11 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     
     if (birthday) {
         if (birthday.month != NSDateComponentUndefined && birthday.day != NSDateComponentUndefined) {
+            //months are indexed to 0 in JavaScript (0 = January) so we subtract 1 from NSDateComponents.month
             if (birthday.year != NSDateComponentUndefined) {
-                [output setObject:@{@"year": @(birthday.year), @"month": @(birthday.month), @"day": @(birthday.day)} forKey:@"birthday"];
+                [output setObject:@{@"year": @(birthday.year), @"month": @(birthday.month - 1), @"day": @(birthday.day)} forKey:@"birthday"];
             } else {
-                [output setObject:@{@"month": @(birthday.month), @"day":@(birthday.day)} forKey:@"birthday"];
+                [output setObject:@{@"month": @(birthday.month - 1), @"day":@(birthday.day)} forKey:@"birthday"];
             }
         }
     }
@@ -440,7 +441,8 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
             if (birthday[@"year"]) {
                 components.year = [birthday[@"year"] intValue];
             }
-            components.month = [birthday[@"month"] intValue];
+            //months are indexed to 0 in JavaScript so we add 1 when assigning the month to DateComponent
+            components.month = [birthday[@"month"] intValue] + 1;
             components.day = [birthday[@"day"] intValue];
         }
 

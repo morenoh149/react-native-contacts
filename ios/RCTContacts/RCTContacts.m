@@ -1,7 +1,6 @@
 #import <AddressBook/AddressBook.h>
 #import <UIKit/UIKit.h>
 #import "RCTContacts.h"
-#import <Contacts/Contacts.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
 @implementation RCTContacts {
@@ -358,6 +357,37 @@ RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData callback:(RCTResponseSe
     @catch (NSException *exception) {
         callback(@[[exception description], [NSNull null]]);
     }
+}
+
+RCT_EXPORT_METHOD(createContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
+{
+    CNContactStore* contactStore = [self contactsStore:callback];
+    if(!contactStore)
+        return;
+    
+    CNMutableContact * contact = [[CNMutableContact alloc] init];
+    
+    [self updateRecord:contact withData:contactData];
+    
+    CNContactViewController *controller = [CNContactViewController viewControllerForNewContact:contact];
+    
+    controller.delegate = self;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
+        UINavigationController *viewController = (UINavigationController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        [viewController presentViewController:navigation animated:YES completion:nil];
+        
+        NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:false];
+        
+        callback(@[[NSNull null], contactDict]);
+    });
+    
+}
+
+//dismiss create contact page after done or cancel is clicked
+- (void)contactViewController:(CNContactViewController *)viewController didCompleteWithContact:(CNContact *)contact {
+    [viewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)

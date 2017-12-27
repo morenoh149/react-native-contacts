@@ -3,6 +3,7 @@ declare module 'react-native-contacts' {
   export function getAllWithoutPhotos(callback: (error: any, contacts: Contact[]) => void): void;
   export function getPhotoForId(contactId: string, callback: (error: any, photoUri: string) => void): void;
   export function addContact(contact: Contact, callback: (error?: any) => void): void;
+  export function createContact(contact: Contact, callback: (error?: any) => void): void;
   export function updateContact(contact: Contact, callback: (error?: any) => void): void;
   export function deleteContact(contact: Contact, callback: (error?: any) => void): void;
   export function getContactsMatchingString(str: string, callback: (error: any, contacts: Contact[]) => void): void;

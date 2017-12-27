@@ -81,6 +81,7 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
 | ------- | --- | ------- |
 | `getAll`  | ✔   | ✔ |
 | `addContact` | ✔ | ✔ |
+| `createContact` | ✔ | ✔ |
 | `updateContact` | ✔ | ✔ |
 | `deleteContact` | ✔ | 😞 |
 | `getContactsMatchingString` | ✔ | ✔ |
@@ -94,6 +95,7 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
  * `getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
  * `addContact` (contact, callback) - adds a contact to the AddressBook.  
+ * `createContact` (contact, callback) - create a new contact and display in contactsUI.  
  * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
  * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
  * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
@@ -148,6 +150,21 @@ var newPerson = {
 }
 
 Contacts.addContact(newPerson, (err) => { /*...*/ })
+```
+
+## Creating Contacts
+Currently all fields from the contact record except for thumbnailPath are supported for writing
+```js
+var newPerson = {
+  emailAddresses: [{
+    label: "work",
+    email: "mrniet@example.com",
+  }],
+  familyName: "Nietzsche",
+  givenName: "Friedrich",
+}
+
+Contacts.createContact(newPerson, (err) => { /*...*/ })
 ```
 
 ## Updating and Deleting Contacts

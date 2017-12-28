@@ -166,6 +166,7 @@ var newPerson = {
 
 Contacts.createContact(newPerson, (err) => { /*...*/ })
 ```
+You may want to edit the contact before saving it into your phone book. So using `createContact` allow you to prompt default phone create contacts UI and the new to-be-added contact will be display on the contacts UI view. Click save or cancel button will exit the contacts UI view.
 
 ## Updating and Deleting Contacts
 ```js

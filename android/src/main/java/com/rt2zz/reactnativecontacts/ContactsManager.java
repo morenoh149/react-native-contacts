@@ -131,7 +131,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     }
 
     /*
-     * Start add contact intent
+     * Start create contact intent
      */
     @ReactMethod
     public void createContact(ReadableMap contact, Callback callback) {
@@ -262,8 +262,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
     }
     /*
-         * Adds contact to phone's addressbook
-         */
+     * Adds contact to phone's addressbook
+     */
     @ReactMethod
     public void addContact(ReadableMap contact, Callback callback) {
 

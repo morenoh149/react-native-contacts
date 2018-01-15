@@ -131,10 +131,10 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     }
 
     /*
-     * Start create contact intent
+     * Start open contact form
      */
     @ReactMethod
-    public void createContact(ReadableMap contact, Callback callback) {
+    public void openContactForm(ReadableMap contact, Callback callback) {
 
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;

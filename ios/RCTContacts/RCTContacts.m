@@ -359,33 +359,33 @@ RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData callback:(RCTResponseSe
     }
 }
 
-RCT_EXPORT_METHOD(createContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
 {
     CNContactStore* contactStore = [self contactsStore:callback];
     if(!contactStore)
         return;
-    
+
     CNMutableContact * contact = [[CNMutableContact alloc] init];
-    
+
     [self updateRecord:contact withData:contactData];
-    
+
     CNContactViewController *controller = [CNContactViewController viewControllerForNewContact:contact];
-    
+
     controller.delegate = self;
-    
+
     dispatch_async(dispatch_get_main_queue(), ^{
         UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
         UINavigationController *viewController = (UINavigationController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
         [viewController presentViewController:navigation animated:YES completion:nil];
-        
+
         NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:false];
-        
+
         callback(@[[NSNull null], contactDict]);
     });
-    
+
 }
 
-//dismiss create contact page after done or cancel is clicked
+//dismiss open contact page after done or cancel is clicked
 - (void)contactViewController:(CNContactViewController *)viewController didCompleteWithContact:(CNContact *)contact {
     [viewController dismissViewControllerAnimated:YES completion:nil];
 }
@@ -481,7 +481,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     contact.emailAddresses = emails;
 
     NSMutableArray *postalAddresses = [[NSMutableArray alloc]init];
-    
+
     for (id addressData in [contactData valueForKey:@"postalAddresses"]) {
         NSString *label = [addressData valueForKey:@"label"];
         NSString *street = [addressData valueForKey:@"street"];
@@ -489,7 +489,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
         NSString *city = [addressData valueForKey:@"city"];
         NSString *country = [addressData valueForKey:@"country"];
         NSString *state = [addressData valueForKey:@"state"];
-        
+
         if(label && street) {
             CNMutablePostalAddress *postalAddr = [[CNMutablePostalAddress alloc] init];
             postalAddr.street = street;
@@ -500,7 +500,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
             [postalAddresses addObject:[[CNLabeledValue alloc] initWithLabel:label value: postalAddr]];
         }
     }
-    
+
     contact.postalAddresses = postalAddresses;
 
     NSString *thumbnailPath = [contactData valueForKey:@"thumbnailPath"];

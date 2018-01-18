@@ -568,4 +568,9 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData callback:(RCTRespons
     return contactStore;
 }
 
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
 @end

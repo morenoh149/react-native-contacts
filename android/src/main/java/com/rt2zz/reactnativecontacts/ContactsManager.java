@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -130,6 +131,137 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     }
 
     /*
+     * Start open contact form
+     */
+    @ReactMethod
+    public void openContactForm(ReadableMap contact, Callback callback) {
+
+        String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
+        String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
+        String displayName = contact.hasKey("displayName") ? contact.getString("displayName") : null;
+        String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;
+        String prefix = contact.hasKey("prefix") ? contact.getString("prefix") : null;
+        String suffix = contact.hasKey("suffix") ? contact.getString("suffix") : null;
+        String company = contact.hasKey("company") ? contact.getString("company") : null;
+        String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
+        String department = contact.hasKey("department") ? contact.getString("department") : null;
+
+        ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
+        int numOfPhones = 0;
+        String[] phones = null;
+        Integer[] phonesLabels = null;
+        if (phoneNumbers != null) {
+            numOfPhones = phoneNumbers.size();
+            phones = new String[numOfPhones];
+            phonesLabels = new Integer[numOfPhones];
+            for (int i = 0; i < numOfPhones; i++) {
+                phones[i] = phoneNumbers.getMap(i).getString("number");
+                String label = phoneNumbers.getMap(i).getString("label");
+                phonesLabels[i] = mapStringToPhoneType(label);
+            }
+        }
+
+        ReadableArray emailAddresses = contact.hasKey("emailAddresses") ? contact.getArray("emailAddresses") : null;
+        int numOfEmails = 0;
+        String[] emails = null;
+        Integer[] emailsLabels = null;
+        if (emailAddresses != null) {
+            numOfEmails = emailAddresses.size();
+            emails = new String[numOfEmails];
+            emailsLabels = new Integer[numOfEmails];
+            for (int i = 0; i < numOfEmails; i++) {
+                emails[i] = emailAddresses.getMap(i).getString("email");
+                String label = emailAddresses.getMap(i).getString("label");
+                emailsLabels[i] = mapStringToEmailType(label);
+            }
+        }
+
+        ReadableArray postalAddresses = contact.hasKey("postalAddresses") ? contact.getArray("postalAddresses") : null;
+        int numOfPostalAddresses = 0;
+        String[] postalAddressesStreet = null;
+        String[] postalAddressesCity = null;
+        String[] postalAddressesState = null;
+        String[] postalAddressesRegion = null;
+        String[] postalAddressesPostCode = null;
+        String[] postalAddressesCountry = null;
+        Integer[] postalAddressesLabel = null;
+        if (postalAddresses != null) {
+            numOfPostalAddresses = postalAddresses.size();
+            postalAddressesStreet = new String[numOfPostalAddresses];
+            postalAddressesCity = new String[numOfPostalAddresses];
+            postalAddressesState = new String[numOfPostalAddresses];
+            postalAddressesRegion = new String[numOfPostalAddresses];
+            postalAddressesPostCode = new String[numOfPostalAddresses];
+            postalAddressesCountry = new String[numOfPostalAddresses];
+            postalAddressesLabel =  new Integer[numOfPostalAddresses];
+            for (int i = 0; i <  numOfPostalAddresses ; i++) {
+                postalAddressesStreet[i] =  postalAddresses.getMap(i).getString("street");
+                postalAddressesCity[i] = postalAddresses.getMap(i).getString("city");
+                postalAddressesState[i] = postalAddresses.getMap(i).getString("state");
+                postalAddressesRegion[i] = postalAddresses.getMap(i).getString("region");
+                postalAddressesPostCode[i] = postalAddresses.getMap(i).getString("postCode");
+                postalAddressesCountry[i] = postalAddresses.getMap(i).getString("country");
+                postalAddressesLabel[i] = mapStringToPostalAddressType(postalAddresses.getMap(i).getString("label"));
+            }
+        }
+
+        ArrayList<ContentValues> contactData = new ArrayList<>();
+
+        ContentValues name = new ContentValues();
+        name.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Identity.CONTENT_ITEM_TYPE);
+        name.put(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, givenName);
+        name.put(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, familyName);
+        name.put(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, middleName);
+        name.put(ContactsContract.CommonDataKinds.StructuredName.PREFIX, prefix);
+        name.put(ContactsContract.CommonDataKinds.StructuredName.SUFFIX, suffix);
+        contactData.add(name);
+
+        ContentValues organization = new ContentValues();
+        organization.put(ContactsContract.Data.MIMETYPE, Organization.CONTENT_ITEM_TYPE);
+        organization.put(Organization.COMPANY, company);
+        organization.put(Organization.TITLE, jobTitle);
+        organization.put(Organization.DEPARTMENT, department);
+        contactData.add(organization);
+
+        for (int i = 0; i < numOfEmails; i++) {
+            ContentValues email = new ContentValues();
+            email.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+            email.put(CommonDataKinds.Email.TYPE, emailsLabels[i]);
+            email.put(CommonDataKinds.Email.ADDRESS, emails[i]);
+            contactData.add(email);
+        }
+
+        for (int i = 0; i < numOfPhones; i++) {
+            ContentValues phone = new ContentValues();
+            phone.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
+            phone.put(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+            phone.put(CommonDataKinds.Phone.NUMBER, phones[i]);
+            contactData.add(phone);
+        }
+
+        for (int i = 0; i < numOfPostalAddresses; i++) {
+            ContentValues structuredPostal = new ContentValues();
+            structuredPostal.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE);
+            structuredPostal.put(CommonDataKinds.StructuredPostal.STREET, postalAddressesStreet[i]);
+            structuredPostal.put(CommonDataKinds.StructuredPostal.CITY, postalAddressesCity[i]);
+            structuredPostal.put(CommonDataKinds.StructuredPostal.REGION, postalAddressesRegion[i]);
+            structuredPostal.put(CommonDataKinds.StructuredPostal.COUNTRY, postalAddressesCountry[i]);
+            structuredPostal.put(CommonDataKinds.StructuredPostal.POSTCODE, postalAddressesPostCode[i]);
+            //No state column in StructuredPostal
+            //structuredPostal.put(CommonDataKinds.StructuredPostal.???, postalAddressesState[i]);
+            contactData.add(structuredPostal);
+        }
+
+        Intent intent = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
+        intent.putExtra(ContactsContract.Intents.Insert.NAME, displayName);
+        intent.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, contactData);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        Context context = getReactApplicationContext();
+        context.startActivity(intent);
+
+    }
+    /*
      * Adds contact to phone's addressbook
      */
     @ReactMethod
@@ -253,7 +385,6 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             callback.invoke(e.toString());
         }
     }
-
     /*
      * Update contact to phone's addressbook
      */
@@ -486,6 +617,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         }
         return postalAddressType;
     }
+
 
     @Override
     public String getName() {

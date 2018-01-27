@@ -133,7 +133,7 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
 }
 ```
 **NOTE**
-* on Android the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
+* on Android versions below 8 the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing

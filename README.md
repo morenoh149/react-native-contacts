@@ -47,7 +47,7 @@ run:
 or if you you use yarn:
 
     yarn add react-native-contacts
-    react-native link react-native contacts
+    react-native link react-native-contacts
 
 _For versions of RN before [v0.21.0](https://github.com/facebook/react-native/releases/tag/v0.21.0) use the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android)._
 
@@ -81,6 +81,7 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
 | ------- | --- | ------- |
 | `getAll`  | ✔   | ✔ |
 | `addContact` | ✔ | ✔ |
+| `openContactForm` | ✔ | ✔ |
 | `updateContact` | ✔ | ✔ |
 | `deleteContact` | ✔ | 😞 |
 | `getContactsMatchingString` | ✔ | ✔ |
@@ -94,6 +95,7 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
  * `getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
  * `addContact` (contact, callback) - adds a contact to the AddressBook.  
+ * `openContactForm` (contact, callback) - create a new contact and display in contactsUI.  
  * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
  * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
  * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
@@ -134,7 +136,7 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
 }
 ```
 **NOTE**
-* on Android the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
+* on Android versions below 8 the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing
@@ -150,6 +152,22 @@ var newPerson = {
 
 Contacts.addContact(newPerson, (err) => { /*...*/ })
 ```
+
+## Open Contact Form
+Currently all fields from the contact record except for thumbnailPath are supported for writing
+```js
+var newPerson = {
+  emailAddresses: [{
+    label: "work",
+    email: "mrniet@example.com",
+  }],
+  familyName: "Nietzsche",
+  givenName: "Friedrich",
+}
+
+Contacts.openContactForm(newPerson, (err) => { /*...*/ })
+```
+You may want to edit the contact before saving it into your phone book. So using `openContactForm` allow you to prompt default phone create contacts UI and the new to-be-added contact will be display on the contacts UI view. Click save or cancel button will exit the contacts UI view.
 
 ## Updating and Deleting Contacts
 ```js

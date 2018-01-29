@@ -131,7 +131,8 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
       country: 'USA',
       label: 'home'
     }
-  ]
+  ],
+  birthday: {"year": 1988, "month": 0, "day": 1 }
 }
 ```
 **NOTE**

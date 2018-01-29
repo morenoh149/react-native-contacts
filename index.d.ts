@@ -32,7 +32,13 @@ declare module 'react-native-contacts' {
       postCode: string;
       country: string;
   }
-
+  
+  export interface Birthday {
+      day: Number;
+	  month: Number;
+	  year: Number;
+  }
+  
   export interface Contact {
       recordID: string;
       company: string;
@@ -48,5 +54,6 @@ declare module 'react-native-contacts' {
       prefix: string;
       suffix: string;
       department: string;
+	  birthday: Birthday;
   }
 }

@@ -194,6 +194,7 @@ public class ContactsProvider {
                 }
             }
             if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {
+                contact.lookupKey = cursor.getString(cursor.getColumnIndex(StructuredName.LOOKUP_KEY));
                 contact.givenName = cursor.getString(cursor.getColumnIndex(StructuredName.GIVEN_NAME));
                 contact.middleName = cursor.getString(cursor.getColumnIndex(StructuredName.MIDDLE_NAME));
                 contact.familyName = cursor.getString(cursor.getColumnIndex(StructuredName.FAMILY_NAME));
@@ -302,6 +303,7 @@ public class ContactsProvider {
 
     private static class Contact {
         private String contactId;
+        private String lookupKey;
         private String displayName;
         private String givenName = "";
         private String middleName = "";
@@ -326,6 +328,7 @@ public class ContactsProvider {
         public WritableMap toMap() {
             WritableMap contact = Arguments.createMap();
             contact.putString("recordID", contactId);
+            contact.putString("lookupKey", lookupKey);
             contact.putString("givenName", TextUtils.isEmpty(givenName) ? displayName : givenName);
             contact.putString("middleName", middleName);
             contact.putString("familyName", familyName);

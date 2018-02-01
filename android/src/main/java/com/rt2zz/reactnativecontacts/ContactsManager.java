@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
@@ -135,6 +136,26 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void openContactForm(ReadableMap contact, Callback callback) {
+
+        String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
+        String lookupKey = contact.hasKey("lookupKey") ? contact.getString("lookupKey") : null;
+
+        if (recordID != null) {
+            Uri mSelectedContactUri =
+                    ContactsContract.Contacts.getLookupUri(Long.parseLong(recordID), lookupKey);
+            // Creates a new Intent to edit a contact
+            Intent editIntent = new Intent(Intent.ACTION_EDIT);
+            /*
+             * Sets the contact URI to edit, and the data type that the
+             * Intent must match
+             */
+            editIntent.setDataAndType(mSelectedContactUri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
+
+            Context context = getReactApplicationContext();
+            context.startActivity(editIntent);
+
+            return;
+        }
 
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;

@@ -147,10 +147,6 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     
     [output setObject:recordID forKey: @"recordID"];
 
-    if (givenName) {
-        [output setObject: (givenName) ? givenName : @"" forKey:@"givenName"];
-    }
-
     if (familyName) {
         [output setObject: (familyName) ? familyName : @"" forKey:@"familyName"];
     }
@@ -198,6 +194,10 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     }
 
     [output setObject: phoneNumbers forKey:@"phoneNumbers"];
+    if (givenName) {
+        [output setObject: (givenName) ? givenName : phoneNumbers forKey:@"givenName"];
+    }
+
     //end phone numbers
 
     //handle emails

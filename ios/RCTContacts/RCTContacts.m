@@ -197,7 +197,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         }
     }
     if (givenName) {
-        NSString *phoneNumberName = ([phoneNumbers count] > 0) ? phoneNumbers[0] : @"";
+        NSString *phoneNumberName = ([phoneNumbers count] > 0) ? phoneNumbers[0] : @"ATN";
         [output setObject: (givenName) ? givenName : phoneNumberName  forKey:@"givenName"];
     }
     [output setObject: phoneNumbers forKey:@"phoneNumbers"];

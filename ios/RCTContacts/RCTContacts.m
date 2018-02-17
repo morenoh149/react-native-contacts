@@ -196,10 +196,11 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
             [phoneNumbers addObject:phone];
         }
     }
-    if (givenName) {
-        NSString *phoneNumberName = ([phoneNumbers count] > 0) ? phoneNumbers[0] : @"ATN";
-        [output setObject: (givenName) ? givenName : phoneNumberName  forKey:@"givenName"];
+    if (givenName == @"") {
+        NSString *phoneNumberName = ([phoneNumbers count] > 0) ? phoneNumbers[0].number : @"";
+        [output setObject: phoneNumberName  forKey:@"givenName"];
     }
+
     [output setObject: phoneNumbers forKey:@"phoneNumbers"];
     //end phone numbers
 

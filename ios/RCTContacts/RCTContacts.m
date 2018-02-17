@@ -147,6 +147,10 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     
     [output setObject:recordID forKey: @"recordID"];
 
+    if (givenName) {
+        [output setObject: (givenName) ? givenName : @"" forKey:@"givenName"];
+    }
+
     if (familyName) {
         [output setObject: (familyName) ? familyName : @"" forKey:@"familyName"];
     }
@@ -192,12 +196,11 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
             [phoneNumbers addObject:phone];
         }
     }
-
-    [output setObject: phoneNumbers forKey:@"phoneNumbers"];
     if (givenName) {
-        [output setObject: (givenName) ? givenName : phoneNumbers forKey:@"givenName"];
+        NSString *phoneNumberName = ([phoneNumbers count] > 0) ? phoneNumbers[0] : @"";
+        [output setObject: (givenName) ? givenName : phoneNumberName  forKey:@"givenName"];
     }
-
+    [output setObject: phoneNumbers forKey:@"phoneNumbers"];
     //end phone numbers
 
     //handle emails

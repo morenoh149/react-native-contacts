@@ -147,10 +147,6 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     
     [output setObject:recordID forKey: @"recordID"];
 
-    if (givenName) {
-        [output setObject: (givenName) ? givenName : @"" forKey:@"givenName"];
-    }
-
     if (familyName) {
         [output setObject: (familyName) ? familyName : @"" forKey:@"familyName"];
     }
@@ -181,6 +177,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     
     //handle phone numbers
     NSMutableArray *phoneNumbers = [[NSMutableArray alloc] init];
+    NSString *firstPhoneNumber = @"";
 
     for (CNLabeledValue<CNPhoneNumber*>* labeledValue in person.phoneNumbers) {
         NSMutableDictionary* phone = [NSMutableDictionary dictionary];
@@ -194,9 +191,14 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
             [phone setObject: value forKey:@"number"];
             [phone setObject: label forKey:@"label"];
             [phoneNumbers addObject:phone];
+
+            if ([firstPhoneNumber isEqual:@""]) {
+                firstPhoneNumber = value;
+            }
         }
     }
 
+    [output setObject: [givenName isEqualToString:@""] ? firstPhoneNumber : givenName forKey:@"givenName"];
     [output setObject: phoneNumbers forKey:@"phoneNumbers"];
     //end phone numbers
 

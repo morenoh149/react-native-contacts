@@ -1,16 +1,8 @@
 # React Native Contacts
-To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
-
-Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
-
-Latest version is available on [npm](https://www.npmjs.com/package/react-native-contacts)
-the [releases](https://github.com/rt2zz/react-native-contacts/releases) tab is not always updated.
 
 ## Usage
-`getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
 
-Also there is a lot of room for performance enhancements in both iOS and android. PR's welcome!
-
+### getAll
 ```js
 var Contacts = require('react-native-contacts')
 
@@ -23,8 +15,7 @@ Contacts.getAll((err, contacts) => {
 })
 ```
 
-`getContactMatchingString` is meant to alleviate the amount of time it takes to get all contacts, by filtering on the native side based on a string.
-
+### getContactMatchingString
 ```js
 var Contacts = require('react-native-contacts')
 
@@ -37,19 +28,18 @@ Contacts.getContactsMatchingString("filter", (err, contacts) => {
   }
 })
 ```
+
 ## Installation
 
 run:
 
-    npm install react-native-contacts
-    react-native link react-native-contacts
+    $ npm install --save react-native-contacts
+    $ react-native link react-native-contacts
     
 or if you you use yarn:
 
-    yarn add react-native-contacts
-    react-native link react-native-contacts
-
-_For versions of RN before [v0.21.0](https://github.com/facebook/react-native/releases/tag/v0.21.0) use the [old instructions](https://github.com/rt2zz/react-native-contacts/tree/1ce4b876a416bc2ca3c53e7d7e0296f7fcb7ce40#android)._
+    $ yarn add react-native-contacts
+    $ react-native link react-native-contacts
 
 #### iOS Permissions 
 
@@ -62,8 +52,7 @@ You have to add the key "Privacy - Contacts Usage Description".
 <img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
 #### Android Permissions 
-Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add only the permissions you need (i.e. if you don't need the _WRITE_CONTACTS_ permission then there's no need to add it).
-
+Add permissions to your `android/app/src/main/AndroidManifest.xml` file inside the `<manifest>` tags.
 
 ```xml
 ...
@@ -85,8 +74,6 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
 | `updateContact` | ✔ | ✔ |
 | `deleteContact` | ✔ | 😞 |
 | `getContactsMatchingString` | ✔ | ✔ |
-| get with options | 😞 | 😞 |
-| groups  | 😞 | 😞 |
 
 
 ## API
@@ -223,12 +210,5 @@ These methods do **not** re-request permission if permission has already been gr
 
 On android permission request is done upon install so this function will only show if the  permission has been granted.
 
-## Todo
-- [ ] android feature parity
-- [ ] migrate iOS from AddressBook to Contacts
-- [ ] implement `get` with options
-- [ ] groups support
-
 ## LICENSE
-
 [MIT License](LICENSE)

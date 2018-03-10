@@ -6,3 +6,7 @@ ios/RCTContacts.xcodeproj/project.xcworkspace
 .idea
 
 .npm-debug.log
+
+examples/android/build
+examples/android/app/build/tmp
+examples/android/app/build/intermediates

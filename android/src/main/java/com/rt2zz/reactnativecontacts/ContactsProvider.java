@@ -257,7 +257,8 @@ public class ContactsProvider {
             } else if (mimeType.equals(Event.CONTENT_ITEM_TYPE)) {
                 int eventType = cursor.getInt(cursor.getColumnIndex(Event.TYPE));
                 if (eventType == Event.TYPE_BIRTHDAY) {
-                    String birthday = cursor.getString(cursor.getColumnIndex(Event.START_DATE)).replace("--", "");
+                    String birthdayWithoutDoubleHypen = cursor.getString(cursor.getColumnIndex(Event.START_DATE)).replace("--", "");
+                    String birthday = birthdayWithoutDoubleHypen.replace(".", "-");
                     String[] yearMonthDay = birthday.split("-");
                     List<String> yearMonthDayList = Arrays.asList(yearMonthDay);
                     if (yearMonthDayList.size() == 2) {

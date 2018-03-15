@@ -521,7 +521,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     for (id addressData in [contactData valueForKey:@"postalAddresses"]) {
         NSString *label = [addressData valueForKey:@"label"];
         NSString *street = [addressData valueForKey:@"street"];
-        NSString *postalCode = [addressData valueForKey:@"postalCode"];
+        NSString *postalCode = [addressData valueForKey:@"postCode"];
         NSString *city = [addressData valueForKey:@"city"];
         NSString *country = [addressData valueForKey:@"country"];
         NSString *state = [addressData valueForKey:@"state"];

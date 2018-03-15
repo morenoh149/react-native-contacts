@@ -480,6 +480,23 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             ops.add(op.build());
         }
 
+        ReadableArray postalAddresses = contact.hasKey("postalAddresses") ? contact.getArray("postalAddresses") : null;
+        if (postalAddresses != null) {
+            for (int i = 0; i <  postalAddresses.size() ; i++) {
+                ReadableMap address = postalAddresses.getMap(i);
+                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE})
+                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE)
+                        .withValue(CommonDataKinds.StructuredPostal.TYPE, mapStringToPostalAddressType(address.getString("label")))
+                        .withValue(CommonDataKinds.StructuredPostal.STREET, address.getString("street"))
+                        .withValue(CommonDataKinds.StructuredPostal.CITY, address.getString("city"))
+                        .withValue(CommonDataKinds.StructuredPostal.REGION, address.getString("state"))
+                        .withValue(CommonDataKinds.StructuredPostal.POSTCODE, address.getString("postCode"))
+                        .withValue(CommonDataKinds.StructuredPostal.COUNTRY, address.getString("country"));
+                ops.add(op.build());
+            }
+        }
+        
         Context ctx = getReactApplicationContext();
         try {
             ContentResolver cr = ctx.getContentResolver();

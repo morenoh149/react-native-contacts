@@ -1,11 +1,6 @@
 # React Native Contacts
 To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
-
-Latest version is available on [npm](https://www.npmjs.com/package/react-native-contacts)
-the [releases](https://github.com/rt2zz/react-native-contacts/releases) tab is not always updated.
-
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
 
@@ -44,7 +39,7 @@ run:
     npm install react-native-contacts
     react-native link react-native-contacts
     
-or if you you use yarn:
+or if you use yarn:
 
     yarn add react-native-contacts
     react-native link react-native-contacts
@@ -85,9 +80,6 @@ Add permissions to your `android/app/src/main/AndroidManifest.xml` file.  Add on
 | `updateContact` | ✔ | ✔ |
 | `deleteContact` | ✔ | 😞 |
 | `getContactsMatchingString` | ✔ | ✔ |
-| get with options | 😞 | 😞 |
-| groups  | 😞 | 😞 |
-
 
 ## API
 
@@ -223,11 +215,8 @@ These methods do **not** re-request permission if permission has already been gr
 
 On android permission request is done upon install so this function will only show if the  permission has been granted.
 
-## Todo
-- [ ] android feature parity
-- [ ] migrate iOS from AddressBook to Contacts
-- [ ] implement `get` with options
-- [ ] groups support
+## Rx.js
+Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
 
 ## LICENSE
 

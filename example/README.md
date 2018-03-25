@@ -3,14 +3,18 @@
 This example was created with [create react native app](https://github.com/react-community/create-react-native-app).
 
 ## Running
+* `npm install` to install project dependencies
+* `npm link ../` allows you to quickly test out native code changes
+(obj-c/java) without reinstalling npm dependencies
 
 ### Android
 * make sure you have android sdks installed via android studio
 * create and launch an avd via android studio
-* `npm install` to install project dependencies
 * `react-native run-android` to install the example app
 * `adb shell input keyevent 82` to enable live reloading
 * `react-native log-android` to see logs
+* add a contact to the addressbook
+* 
 
 ## Wishlist
 

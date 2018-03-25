@@ -11,13 +11,13 @@ const PREFIX = 'ReactNativeContacts__'
 export default class App extends React.Component {
 
   getAll = () => {
-    console.log('getAll')
+    console.log('js: running getAll')
     Contacts.getAll((err, data) => {
       if (err) {
         console.log('err', err)
         throw err
       }
-      console.log('getAll:', err, data)
+      console.log('getAll results', err, data)
     })
   }
 
@@ -119,7 +119,8 @@ console.log('updateContact callback')
 
   render () {
     return (
-      <View>
+      <View style={styles.container}>
+        <Text style={styles.hello}>hello</Text>
         <Text style={styles.hello}>All results are console.log'ed</Text>
         <Button text="get all contacts" onPress={this.getAll} />
         <Button text="update contact" onPress={this.updateContact} />
@@ -131,6 +132,10 @@ console.log('updateContact callback')
 }
 
 const styles = StyleSheet.create({
-  container: {},
-  hello: {padding: 15},
+  container: {
+  },
+  hello: {
+    padding: 15,
+    color: 'white'
+  },
 })

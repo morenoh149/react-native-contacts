@@ -20,7 +20,6 @@
     "invariant": "^2.2.3",
     "lodash": "^4.17.5",
     "react": "16.2.0",
-    "react-native": "0.52.0",
-    "react-native-contacts": "file:../"
+    "react-native": "0.52.0"
   }
 }

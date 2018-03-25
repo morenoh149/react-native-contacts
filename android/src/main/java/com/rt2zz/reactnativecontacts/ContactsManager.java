@@ -30,6 +30,7 @@ import com.facebook.react.bridge.WritableArray;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import android.util.Log;
 
 public class ContactsManager extends ReactContextBaseJavaModule {
 
@@ -69,6 +70,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      * @param callback user provided callback to run at completion
      */
     private void getAllContacts(final Callback callback) {
+        Log.e("RN api bridge:", "running getAllContacts");
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -390,6 +392,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void updateContact(ReadableMap contact, Callback callback) {
+        Log.e("RN api bridge:", "running updateContact");
 
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
 
@@ -430,6 +433,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             for (int i = 0; i < numOfEmails; i++) {
                 ReadableMap emailMap = emailAddresses.getMap(i);
                 emails[i] = emailMap.getString("email");
+                Log.e("RN api bridge:", "emailMap is:");
+                Log.e("RN api bridge:", emailMap);
                 String label = emailMap.getString("label");
                 emailsLabels[i] = mapStringToEmailType(label);
             }

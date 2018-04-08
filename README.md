@@ -49,7 +49,7 @@ or if you use yarn:
 ### Manual installation
 
 1. In XCode, in the project navigator, right click Libraries ➜ Add Files to [your project's name]
-1. add ./node_modules/react-native-contacts/RCTContacts.xcodeproj
+1. add ./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj
 1. In the XCode project navigator, select your project, select the Build Phases tab and in the Link Binary With Libraries section add libRCTContacts.a
 
 ### iOS Permissions 

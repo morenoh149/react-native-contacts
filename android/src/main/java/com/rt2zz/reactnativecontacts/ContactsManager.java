@@ -524,6 +524,11 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 .withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{String.valueOf(recordID)});
         ops.add(op.build());
 
+        //Delete from data table based on raw ID
+        op = ContentProviderOperation.newDelete(dataContentUri)
+                .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=?", new String[]{String.valueOf(recordID)});
+        ops.add(op.build());
+
         //Delete from Raw contacts table
         Uri rawContactUri = ContactsContract.RawContacts.CONTENT_URI;
         op = ContentProviderOperation.newDelete(rawContactUri)

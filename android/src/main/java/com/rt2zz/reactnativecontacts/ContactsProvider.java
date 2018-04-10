@@ -265,10 +265,15 @@ public class ContactsProvider {
                         int day = Integer.parseInt(yearMonthDayList.get(1));
                         contact.birthday = new Contact.Birthday(new Date(0).getYear(), month, day);
                     } else {
-                        int year = Integer.parseInt(yearMonthDayList.get(0));
-                        int month = Integer.parseInt(yearMonthDayList.get(1));
-                        int day = Integer.parseInt(yearMonthDayList.get(2));
-                        contact.birthday = new Contact.Birthday(year, month, day);
+                        try {
+                            int year = Integer.parseInt(yearMonthDayList.get(0));
+                            int month = Integer.parseInt(yearMonthDayList.get(1));
+                            int day = Integer.parseInt(yearMonthDayList.get(2));
+                            contact.birthday = new Contact.Birthday(year, month, day);
+                        } catch (java.lang.IndexOutOfBoundsException e) {
+                            // no-op 
+                            assert true;
+                        }
                     }
                 }
             }

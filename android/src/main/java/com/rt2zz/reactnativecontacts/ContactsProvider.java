@@ -261,14 +261,27 @@ public class ContactsProvider {
                     String[] yearMonthDay = birthday.split("-");
                     List<String> yearMonthDayList = Arrays.asList(yearMonthDay);
                     if (yearMonthDayList.size() == 2) {
-                        int month = Integer.parseInt(yearMonthDayList.get(0));
-                        int day = Integer.parseInt(yearMonthDayList.get(1));
-                        contact.birthday = new Contact.Birthday(new Date(0).getYear(), month, day);
+                        try {
+                            int month = Integer.parseInt(yearMonthDayList.get(0));
+                            int day = Integer.parseInt(yearMonthDayList.get(1));
+                            contact.birthday = new Contact.Birthday(new Date(0).getYear(), month, day);
+                        } catch (java.lang.NumberFormatException e) {
+                            // no-op
+                            assert true;
+                        }
+                        
                     } else {
-                        int year = Integer.parseInt(yearMonthDayList.get(0));
-                        int month = Integer.parseInt(yearMonthDayList.get(1));
-                        int day = Integer.parseInt(yearMonthDayList.get(2));
-                        contact.birthday = new Contact.Birthday(year, month, day);
+                        try {
+                            int year = Integer.parseInt(yearMonthDayList.get(0));
+                            int month = Integer.parseInt(yearMonthDayList.get(1));
+                            int day = Integer.parseInt(yearMonthDayList.get(2));
+                            contact.birthday = new Contact.Birthday(year, month, day);
+                        } catch (java.lang.IndexOutOfBoundsException | java.lang.NumberFormatException e) {
+                            // TODO: Can extend the functionality to handle more formats of Birthday
+                            // https://github.com/rt2zz/react-native-contacts/issues/279
+                            // no-op. 
+                            assert true;
+                        }
                     }
                 }
             }

@@ -208,10 +208,9 @@ Contacts.checkPermission( (err, permission) => {
 })
 ```
 
-These methods do **not** re-request permission if permission has already been granted or denied. This is a limitation in iOS, the best you can do is prompt the user with instructions for how to enable contacts from the phone settings page `Settings > [app name] > contacts`.
+These methods are only useful on iOS. For Android you'll have to use https://facebook.github.io/react-native/docs/permissionsandroid.html
 
-On android permission request is done upon install so this function will only show if the  permission has been granted.
- support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
+These methods do **not** re-request permission if permission has already been granted or denied. This is a limitation in iOS, the best you can do is prompt the user with instructions for how to enable contacts from the phone settings page `Settings > [app name] > contacts`.
 
 ## LICENSE
 

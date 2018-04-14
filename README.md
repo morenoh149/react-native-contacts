@@ -4,17 +4,14 @@ To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
 
-Also there is a lot of room for performance enhancements in both iOS and android. PR's welcome!
-
 ```js
 var Contacts = require('react-native-contacts')
 
 Contacts.getAll((err, contacts) => {
-  if(err === 'denied'){
-    // error
-  } else {
-    // contacts returned in []
-  }
+  if (err) throw err;
+  
+  // contacts returned
+  console.log(contacts)
 })
 ```
 
@@ -24,12 +21,10 @@ Contacts.getAll((err, contacts) => {
 var Contacts = require('react-native-contacts')
 
 Contacts.getContactsMatchingString("filter", (err, contacts) => {
-  if(err === 'denied'){
-    // x.x
-  } else {
-    // Contains only contacts matching "filter"
-    console.log(contacts)
-  }
+  if (err) throw err;
+  
+  // contacts matching "filter"
+  console.log(contacts)
 })
 ```
 ## Installation
@@ -90,6 +85,13 @@ Android requires allowing permsssions with https://facebook.github.io/react-nati
  * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
  * `checkPermission` (callback) - checks permission to access Contacts  
  * `requestPermission` (callback) - request permission to access Contacts
+ 
+All callbacks follow node-style:
+```sh
+callback <Function>
+  err <Error>
+  contacts <Array>
+```
 
 ## Example Contact Record
 ```js
@@ -139,7 +141,10 @@ var newPerson = {
   givenName: "Friedrich",
 }
 
-Contacts.addContact(newPerson, (err) => { /*...*/ })
+Contacts.addContact(newPerson, (err) => {
+  if (err) throw err;
+  // save successful
+})
 ```
 
 ## Open Contact Form
@@ -154,29 +159,46 @@ var newPerson = {
   givenName: "Friedrich",
 }
 
-Contacts.openContactForm(newPerson, (err) => { /*...*/ })
+Contacts.openContactForm(newPerson, (err) => {
+  if (err) throw err;
+  // form is open
+})
 ```
 You may want to edit the contact before saving it into your phone book. So using `openContactForm` allow you to prompt default phone create contacts UI and the new to-be-added contact will be display on the contacts UI view. Click save or cancel button will exit the contacts UI view.
 
 ## Updating and Deleting Contacts
+Example
 ```js
-//contrived example
-Contacts.getAll( (err, contacts) => {
-  //update the first record
+Contacts.getAll((err, contacts) => {
+  if (err) throw err;
+  
+  // update the first record
   let someRecord = contacts[0]
   someRecord.emailAddresses.push({
     label: "junk",
     email: "mrniet+junkmail@test.com",
   })
-  Contacts.updateContact(someRecord, (err) => { /*...*/ })
+  Contacts.updateContact(someRecord, (err) => {
+    if (err) throw err;
+    // record updated
+  })
 
   //delete the second record
-  Contacts.deleteContact(contacts[1], (err) => { /*...*/ })
+  Contacts.deleteContact(contacts[1], (err) => {
+    if (err) throw err;
+    // contact deleted
+  })
 })
 ```
 Update and delete reference contacts by their recordID (as returned by the OS in getContacts). Apple does not guarantee the recordID will not change, e.g. it may be reassigned during a phone migration. Consequently you should always grab a fresh contact list with `getContacts` before performing update and delete operations.
 
-You can also delete a record using only it's recordID like follows: `Contacts.deleteContact({recordID: 1}, (err) => {})}`
+You can also delete a record using only it's recordID
+```es
+Contacts.deleteContact({recordID: 1}, (err) => {
+  if (err) throw err;
+  // contact deleted
+})
+```
 
 ## Displaying Thumbnails
 
@@ -192,17 +214,19 @@ The thumbnailPath is the direct URI for the temp location of the contact's cropp
 
 Usage as follows:
 ```js
-Contacts.checkPermission( (err, permission) => {
+Contacts.checkPermission((err, permission) => {
+  if (err) throw err;
+  
   // Contacts.PERMISSION_AUTHORIZED || Contacts.PERMISSION_UNDEFINED || Contacts.PERMISSION_DENIED
-  if(permission === 'undefined'){
-    Contacts.requestPermission( (err, permission) => {
+  if (permission === 'undefined') {
+    Contacts.requestPermission((err, permission) => {
       // ...
     })
   }
-  if(permission === 'authorized'){
+  if (permission === 'authorized') {
     // yay!
   }
-  if(permission === 'denied'){
+  if (permission === 'denied') {
     // x.x
   }
 })

@@ -257,18 +257,31 @@ public class ContactsProvider {
             } else if (mimeType.equals(Event.CONTENT_ITEM_TYPE)) {
                 int eventType = cursor.getInt(cursor.getColumnIndex(Event.TYPE));
                 if (eventType == Event.TYPE_BIRTHDAY) {
-                    String birthday = cursor.getString(cursor.getColumnIndex(Event.START_DATE)).replace("--", "");
-                    String[] yearMonthDay = birthday.split("-");
-                    List<String> yearMonthDayList = Arrays.asList(yearMonthDay);
-                    if (yearMonthDayList.size() == 2) {
-                        int month = Integer.parseInt(yearMonthDayList.get(0));
-                        int day = Integer.parseInt(yearMonthDayList.get(1));
-                        contact.birthday = new Contact.Birthday(new Date(0).getYear(), month, day);
-                    } else {
-                        int year = Integer.parseInt(yearMonthDayList.get(0));
-                        int month = Integer.parseInt(yearMonthDayList.get(1));
-                        int day = Integer.parseInt(yearMonthDayList.get(2));
-                        contact.birthday = new Contact.Birthday(year, month, day);
+                    try {
+                        String birthday = cursor.getString(cursor.getColumnIndex(Event.START_DATE)).replace("--", "");
+                        String[] yearMonthDay = birthday.split("-");
+                        List<String> yearMonthDayList = Arrays.asList(yearMonthDay);
+
+                        if (yearMonthDayList.size() == 2) {
+                            // birthday is formatted "12-31"
+                            int month = Integer.parseInt(yearMonthDayList.get(0));
+                            int day = Integer.parseInt(yearMonthDayList.get(1));
+                            contact.birthday = new Contact.Birthday(new Date(0).getYear(), month, day);
+                        } else if (yearMonthDayList.size() == 3) {
+                            // birthday is formatted "1986-12-31"
+                            int year = Integer.parseInt(yearMonthDayList.get(0));
+                            int month = Integer.parseInt(yearMonthDayList.get(1));
+                            int day = Integer.parseInt(yearMonthDayList.get(2));
+                            contact.birthday = new Contact.Birthday(year, month, day);
+                        }
+                    } catch (NumberFormatException nfe, ArrayIndexOutOfBoundsException oobe) {
+                        // whoops, birthday isn't in the format we expect
+                        if (nfe != null) {
+                            Logger.w(nfe.toString());
+                        }
+                        if (oobe != null) {
+                            Logger.w(oobe.toString());
+                        }
                     }
                 }
             }

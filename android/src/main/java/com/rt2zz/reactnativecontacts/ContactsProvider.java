@@ -274,14 +274,10 @@ public class ContactsProvider {
                             int day = Integer.parseInt(yearMonthDayList.get(2));
                             contact.birthday = new Contact.Birthday(year, month, day);
                         }
-                    } catch (NumberFormatException nfe, ArrayIndexOutOfBoundsException oobe) {
+                    } catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
                         // whoops, birthday isn't in the format we expect
-                        if (nfe != null) {
-                            Logger.w(nfe.toString());
-                        }
-                        if (oobe != null) {
-                            Logger.w(oobe.toString());
-                        }
+                        Log.w("ContactsProvider", e.toString());
+                        
                     }
                 }
             }

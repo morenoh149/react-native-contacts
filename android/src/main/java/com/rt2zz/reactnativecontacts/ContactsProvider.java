@@ -12,6 +12,9 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +24,8 @@ import static android.provider.ContactsContract.CommonDataKinds.Organization;
 import static android.provider.ContactsContract.CommonDataKinds.Phone;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import static android.provider.ContactsContract.CommonDataKinds.Event;
+import android.util.Log;
 
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
@@ -57,6 +62,8 @@ public class ContactsProvider {
         add(StructuredPostal.REGION);
         add(StructuredPostal.POSTCODE);
         add(StructuredPostal.COUNTRY);
+        add(Event.START_DATE);
+        add(Event.TYPE);
     }};
 
     private static final List<String> FULL_PROJECTION = new ArrayList<String>() {{
@@ -181,8 +188,8 @@ public class ContactsProvider {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
-                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE},
+                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR "+ ContactsContract.Data.MIMETYPE + "=?",
+                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE, Event.CONTENT_ITEM_TYPE},
                     null
             );
 
@@ -242,7 +249,6 @@ public class ContactsProvider {
                     contact.hasPhoto = true;
                 }
             }
-
             if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {
                 contact.givenName = cursor.getString(cursor.getColumnIndex(StructuredName.GIVEN_NAME));
                 contact.middleName = cursor.getString(cursor.getColumnIndex(StructuredName.MIDDLE_NAME));
@@ -304,6 +310,36 @@ public class ContactsProvider {
                 contact.department = cursor.getString(cursor.getColumnIndex(Organization.DEPARTMENT));
             } else if (mimeType.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
                 contact.postalAddresses.add(new Contact.PostalAddressItem(cursor));
+            } else if (mimeType.equals(Event.CONTENT_ITEM_TYPE)) {
+                int eventType = cursor.getInt(cursor.getColumnIndex(Event.TYPE));
+                if (eventType == Event.TYPE_BIRTHDAY) {
+                    try {
+                        String birthday = cursor.getString(cursor.getColumnIndex(Event.START_DATE)).replace("--", "");
+                        String[] yearMonthDay = birthday.split("-");
+                        List<String> yearMonthDayList = Arrays.asList(yearMonthDay);
+
+                        if (yearMonthDayList.size() == 2) {
+                            // birthday is formatted "12-31"
+                            int month = Integer.parseInt(yearMonthDayList.get(0));
+                            int day = Integer.parseInt(yearMonthDayList.get(1));
+                            if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                                contact.birthday = new Contact.Birthday(month, day);
+                            }
+                        } else if (yearMonthDayList.size() == 3) {
+                            // birthday is formatted "1986-12-31"
+                            int year = Integer.parseInt(yearMonthDayList.get(0));
+                            int month = Integer.parseInt(yearMonthDayList.get(1));
+                            int day = Integer.parseInt(yearMonthDayList.get(2));
+                            if (year > 0 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                                contact.birthday = new Contact.Birthday(year, month, day);
+                            }
+                        }
+                    } catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+                        // whoops, birthday isn't in the format we expect
+                        Log.w("ContactsProvider", e.toString());
+                        
+                    }
+                }
             }
         }
 
@@ -349,6 +385,8 @@ public class ContactsProvider {
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
         private List<PostalAddressItem> postalAddresses = new ArrayList<>();
+        private Birthday birthday;
+
 
         public Contact(String contactId) {
             this.contactId = contactId;
@@ -388,9 +426,19 @@ public class ContactsProvider {
 
             WritableArray postalAddresses = Arguments.createArray();
             for (PostalAddressItem item : this.postalAddresses) {
-              postalAddresses.pushMap(item.map);
+                postalAddresses.pushMap(item.map);
             }
             contact.putArray("postalAddresses", postalAddresses);
+
+            WritableMap birthdayMap = Arguments.createMap();
+            if (birthday != null) {
+                if (birthday.year > 0) {
+                    birthdayMap.putInt("year", birthday.year);
+                }
+                birthdayMap.putInt("month", birthday.month);
+                birthdayMap.putInt("day", birthday.day);
+                contact.putMap("birthday", birthdayMap);
+            }
 
             return contact;
         }
@@ -402,6 +450,23 @@ public class ContactsProvider {
             public Item(String label, String value) {
                 this.label = label;
                 this.value = value;
+            }
+        }
+
+        public static class Birthday {
+            public int year = 0;
+            public int month = 0;
+            public int day = 0;
+
+            public Birthday(int year, int month, int day) {
+                this.year = year;
+                this.month = month;
+                this.day = day;
+            }
+
+            public Birthday(int month, int day) {
+                this.month = month;
+                this.day = day;
             }
         }
 
@@ -418,6 +483,7 @@ public class ContactsProvider {
                 putString(cursor, "neighborhood", StructuredPostal.NEIGHBORHOOD);
                 putString(cursor, "city", StructuredPostal.CITY);
                 putString(cursor, "region", StructuredPostal.REGION);
+                putString(cursor, "state", StructuredPostal.REGION);
                 putString(cursor, "postCode", StructuredPostal.POSTCODE);
                 putString(cursor, "country", StructuredPostal.COUNTRY);
             }
@@ -425,7 +491,7 @@ public class ContactsProvider {
             private void putString(Cursor cursor, String key, String androidKey) {
                 final String value = cursor.getString(cursor.getColumnIndex(androidKey));
                 if (!TextUtils.isEmpty(value))
-                  map.putString(key, value);
+                    map.putString(key, value);
             }
 
             static String getLabel(Cursor cursor) {

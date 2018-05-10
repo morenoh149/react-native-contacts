@@ -60,18 +60,15 @@ You have to add the key "Privacy - Contacts Usage Description".
 ### Android Permissions 
 Android requires allowing permsssions with https://facebook.github.io/react-native/docs/permissionsandroid.html
 
-## Status
-* Preliminary iOS and Android support
-* API subject to revision, changelog in release notes  
-
+## API Implemented methods
 | Feature | iOS | Android |
 | ------- | --- | ------- |
 | `getAll`  | ✔   | ✔ |
 | `addContact` | ✔ | ✔ |
 | `openContactForm` | ✔ | ✔ |
 | `updateContact` | ✔ | ✔ |
-| `deleteContact` | ✔ | X |
 | `getContactsMatchingString` | ✔ | ✔ |
+| `deleteContact` | ✔ | X |
 
 ## API
 
@@ -83,8 +80,8 @@ Android requires allowing permsssions with https://facebook.github.io/react-nati
  * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
  * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
  * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
- * `checkPermission` (callback) - checks permission to access Contacts  
- * `requestPermission` (callback) - request permission to access Contacts
+ * `checkPermission` (callback) - checks permission to access Contacts _ios only_
+ * `requestPermission` (callback) - request permission to access Contacts _ios only_
  
 All callbacks follow node-style:
 ```sh

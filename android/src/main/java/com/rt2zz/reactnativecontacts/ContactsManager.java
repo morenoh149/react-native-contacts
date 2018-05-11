@@ -2,13 +2,11 @@ package com.rt2zz.reactnativecontacts;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
@@ -16,10 +14,9 @@ import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.RawContacts;
-
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.LocalBroadcastManager;
+
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -66,6 +63,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     /**
      * Retrieves contacts.
      * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
+     *
      * @param callback user provided callback to run at completion
      */
     private void getAllContacts(final Callback callback) {
@@ -90,9 +88,11 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     public void getContactsMatchingString(final String searchString, final Callback callback) {
         getAllContactsMatchingString(searchString, callback);
     }
+
     /**
      * Retrieves contacts matching String.
      * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
+     *
      * @param searchString String to match
      * @param callback user provided callback to run at completion
      */
@@ -112,6 +112,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
     /**
      * Retrieves <code>thumbnailPath</code> for contact, or <code>null</code> if not available.
+     *
      * @param contactId contact identifier, <code>recordID</code>
      * @param callback callback
      */
@@ -193,9 +194,9 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             postalAddressesRegion = new String[numOfPostalAddresses];
             postalAddressesPostCode = new String[numOfPostalAddresses];
             postalAddressesCountry = new String[numOfPostalAddresses];
-            postalAddressesLabel =  new Integer[numOfPostalAddresses];
-            for (int i = 0; i <  numOfPostalAddresses ; i++) {
-                postalAddressesStreet[i] =  postalAddresses.getMap(i).getString("street");
+            postalAddressesLabel = new Integer[numOfPostalAddresses];
+            for (int i = 0; i < numOfPostalAddresses; i++) {
+                postalAddressesStreet[i] = postalAddresses.getMap(i).getString("street");
                 postalAddressesCity[i] = postalAddresses.getMap(i).getString("city");
                 postalAddressesState[i] = postalAddresses.getMap(i).getString("state");
                 postalAddressesRegion[i] = postalAddresses.getMap(i).getString("region");
@@ -261,6 +262,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         context.startActivity(intent);
 
     }
+
     /*
      * Adds contact to phone's addressbook
      */
@@ -359,7 +361,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
         ReadableArray postalAddresses = contact.hasKey("postalAddresses") ? contact.getArray("postalAddresses") : null;
         if (postalAddresses != null) {
-            for (int i = 0; i <  postalAddresses.size() ; i++) {
+            for (int i = 0; i < postalAddresses.size(); i++) {
                 ReadableMap address = postalAddresses.getMap(i);
 
                 op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
@@ -385,6 +387,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             callback.invoke(e.toString());
         }
     }
+
     /*
      * Update contact to phone's addressbook
      */
@@ -392,6 +395,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     public void updateContact(ReadableMap contact, Callback callback) {
 
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
+        String rawContactId = contact.hasKey("rawContactId") ? contact.getString("rawContactId") : null;
 
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
@@ -406,16 +410,20 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         int numOfPhones = 0;
         String[] phones = null;
         Integer[] phonesLabels = null;
+        String[] phoneIds = null;
         if (phoneNumbers != null) {
             numOfPhones = phoneNumbers.size();
             phones = new String[numOfPhones];
             phonesLabels = new Integer[numOfPhones];
+            phoneIds = new String[numOfPhones];
             for (int i = 0; i < numOfPhones; i++) {
                 ReadableMap phoneMap = phoneNumbers.getMap(i);
                 String phoneNumber = phoneMap.getString("number");
                 String phoneLabel = phoneMap.getString("label");
+                String phoneId = phoneMap.hasKey("id") ? phoneMap.getString("id") : null;
                 phones[i] = phoneNumber;
                 phonesLabels[i] = mapStringToPhoneType(phoneLabel);
+                phoneIds[i] = phoneId;
             }
         }
 
@@ -423,15 +431,19 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         int numOfEmails = 0;
         String[] emails = null;
         Integer[] emailsLabels = null;
+        String[] emailIds = null;
+
         if (emailAddresses != null) {
             numOfEmails = emailAddresses.size();
             emails = new String[numOfEmails];
+            emailIds = new String[numOfEmails];
             emailsLabels = new Integer[numOfEmails];
             for (int i = 0; i < numOfEmails; i++) {
                 ReadableMap emailMap = emailAddresses.getMap(i);
                 emails[i] = emailMap.getString("email");
                 String label = emailMap.getString("label");
                 emailsLabels[i] = mapStringToEmailType(label);
+                emailIds[i] = emailMap.hasKey("id") ? emailMap.getString("id") : null;
             }
         }
 
@@ -463,26 +475,40 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         op.withYieldAllowed(true);
 
         for (int i = 0; i < numOfPhones; i++) {
-            op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Phone.CONTENT_ITEM_TYPE})
-                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                    .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-                    .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+            if (phoneIds[i] == null) {
+                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                        .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
+                        .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+            } else {
+                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(phoneIds[i])})
+                        .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
+                        .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+            }
             ops.add(op.build());
         }
 
         for (int i = 0; i < numOfEmails; i++) {
-            op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Email.CONTENT_ITEM_TYPE})
-                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
-                    .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-                    .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
+            if (emailIds[i] == null) {
+                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
+                        .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
+                        .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
+            } else {
+                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(emailIds[i])})
+                        .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
+                        .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
+            }
             ops.add(op.build());
         }
 
         ReadableArray postalAddresses = contact.hasKey("postalAddresses") ? contact.getArray("postalAddresses") : null;
         if (postalAddresses != null) {
-            for (int i = 0; i <  postalAddresses.size() ; i++) {
+            for (int i = 0; i < postalAddresses.size(); i++) {
                 ReadableMap address = postalAddresses.getMap(i);
                 op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
                         .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE})
@@ -496,7 +522,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 ops.add(op.build());
             }
         }
-        
+
         Context ctx = getReactApplicationContext();
         try {
             ContentResolver cr = ctx.getContentResolver();
@@ -540,7 +566,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     }
 
     protected static void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-        @NonNull int[] grantResults) {
+                                                     @NonNull int[] grantResults) {
         if (requestCallback == null) {
             return;
         }
@@ -551,7 +577,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         }
 
         Hashtable<String, Boolean> results = new Hashtable<>();
-        for (int i=0; i < permissions.length; i++) {
+        for (int i = 0; i < permissions.length; i++) {
             results.put(permissions[i], grantResults[i] == PackageManager.PERMISSION_GRANTED);
         }
 

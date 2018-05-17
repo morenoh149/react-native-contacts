@@ -383,6 +383,7 @@ public class ContactsProvider {
                 WritableMap map = Arguments.createMap();
                 map.putString("email", item.value);
                 map.putString("label", item.label);
+                map.putString("id", item.id);
                 emailAddresses.pushMap(map);
             }
             contact.putArray("emailAddresses", emailAddresses);

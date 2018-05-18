@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
@@ -522,6 +523,49 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 ops.add(op.build());
             }
         }
+
+        Context ctx = getReactApplicationContext();
+        try {
+            ContentResolver cr = ctx.getContentResolver();
+            cr.applyBatch(ContactsContract.AUTHORITY, ops);
+            callback.invoke(); // success
+        } catch (Exception e) {
+            callback.invoke(e.toString());
+        }
+    }
+
+    /*
+     * Delete contact from phone's addressbook
+     */
+    @ReactMethod
+    public void deleteContact(ReadableMap contact, Callback callback) {
+
+        String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
+
+        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+        
+        //Delete from data table
+        Uri dataContentUri = ContactsContract.Data.CONTENT_URI;
+        ContentProviderOperation.Builder op = ContentProviderOperation.newDelete(dataContentUri)
+                .withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{String.valueOf(recordID)});
+        ops.add(op.build());
+
+        //Delete from data table based on raw ID
+        op = ContentProviderOperation.newDelete(dataContentUri)
+                .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=?", new String[]{String.valueOf(recordID)});
+        ops.add(op.build());
+
+        //Delete from Raw contacts table
+        Uri rawContactUri = ContactsContract.RawContacts.CONTENT_URI;
+        op = ContentProviderOperation.newDelete(rawContactUri)
+            .withSelection(ContactsContract.RawContacts._ID + "=?", new String[]{String.valueOf(recordID)});
+        ops.add(op.build());
+
+        //Delete from contacts table
+        Uri contactUri = ContactsContract.Contacts.CONTENT_URI;
+        op = ContentProviderOperation.newDelete(contactUri)
+            .withSelection(ContactsContract.Contacts._ID + "=?", new String[]{String.valueOf(recordID)});
+        ops.add(op.build());
 
         Context ctx = getReactApplicationContext();
         try {

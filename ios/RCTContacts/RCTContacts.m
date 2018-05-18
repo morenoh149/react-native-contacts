@@ -602,13 +602,21 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData callback:(RCTRespons
     NSString* recordID = [contactData valueForKey:@"recordID"];
 
     NSArray *keys = @[CNContactIdentifierKey];
-    CNMutableContact *contact = [[contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil] mutableCopy];
-    NSError *error;
-    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
-    [saveRequest deleteContact:contact];
-    [contactStore executeSaveRequest:saveRequest error:&error];
+    
+    
+    @try {
+        
+        CNMutableContact *contact = [[contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil] mutableCopy];
+        NSError *error;
+        CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+        [saveRequest deleteContact:contact];
+        [contactStore executeSaveRequest:saveRequest error:&error];
 
-    callback(@[[NSNull null], [NSNull null]]);
+        callback(@[[NSNull null], recordID]);
+    }
+    @catch (NSException *exception) {
+        callback(@[[exception description], [NSNull null]]);
+    }
 }
 
 -(CNContactStore*) contactsStore: (RCTResponseSenderBlock)callback {

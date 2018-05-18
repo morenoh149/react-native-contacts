@@ -108,6 +108,62 @@ public class ContactsProvider {
         return contacts;
     }
 
+     public WritableMap getContactByRawId(String contactRawId) {
+
+        // Get Contact Id from Raw Contact Id
+        String[] projections = new String[]{ContactsContract.RawContacts.CONTACT_ID};
+        String select = ContactsContract.RawContacts._ID + "= ?";
+        String[] selectionArgs = new String[]{contactRawId};
+        Cursor rawCursor = contentResolver.query(ContactsContract.RawContacts.CONTENT_URI, projections, select, selectionArgs, null);
+        String contactId = null;
+        if (rawCursor.getCount() == 0) {
+            /*contact id not found */
+        }
+
+        if (rawCursor.moveToNext()) {
+            int columnIndex;
+            columnIndex = rawCursor.getColumnIndex(ContactsContract.RawContacts.CONTACT_ID);
+            if (columnIndex == -1) {
+                /* trouble getting contact id */
+            } else {
+                contactId = rawCursor.getString(columnIndex);
+            }
+        }
+
+        rawCursor.close();
+
+        //Now that we have the real contact id, fetch information
+        return getContactById(contactId);
+    }
+
+    public WritableMap getContactById(String contactId) {
+
+        Map<String, Contact> matchingContacts;
+        {
+            Cursor cursor = contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                ContactsContract.RawContacts.CONTACT_ID + " = ?",
+                new String[]{contactId},
+                null
+            );
+
+            try {
+                matchingContacts = loadContactsFrom(cursor);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+        
+        if(matchingContacts.values().size() > 0) {
+            return matchingContacts.values().iterator().next().toMap();
+        }
+        
+       return null;
+    }
+
     public WritableArray getContacts() {
         Map<String, Contact> justMe;
         {

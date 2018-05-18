@@ -60,18 +60,7 @@ You have to add the key "Privacy - Contacts Usage Description".
 ### Android Permissions 
 Android requires allowing permsssions with https://facebook.github.io/react-native/docs/permissionsandroid.html
 
-## API Implemented methods
-| Feature | iOS | Android |
-| ------- | --- | ------- |
-| `getAll`  | ✔   | ✔ |
-| `addContact` | ✔ | ✔ |
-| `openContactForm` | ✔ | ✔ |
-| `updateContact` | ✔ | ✔ |
-| `getContactsMatchingString` | ✔ | ✔ |
-| `deleteContact` | ✔ | X |
-
 ## API
-
  * `getAll` (callback) - returns *all* contacts as an array of objects
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
  * `getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
@@ -83,11 +72,11 @@ Android requires allowing permsssions with https://facebook.github.io/react-nati
  * `checkPermission` (callback) - checks permission to access Contacts _ios only_
  * `requestPermission` (callback) - request permission to access Contacts _ios only_
  
-All callbacks follow node-style:
+Callbacks follow node-style:
 ```sh
 callback <Function>
   err <Error>
-  contacts <Array>
+  response <Object>
 ```
 
 ## Example Contact Record
@@ -181,7 +170,7 @@ Contacts.getAll((err, contacts) => {
   })
 
   //delete the second record
-  Contacts.deleteContact(contacts[1], (err) => {
+  Contacts.deleteContact(contacts[1], (err, recordId) => {
     if (err) throw err;
     // contact deleted
   })
@@ -191,7 +180,7 @@ Update and delete reference contacts by their recordID (as returned by the OS in
 
 You can also delete a record using only it's recordID
 ```es
-Contacts.deleteContact({recordID: 1}, (err) => {
+Contacts.deleteContact({recordID: 1}, (err, recordId) => {
   if (err) throw err;
   // contact deleted
 })

@@ -7,8 +7,8 @@ declare module 'react-native-contacts' {
   export function updateContact(contact: Contact, callback: (error?: any) => void): void;
   export function deleteContact(contact: Contact, callback: (error?: any) => void): void;
   export function getContactsMatchingString(str: string, callback: (error: any, contacts: Contact[]) => void): void;
-  export function checkPermission(callback: (error: any, result: 'authorized' | 'denied') => void): void;
-  export function requestPermission(callback: (error: any, result: 'authorized' | 'denied') => void): void;
+  export function checkPermission(callback: (error: any, result: 'authorized' | 'denied' | 'undefined') => void): void;
+  export function requestPermission(callback: (error: any, result: 'authorized' | 'denied' | 'undefined') => void): void;
 
   export interface EmailAddress {
       label: string;
@@ -32,13 +32,13 @@ declare module 'react-native-contacts' {
       postCode: string;
       country: string;
   }
-  
+
   export interface Birthday {
-      day: Number;
-	  month: Number;
-	  year: Number;
+      day: number;
+      month: number;
+      year: number;
   }
-  
+
   export interface Contact {
       recordID: string;
       company: string;
@@ -54,6 +54,6 @@ declare module 'react-native-contacts' {
       prefix: string;
       suffix: string;
       department: string;
-	  birthday: Birthday;
+      birthday: Birthday;
   }
 }

@@ -9,7 +9,7 @@ var Contacts = require('react-native-contacts')
 
 Contacts.getAll((err, contacts) => {
   if (err) throw err;
-  
+
   // contacts returned
   console.log(contacts)
 })
@@ -22,7 +22,7 @@ var Contacts = require('react-native-contacts')
 
 Contacts.getContactsMatchingString("filter", (err, contacts) => {
   if (err) throw err;
-  
+
   // contacts matching "filter"
   console.log(contacts)
 })
@@ -35,7 +35,7 @@ run:
 
     npm install react-native-contacts
     react-native link react-native-contacts
-    
+
 or if you use yarn:
 
     yarn add react-native-contacts
@@ -47,7 +47,7 @@ or if you use yarn:
 1. add ./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj
 1. In the XCode project navigator, select your project, select the Build Phases tab and in the Link Binary With Libraries section add libRCTContacts.a
 
-### iOS Permissions 
+### iOS Permissions
 
 As of Xcode 8 and React Native 0.33 it is now **necessary to add kit specific "permission" keys** to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission. I discovered this after days of frustration.
 
@@ -57,8 +57,9 @@ You have to add the key "Privacy - Contacts Usage Description".
 
 <img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
-### Android Permissions 
-Android requires allowing permsssions with https://facebook.github.io/react-native/docs/permissionsandroid.html
+### Android Permissions
+Android requires allowing permissions with https://facebook.github.io/react-native/docs/permissionsandroid.html
+The `READ_CONTACTS` permission is automatically added to the `AndroidManifest.xml`, so you just need request it. If your app also needs to create contacts, don't forget to add `WRITE_CONTACTS` permission to the manifest and request it at runtime. 
 
 ## API
  * `getAll` (callback) - returns *all* contacts as an array of objects
@@ -71,7 +72,7 @@ Android requires allowing permsssions with https://facebook.github.io/react-nati
  * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
  * `checkPermission` (callback) - checks permission to access Contacts _ios only_
  * `requestPermission` (callback) - request permission to access Contacts _ios only_
- 
+
 Callbacks follow node-style:
 ```sh
 callback <Function>
@@ -157,7 +158,7 @@ Example
 ```js
 Contacts.getAll((err, contacts) => {
   if (err) throw err;
-  
+
   // update the first record
   let someRecord = contacts[0]
   someRecord.emailAddresses.push({
@@ -202,7 +203,7 @@ Usage as follows:
 ```js
 Contacts.checkPermission((err, permission) => {
   if (err) throw err;
-  
+
   // Contacts.PERMISSION_AUTHORIZED || Contacts.PERMISSION_UNDEFINED || Contacts.PERMISSION_DENIED
   if (permission === 'undefined') {
     Contacts.requestPermission((err, permission) => {

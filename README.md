@@ -28,24 +28,27 @@ Contacts.getContactsMatchingString("filter", (err, contacts) => {
 })
 ```
 ## Installation
-
-
-### With React Native Link
-run:
+### React Native Link
+with npm
 
     npm install react-native-contacts
-    react-native link react-native-contacts
-
-or if you use yarn:
+with yarn
 
     yarn add react-native-contacts
+and then do
+
     react-native link react-native-contacts
+if you get an error about
+`import Contacts from "react-native-contacts"; is undefined.` try manual linking
+below
 
 ### Manual installation
 
-1. In XCode, in the project navigator, right click Libraries ➜ Add Files to [your project's name]
-1. add ./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj
-1. In the XCode project navigator, select your project, select the Build Phases tab and in the Link Binary With Libraries section add libRCTContacts.a
+1. In XCode, in the project navigator, right click Libraries `Add Files to [your project's name]`
+1. add `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj`
+1. In the XCode project navigator, select your project,
+select the `Build Phases` tab and in the `Link Binary With Libraries` section
+add `libRCTContacts.a`
 
 ### iOS Permissions
 

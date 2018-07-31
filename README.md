@@ -4,8 +4,8 @@ To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
 
-```js
-var Contacts = require('react-native-contacts')
+```es
+import Contacts from 'react-native-contacts';
 
 Contacts.getAll((err, contacts) => {
   if (err) throw err;
@@ -17,8 +17,8 @@ Contacts.getAll((err, contacts) => {
 
 `getContactMatchingString` is meant to alleviate the amount of time it takes to get all contacts, by filtering on the native side based on a string.
 
-```js
-var Contacts = require('react-native-contacts')
+```es
+import Contacts from 'react-native-contacts';
 
 Contacts.getContactsMatchingString("filter", (err, contacts) => {
   if (err) throw err;
@@ -39,7 +39,7 @@ and then do
 
     react-native link react-native-contacts
 if you get an error about
-`import Contacts from "react-native-contacts"; is undefined.` try manual linking
+`import Contacts from 'react-native-contacts'; is undefined.` try manual linking
 below
 
 ### Manual installation
@@ -84,7 +84,7 @@ callback <Function>
 ```
 
 ## Example Contact Record
-```js
+```es
 {
   recordID: '6b2237ee0df85980',
   company: "",
@@ -121,7 +121,7 @@ callback <Function>
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing
-```js
+```es
 var newPerson = {
   emailAddresses: [{
     label: "work",
@@ -139,7 +139,7 @@ Contacts.addContact(newPerson, (err) => {
 
 ## Open Contact Form
 Currently all fields from the contact record except for thumbnailPath are supported for writing
-```js
+```es
 var newPerson = {
   emailAddresses: [{
     label: "work",
@@ -158,7 +158,7 @@ You may want to edit the contact before saving it into your phone book. So using
 
 ## Updating and Deleting Contacts
 Example
-```js
+```es
 Contacts.getAll((err, contacts) => {
   if (err) throw err;
 
@@ -194,7 +194,7 @@ Contacts.deleteContact({recordID: 1}, (err, recordId) => {
 
 The thumbnailPath is the direct URI for the temp location of the contact's cropped thumbnail image.
 
-```js
+```es
 <Image source={{uri: contact.thumbnailPath}} />
 ```
 
@@ -203,7 +203,7 @@ The thumbnailPath is the direct URI for the temp location of the contact's cropp
 `requestPermission` (callback) - request permission to access Contacts.  
 
 Usage as follows:
-```js
+```es
 Contacts.checkPermission((err, permission) => {
   if (err) throw err;
 

@@ -4,11 +4,18 @@
 #import <Contacts/Contacts.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
+NSString *const RCTContactsChanged = @"ContactsChanged";
+
 @implementation RCTContacts {
     CNContactStore * contactStore;
 }
 
 RCT_EXPORT_MODULE();
+
+- (NSArray<NSString *> *)supportedEvents
+{
+    return @[@"ContactsChanged"];
+}
 
 - (NSDictionary *)constantsToExport
 {
@@ -18,6 +25,29 @@ RCT_EXPORT_MODULE();
              @"PERMISSION_UNDEFINED": @"undefined"
              };
 }
+
+- (void)userContactsChange:(NSNotification*)note
+{
+     NSLog(@"Change in contacts!");
+     [self sendEventWithName:@"ContactsChanged" body:nil];
+}
+
+RCT_EXPORT_METHOD(subscribeToUpdates:(RCTResponseSenderBlock) callback)
+{
+    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
+    if (authStatus == CNAuthorizationStatusAuthorized) {
+        callback(@[[NSNull null], @"authorized"]);
+        NSLog(@"RCTContacts: subscribe to contact updates");
+        contactStore = [[CNContactStore alloc] init];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+            selector:@selector(userContactsChange:)
+            name:CNContactStoreDidChangeNotification object:nil];
+
+    } else {
+        callback(@[[NSNull null], @"unathorized"]);
+    }
+}
+
 
 RCT_EXPORT_METHOD(checkPermission:(RCTResponseSenderBlock) callback)
 {

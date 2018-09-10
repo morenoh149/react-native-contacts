@@ -63,6 +63,8 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResp
                       CNContactOrganizationNameKey,
                       CNContactJobTitleKey,
                       CNContactImageDataAvailableKey,
+                      CNContactNoteKey,
+                      CNSocialProfileURLStringKey,
                       CNContactBirthdayKey
                       ];
     NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingName:searchString]
@@ -143,6 +145,8 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     NSString *middleName = person.middleName;
     NSString *company = person.organizationName;
     NSString *jobTitle = person.jobTitle;
+    NSString *note = person.note;
+    NSString *url = person.url;
     NSDateComponents *birthday = person.birthday;
     
     [output setObject:recordID forKey: @"recordID"];
@@ -167,7 +171,14 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         [output setObject: (jobTitle) ? jobTitle : @"" forKey:@"jobTitle"];
     }
 
-    
+    if(note){
+        [output setObject: (note) ? note : @"" forKey:@"note"];
+    }
+
+    if(url){
+        [output setObject: (url) ? url : @"" forKey:@"url"];
+    }
+
     if (birthday) {
         if (birthday.month != NSDateComponentUndefined && birthday.day != NSDateComponentUndefined) {
             //months are indexed to 0 in JavaScript (0 = January) so we subtract 1 from NSDateComponents.month
@@ -425,6 +436,8 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
                              CNContactImageDataAvailableKey,
                              CNContactThumbnailImageDataKey,
                              CNContactImageDataKey,
+                             CNContactNoteKey,
+                             CNSocialProfileURLStringKey,
                              CNContactBirthdayKey
                              ];
 
@@ -452,6 +465,8 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     NSString *middleName = [contactData valueForKey:@"middleName"];
     NSString *company = [contactData valueForKey:@"company"];
     NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
+    NSString *note = [contactData valueForKey:@"note"];
+    NSString *url = [contactData valueForKey:@"url"];
     NSDictionary *birthday = [contactData valueForKey:@"birthday"];
     
     contact.givenName = givenName;
@@ -459,6 +474,8 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     contact.middleName = middleName;
     contact.organizationName = company;
     contact.jobTitle = jobTitle;
+    contact.note = note;
+    contact.url = url;
     
     if (birthday) {
         NSDateComponents *components;

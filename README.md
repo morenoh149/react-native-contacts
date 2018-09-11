@@ -1,6 +1,8 @@
 # React Native Contacts
 To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
 
+Ask questions on [stackoverflow](https://stackoverflow.com/questions/tagged/react-native-contacts) not the issue tracker.
+
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
 

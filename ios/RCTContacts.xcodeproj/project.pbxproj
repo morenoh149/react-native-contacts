@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		144161911BD0A79300FA4F59 /* RCTContacts.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 144161901BD0A79300FA4F59 /* RCTContacts.h */; };
-		144161931BD0A79300FA4F59 /* RCTContacts.m in Sources */ = {isa = PBXBuildFile; fileRef = 144161921BD0A79300FA4F59 /* RCTContacts.m */; };
+		B63FC3151FEA3AD20051B2A4 /* RCTContacts.m in Sources */ = {isa = PBXBuildFile; fileRef = B63FC3141FEA3AD20051B2A4 /* RCTContacts.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -18,7 +17,6 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				144161911BD0A79300FA4F59 /* RCTContacts.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -26,8 +24,8 @@
 
 /* Begin PBXFileReference section */
 		1441618E1BD0A79300FA4F59 /* libRCTContacts.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRCTContacts.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		144161901BD0A79300FA4F59 /* RCTContacts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTContacts.h; sourceTree = "<group>"; };
-		144161921BD0A79300FA4F59 /* RCTContacts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTContacts.m; sourceTree = "<group>"; };
+		B63FC3131FEA3AD20051B2A4 /* RCTContacts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTContacts.h; sourceTree = "<group>"; };
+		B63FC3141FEA3AD20051B2A4 /* RCTContacts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTContacts.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,8 +42,8 @@
 		1441618F1BD0A79300FA4F59 /* RCTContacts */ = {
 			isa = PBXGroup;
 			children = (
-				144161901BD0A79300FA4F59 /* RCTContacts.h */,
-				144161921BD0A79300FA4F59 /* RCTContacts.m */,
+				B63FC3131FEA3AD20051B2A4 /* RCTContacts.h */,
+				B63FC3141FEA3AD20051B2A4 /* RCTContacts.m */,
 			);
 			path = RCTContacts;
 			sourceTree = "<group>";
@@ -122,7 +120,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				144161931BD0A79300FA4F59 /* RCTContacts.m in Sources */,
+				B63FC3151FEA3AD20051B2A4 /* RCTContacts.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -138,6 +136,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/../../../React/**",
 					"$(SRCROOT)/../../react-native/React/**",
+					"$(BUILT_PRODUCTS_DIR)",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -152,6 +151,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/../../../React/**",
 					"$(SRCROOT)/../../react-native/React/**",
+					"$(BUILT_PRODUCTS_DIR)",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -68,3 +68,4 @@ fabric.properties
 /.gitignore
 
 .gradle
+.project

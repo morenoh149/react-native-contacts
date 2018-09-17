@@ -12,6 +12,7 @@ Pod::Spec.new do |s|
   s.platform       = :ios, "9.0"
   s.source         = { :git => package_json["repository"]["url"] }
   s.source_files   = 'ios/RCTContacts/*.{h,m}'
+
   s.dependency 'React'
 
 end

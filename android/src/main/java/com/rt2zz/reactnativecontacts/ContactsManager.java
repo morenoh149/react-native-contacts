@@ -478,11 +478,10 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void updateContact(ReadableMap contact, Callback callback) {
-        String rawContactID = contact.hasKey("rawContactID") ? contact.getString("rawContactID") : null;
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
         String rawContactId = contact.hasKey("rawContactId") ? contact.getString("rawContactId") : null;
 
-        if (rawContactID == null || recordID == null) {
+        if (rawContactId == null || recordID == null) {
             callback.invoke("Invalid recordId or rawContactId");
             return;
         }

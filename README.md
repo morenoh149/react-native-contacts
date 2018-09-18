@@ -228,6 +228,22 @@ These methods are only useful on iOS. For Android you'll have to use https://fac
 
 These methods do **not** re-request permission if permission has already been granted or denied. This is a limitation in iOS, the best you can do is prompt the user with instructions for how to enable contacts from the phone settings page `Settings > [app name] > contacts`.
 
+<h2 align="center">Maintainers</h2>
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center">
+        <a href="https://github.com/morenoh149">
+          <img width="150" height="150" src="https://github.com/morenoh149.png?size=150">
+          </br>
+          Harry Moreno
+        </a>
+      </td>
+    </tr>
+  <tbody>
+</table>
+
 ## LICENSE
 
 [MIT License](LICENSE)

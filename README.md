@@ -48,11 +48,53 @@ below
 
 ### Manual installation
 
+## iOS
+
 1. In XCode, in the project navigator, right click Libraries `Add Files to [your project's name]`
 1. add `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj`
 1. In the XCode project navigator, select your project,
 select the `Build Phases` tab and in the `Link Binary With Libraries` section
 add `libRCTContacts.a`
+
+## Android
+1. In `android/settings.gradle`
+
+```gradle
+...
+include ':react-native-contacts'
+project(':react-native-contacts').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-contacts/android')
+```
+
+3. In `android/app/build.gradle`
+
+```gradle
+...
+dependencies {
+    ...
+    implementation project(':react-native-contacts')
+}
+```
+
+4. register module (in MainApplication.java)
+
+```java
+import com.rt2zz.reactnativecontacts.ReactNativeContacts; // <--- import
+
+public class MainActivity extends ReactActivity {
+  ......
+
+  @Override
+  protected List<ReactPackage> getPackages() {
+    return Arrays.<ReactPackage>asList(
+            new MainReactPackage(),
+            new ReactNativeContacts()); // <------ add this
+  }
+
+  ......
+
+}
+
+```
 
 ### iOS Permissions
 

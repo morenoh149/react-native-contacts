@@ -32,7 +32,7 @@ Contacts.getContactsMatchingString("filter", (err, contacts) => {
 ## Installation
 To use this module you have to install it and configure the permissions. Please read this entire section.
 
-### React Native Link
+### Automatic
 with npm
 
     npm install react-native-contacts
@@ -46,9 +46,8 @@ if you get an error about
 `import Contacts from 'react-native-contacts'; is undefined.` try manual linking
 below
 
-### Manual installation
-
-## iOS
+### Manual
+#### iOS
 
 1. In XCode, in the project navigator, right click Libraries `Add Files to [your project's name]`
 1. add `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj`
@@ -56,7 +55,7 @@ below
 select the `Build Phases` tab and in the `Link Binary With Libraries` section
 add `libRCTContacts.a`
 
-## Android
+#### Android
 1. In `android/settings.gradle`
 
 ```gradle
@@ -95,8 +94,8 @@ public class MainActivity extends ReactActivity {
 }
 
 ```
-
-### iOS Permissions
+### Permissions
+#### iOS
 
 Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission.
 
@@ -104,7 +103,7 @@ Open Xcode > open ios/yourApp.xcodeproj > Info.plist > Add key `Privacy - Contac
 
 <img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
-### Android Permissions
+#### Android
 Android requires allowing permissions with https://facebook.github.io/react-native/docs/permissionsandroid.html
 The `READ_CONTACTS` permission is automatically added to the `AndroidManifest.xml`, so you just need request it. If your app also needs to create contacts, don't forget to add `WRITE_CONTACTS` permission to the manifest and request it at runtime. 
 

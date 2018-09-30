@@ -175,6 +175,17 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             }
         }
 
+        ReadableArray urlAddresses = contact.hasKey("urlAddresses") ? contact.getArray("urlAddresses") : null;
+        int numOfUrls = 0;
+        String[] urls = null;
+        if (urlAddresses != null) {
+            numOfUrls = urlAddresses.size();
+            urls = new String[numOfUrls];
+            for (int i = 0; i < numOfUrls; i++) {
+                urls[i] = urlAddresses.getMap(i).getString("url");
+            }
+        }
+
         ReadableArray emailAddresses = contact.hasKey("emailAddresses") ? contact.getArray("emailAddresses") : null;
         int numOfEmails = 0;
         String[] emails = null;
@@ -237,6 +248,13 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         organization.put(Organization.DEPARTMENT, department);
         contactData.add(organization);
 
+        for (int i = 0; i < numOfUrls; i++) {
+            ContentValues url = new ContentValues();
+            url.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            url.put(CommonDataKinds.Website.URL, urls[i]);
+            contactData.add(url);
+        }
+
         for (int i = 0; i < numOfEmails; i++) {
             ContentValues email = new ContentValues();
             email.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE);
@@ -291,7 +309,6 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
         String note = contact.hasKey("note") ? contact.getString("note") : null;
-        String url = contact.hasKey("url") ? contact.getString("url") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
@@ -306,6 +323,17 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 phones[i] = phoneNumbers.getMap(i).getString("number");
                 String label = phoneNumbers.getMap(i).getString("label");
                 phonesLabels[i] = mapStringToPhoneType(label);
+            }
+        }
+
+        ReadableArray urlAddresses = contact.hasKey("urlAddresses") ? contact.getArray("urlAddresses") : null;
+        int numOfUrls = 0;
+        String[] urls = null;
+        if (urlAddresses != null) {
+            numOfUrls = urlAddresses.size();
+            urls = new String[numOfUrls];
+            for (int i = 0; i < numOfUrls; i++) {
+                urls[i] = urlAddresses.getMap(i).getString("url");
             }
         }
 
@@ -341,17 +369,11 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 .withValue(StructuredName.PREFIX, prefix)
                 .withValue(StructuredName.SUFFIX, suffix);
         ops.add(op.build());
- 
+        
         op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                 .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                 .withValue(ContactsContract.Data.MIMETYPE, Note.CONTENT_ITEM_TYPE)
                 .withValue(ContactsContract.CommonDataKinds.Note.NOTE, note);
-        ops.add(op.build());
-
-        op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                .withValue(ContactsContract.Data.MIMETYPE, Website.CONTENT_ITEM_TYPE)
-                .withValue(ContactsContract.CommonDataKinds.Website.URL, url);
         ops.add(op.build());
 
         op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
@@ -371,6 +393,14 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
                     .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+            ops.add(op.build());
+        }
+
+        for (int i = 0; i < numOfUrls; i++) {
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Website.CONTENT_ITEM_TYPE)
+                    .withValue(CommonDataKinds.Website.URL, urls[i]);
             ops.add(op.build());
         }
 
@@ -457,7 +487,6 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
         String note = contact.hasKey("note") ? contact.getString("note") : null;
-        String url = contact.hasKey("url") ? contact.getString("url") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
@@ -478,6 +507,22 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 phones[i] = phoneNumber;
                 phonesLabels[i] = mapStringToPhoneType(phoneLabel);
                 phoneIds[i] = phoneId;
+            }
+        }
+
+        ReadableArray urlAddresses = contact.hasKey("urlAddresses") ? contact.getArray("urlAddresses") : null;
+        int numOfUrls = 0;
+        String[] urls = null;
+        String[] urlIds = null;
+
+        if (urlAddresses != null) {
+            numOfUrls = urlAddresses.size();
+            urls = new String[numOfUrls];
+            urlIds = new String[numOfUrls];
+            for (int i = 0; i < numOfUrls; i++) {
+                ReadableMap urlMap = urlAddresses.getMap(i);
+                urls[i] = urlMap.getString("url");
+                urlIds[i] = urlMap.hasKey("id") ? urlMap.getString("id") : null;
             }
         }
 
@@ -540,6 +585,20 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                         .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(phoneIds[i])})
                         .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
                         .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+            }
+            ops.add(op.build());
+        }
+
+        for (int i = 0; i < numOfUrls; i++) {
+            if (urlIds[i] == null) {
+                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Website.CONTENT_ITEM_TYPE)
+                        .withValue(CommonDataKinds.Website.URL, urls[i]);
+            } else {
+                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(urlIds[i])})
+                        .withValue(CommonDataKinds.Website.URL, urls[i]);
             }
             ops.add(op.build());
         }

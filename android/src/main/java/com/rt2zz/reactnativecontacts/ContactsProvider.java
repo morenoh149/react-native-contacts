@@ -312,6 +312,11 @@ public class ContactsProvider {
                     }
                     contact.phones.add(new Contact.Item(label, phoneNumber, id));
                 }
+            } else if (mimeType.equals(Website.CONTENT_ITEM_TYPE)) {
+                String url = cursor.getString(cursor.getColumnIndex(Website.URL));
+                if (!TextUtils.isEmpty(url)) {
+                    contact.urls.add(new Contact.Item(id, url));
+                }
             } else if (mimeType.equals(Email.CONTENT_ITEM_TYPE)) {
                 String email = cursor.getString(cursor.getColumnIndex(Email.ADDRESS));
                 int type = cursor.getInt(cursor.getColumnIndex(Email.TYPE));
@@ -347,8 +352,6 @@ public class ContactsProvider {
                 contact.postalAddresses.add(new Contact.PostalAddressItem(cursor));
             } else if (mimeType.equals(Note.CONTENT_ITEM_TYPE)) {
                 contact.note = cursor.getString(cursor.getColumnIndex(Note.NOTE));
-            } else if (mimeType.equals(Website.CONTENT_ITEM_TYPE)) {
-                contact.url = cursor.getString(cursor.getColumnIndex(Website.URL));
             }else if (mimeType.equals(Event.CONTENT_ITEM_TYPE)) {
                 int eventType = cursor.getInt(cursor.getColumnIndex(Event.TYPE));
                 if (eventType == Event.TYPE_BIRTHDAY) {
@@ -421,7 +424,7 @@ public class ContactsProvider {
         private String jobTitle = "";
         private String department = "";
         private String note ="";
-        private String url ="";
+        private List<Item> urls = new ArrayList<>();
         private boolean hasPhoto = false;
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
@@ -447,7 +450,6 @@ public class ContactsProvider {
             contact.putString("jobTitle", jobTitle);
             contact.putString("department", department);
             contact.putString("note", note);
-            contact.putString("url", url);
             contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
 
@@ -460,6 +462,15 @@ public class ContactsProvider {
                 phoneNumbers.pushMap(map);
             }
             contact.putArray("phoneNumbers", phoneNumbers);
+
+            WritableArray urlAddresses = Arguments.createArray();
+            for (Item item : urls) {
+                WritableMap map = Arguments.createMap();
+                map.putString("url", item.value);
+                map.putString("id", item.id);
+                urlAddresses.pushMap(map);
+            }
+            contact.putArray("urlAddresses", urlAddresses);
 
             WritableArray emailAddresses = Arguments.createArray();
             for (Item item : emails) {

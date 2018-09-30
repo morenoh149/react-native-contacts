@@ -96,7 +96,10 @@ callback <Function>
   givenName: "Carl",
   jobTitle: "",
   note: 'some text',
-  url: 'www.jung.com',
+  urlAddresses: [{
+    label: "home",
+    url: "www.jung.com",
+  }],
   middleName: "",
   phoneNumbers: [{
     label: "mobile",

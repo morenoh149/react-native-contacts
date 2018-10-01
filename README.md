@@ -138,6 +138,11 @@ callback <Function>
   familyName: "Jung",
   givenName: "Carl",
   jobTitle: "",
+  note: 'some text',
+  urlAddresses: [{
+    label: "home",
+    url: "www.jung.com",
+  }],
   middleName: "",
   phoneNumbers: [{
     label: "mobile",

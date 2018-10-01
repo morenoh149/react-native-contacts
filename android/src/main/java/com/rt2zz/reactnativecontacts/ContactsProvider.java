@@ -24,6 +24,8 @@ import static android.provider.ContactsContract.CommonDataKinds.Event;
 import static android.provider.ContactsContract.CommonDataKinds.Organization;
 import static android.provider.ContactsContract.CommonDataKinds.Phone;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
+import static android.provider.ContactsContract.CommonDataKinds.Note;
+import static android.provider.ContactsContract.CommonDataKinds.Website;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
 public class ContactsProvider {
@@ -63,6 +65,8 @@ public class ContactsProvider {
         add(StructuredPostal.REGION);
         add(StructuredPostal.POSTCODE);
         add(StructuredPostal.COUNTRY);
+        add(Note.NOTE);
+        add(Website.URL);
         add(Event.START_DATE);
         add(Event.TYPE);
     }};
@@ -189,8 +193,22 @@ public class ContactsProvider {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
-                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE, Event.CONTENT_ITEM_TYPE},
+                    ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=?",
+                    new String[]{
+                        Email.CONTENT_ITEM_TYPE,
+                        Phone.CONTENT_ITEM_TYPE,
+                        StructuredName.CONTENT_ITEM_TYPE,
+                        Organization.CONTENT_ITEM_TYPE,
+                        StructuredPostal.CONTENT_ITEM_TYPE,
+                        Note.CONTENT_ITEM_TYPE,
+                        Website.CONTENT_ITEM_TYPE,
+                    },
                     null
             );
 
@@ -294,6 +312,11 @@ public class ContactsProvider {
                     }
                     contact.phones.add(new Contact.Item(label, phoneNumber, id));
                 }
+            } else if (mimeType.equals(Website.CONTENT_ITEM_TYPE)) {
+                String url = cursor.getString(cursor.getColumnIndex(Website.URL));
+                if (!TextUtils.isEmpty(url)) {
+                    contact.urls.add(new Contact.Item(id, url));
+                }
             } else if (mimeType.equals(Email.CONTENT_ITEM_TYPE)) {
                 String email = cursor.getString(cursor.getColumnIndex(Email.ADDRESS));
                 int type = cursor.getInt(cursor.getColumnIndex(Email.TYPE));
@@ -327,7 +350,9 @@ public class ContactsProvider {
                 contact.department = cursor.getString(cursor.getColumnIndex(Organization.DEPARTMENT));
             } else if (mimeType.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
                 contact.postalAddresses.add(new Contact.PostalAddressItem(cursor));
-            } else if (mimeType.equals(Event.CONTENT_ITEM_TYPE)) {
+            } else if (mimeType.equals(Note.CONTENT_ITEM_TYPE)) {
+                contact.note = cursor.getString(cursor.getColumnIndex(Note.NOTE));
+            }else if (mimeType.equals(Event.CONTENT_ITEM_TYPE)) {
                 int eventType = cursor.getInt(cursor.getColumnIndex(Event.TYPE));
                 if (eventType == Event.TYPE_BIRTHDAY) {
                     try {
@@ -398,6 +423,8 @@ public class ContactsProvider {
         private String company = "";
         private String jobTitle = "";
         private String department = "";
+        private String note ="";
+        private List<Item> urls = new ArrayList<>();
         private boolean hasPhoto = false;
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
@@ -422,6 +449,7 @@ public class ContactsProvider {
             contact.putString("company", company);
             contact.putString("jobTitle", jobTitle);
             contact.putString("department", department);
+            contact.putString("note", note);
             contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
 
@@ -434,6 +462,15 @@ public class ContactsProvider {
                 phoneNumbers.pushMap(map);
             }
             contact.putArray("phoneNumbers", phoneNumbers);
+
+            WritableArray urlAddresses = Arguments.createArray();
+            for (Item item : urls) {
+                WritableMap map = Arguments.createMap();
+                map.putString("url", item.value);
+                map.putString("id", item.id);
+                urlAddresses.pushMap(map);
+            }
+            contact.putArray("urlAddresses", urlAddresses);
 
             WritableArray emailAddresses = Arguments.createArray();
             for (Item item : emails) {

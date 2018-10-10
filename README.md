@@ -35,13 +35,15 @@ To use this module you have to install it and configure the permissions. Please 
 ### Automatic
 with npm
 
-    npm install react-native-contacts
+    npm install react-native-contacts --save
+_the `--save` is necessary for [automatic linking](https://facebook.github.io/react-native/docs/linking-libraries-ios.html#automatic-linking)_
+
 with yarn
 
     yarn add react-native-contacts
 and then do
 
-    react-native link react-native-contacts
+    react-native link
 if you get an error about
 `import Contacts from 'react-native-contacts'; is undefined.` try manual linking
 below

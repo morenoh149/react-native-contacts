@@ -44,9 +44,11 @@ with yarn
 and then do
 
     react-native link
-if you get an error about
+If you get an error about
 `import Contacts from 'react-native-contacts'; is undefined.` try manual linking
-below
+below.  
+
+Also, supporting older versions of Android (API level <= 22) requires extra permissions; see the [Android permissions](#android-1) section.
 
 ### Manual
 #### iOS
@@ -107,7 +109,9 @@ Open Xcode > open ios/yourApp.xcodeproj > Info.plist > Add key `Privacy - Contac
 
 #### Android
 Android requires allowing permissions with https://facebook.github.io/react-native/docs/permissionsandroid.html
-The `READ_CONTACTS` permission is automatically added to the `AndroidManifest.xml`, so you just need request it. If your app also needs to create contacts, don't forget to add `WRITE_CONTACTS` permission to the manifest and request it at runtime. 
+The `READ_CONTACTS` permission is automatically added to the `AndroidManifest.xml`, so you just need request it. If your app also needs to create contacts, don't forget to add `WRITE_CONTACTS` permission to the manifest and request it at runtime.  
+
+If you wish to support older versions of Android (API level <= 22), you may need to add `READ_PROFILE` and/or `WRITE_PROFILE` permissions as well to `AndroidManifest.xml` ([#331](https://github.com/rt2zz/react-native-contacts/issues/331)).
 
 ## API
  * `getAll` (callback) - returns *all* contacts as an array of objects

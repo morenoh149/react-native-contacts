@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/rt2zz/react-native-contacts.git"
   },
-  "version": "2.2.4",
+  "version": "2.2.5",
   "description": "React Native Contacts (android & ios)",
   "nativePackage": true,
   "keywords": [

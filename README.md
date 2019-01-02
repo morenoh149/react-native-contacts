@@ -108,10 +108,22 @@ Open Xcode > open ios/yourApp.xcodeproj > Info.plist > Add key `Privacy - Contac
 <img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
 #### Android
+##### API 23+
 Android requires allowing permissions with https://facebook.github.io/react-native/docs/permissionsandroid.html
-The `READ_CONTACTS` permission is automatically added to the `AndroidManifest.xml`, so you just need request it. If your app also needs to create contacts, don't forget to add `WRITE_CONTACTS` permission to the manifest and request it at runtime.  
+The `READ_CONTACTS` permission is automatically added to `AndroidManifest.xml`, so you just need request it. If your app creates contacts add `WRITE_CONTACTS` permission to `AndroidManifest.xml` and request the permission at runtime.
+```xml
+...
+<uses-permission android:name="android.permission.WRITE_CONTACTS" />
+...
+```
 
-If you wish to support older versions of Android (API level <= 22), you may need to add `READ_PROFILE` and/or `WRITE_PROFILE` permissions as well to `AndroidManifest.xml` ([#331](https://github.com/rt2zz/react-native-contacts/issues/331)).
+##### API 22 and below
+Add `READ_PROFILE` and/or `WRITE_PROFILE` permissions to `AndroidManifest.xml`
+```xml
+...
+<uses-permission android:name="android.permission.READ_PROFILE" />
+...
+```
 
 ## API
  * `getAll` (callback) - returns *all* contacts as an array of objects

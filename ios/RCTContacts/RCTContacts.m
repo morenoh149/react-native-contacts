@@ -5,6 +5,8 @@
 
 @implementation RCTContacts {
     CNContactStore * contactStore;
+    
+    RCTResponseSenderBlock updateContactCallback;
 }
 
 RCT_EXPORT_MODULE();
@@ -390,19 +392,66 @@ RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTRespo
 
     dispatch_async(dispatch_get_main_queue(), ^{
         UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
-        UINavigationController *viewController = (UINavigationController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
         [viewController presentViewController:navigation animated:YES completion:nil];
 
-        NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:false];
-
-        callback(@[[NSNull null], contactDict]);
+        updateContactCallback = callback;
     });
+}
 
+RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
+{
+    if(!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+    
+    NSString* recordID = [contactData valueForKey:@"recordID"];
+    
+    NSArray *keys = @[CNContactIdentifierKey,
+                      CNContactEmailAddressesKey,
+                      CNContactBirthdayKey,
+                      CNContactImageDataKey,
+                      CNContactPhoneNumbersKey,
+                      [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName],
+                      [CNContactViewController descriptorForRequiredKeys]];
+    
+    @try {
+        
+        CNContact *contact = [contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil];
+        CNContactViewController *controller = [CNContactViewController viewControllerForContact:contact];
+        
+        controller.delegate = self;
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // TODO: Change so this is not opened as a modal. We want the back button!
+            UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
+            UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+            [viewController presentViewController:navigation animated:YES completion:nil];
+            
+            updateContactCallback = callback;
+        });
+        
+    }
+    @catch (NSException *exception) {
+        callback(@[[exception description], [NSNull null]]);
+    }
 }
 
 //dismiss open contact page after done or cancel is clicked
 - (void)contactViewController:(CNContactViewController *)viewController didCompleteWithContact:(CNContact *)contact {
     [viewController dismissViewControllerAnimated:YES completion:nil];
+    
+    if(updateContactCallback) {
+        
+        if (contact) {
+            NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:false];
+            updateContactCallback(@[[NSNull null], contactDict]);
+        } else {
+            updateContactCallback(@[[NSNull null]]);
+        }
+        
+        updateContactCallback = nil;
+    }
 }
 
 RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)

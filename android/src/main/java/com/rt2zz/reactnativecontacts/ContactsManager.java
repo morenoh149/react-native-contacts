@@ -15,6 +15,7 @@ import android.graphics.BitmapFactory;
 import android.Manifest;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.Organization;
@@ -23,6 +24,7 @@ import android.provider.ContactsContract.RawContacts;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 
+import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -40,17 +42,22 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.util.Hashtable;
 
-public class ContactsManager extends ReactContextBaseJavaModule {
+public class ContactsManager extends ReactContextBaseJavaModule implements ActivityEventListener {
 
     private static final String PERMISSION_DENIED = "denied";
     private static final String PERMISSION_AUTHORIZED = "authorized";
     private static final String PERMISSION_READ_CONTACTS = Manifest.permission.READ_CONTACTS;
     private static final int PERMISSION_REQUEST_CODE = 888;
 
+    private static final int REQUEST_OPEN_CONTACT_FORM = 52941;
+    private static final int REQUEST_OPEN_EXISTING_CONTACT = 52942;
+
+    private static Callback updateContactCallback;
     private static Callback requestCallback;
 
     public ContactsManager(ReactApplicationContext reactContext) {
         super(reactContext);
+        reactContext.addActivityEventListener(this);
     }
 
     /*
@@ -281,12 +288,33 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
         Intent intent = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
         intent.putExtra(ContactsContract.Intents.Insert.NAME, displayName);
+        intent.putExtra("finishActivityOnSaveCompleted", true);
         intent.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, contactData);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        Context context = getReactApplicationContext();
-        context.startActivity(intent);
+        updateContactCallback = callback;
+        getReactApplicationContext().startActivityForResult(intent, REQUEST_OPEN_CONTACT_FORM, Bundle.EMPTY);
+    }
 
+    /*
+     * Open contact in native app
+     */
+    @ReactMethod
+    public void openExistingContact(ReadableMap contact, Callback callback) {
+
+        String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
+
+        try {
+            Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, recordID);
+            Intent intent = new Intent(Intent.ACTION_EDIT);
+            intent.setDataAndType(uri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
+            intent.putExtra("finishActivityOnSaveCompleted", true);
+
+            updateContactCallback = callback;
+            getReactApplicationContext().startActivityForResult(intent, REQUEST_OPEN_EXISTING_CONTACT, Bundle.EMPTY);
+
+        } catch (Exception e) {
+            callback.invoke(e.toString());
+        }
     }
 
     /*
@@ -840,4 +868,58 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     public String getName() {
         return "Contacts";
     }
+
+    /*
+     * Required for ActivityEventListener
+     */
+    @Override
+    public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+        if (requestCode != REQUEST_OPEN_CONTACT_FORM && requestCode != REQUEST_OPEN_EXISTING_CONTACT) {
+            return;
+        }
+
+        if (updateContactCallback == null) {
+            return;
+        }
+
+        if (resultCode != Activity.RESULT_OK) {
+            updateContactCallback.invoke(null, null); // user probably pressed cancel
+            updateContactCallback = null;
+            return;
+        }
+
+        if (data == null) {
+            updateContactCallback.invoke("No data", null);
+            updateContactCallback = null;
+            return;
+        }
+
+        try {
+            Uri contactUri = data.getData();
+
+            if (contactUri == null) {
+                updateContactCallback.invoke(null, null); // something was wrong
+                updateContactCallback = null;
+                return;
+            }
+
+            Context ctx = getReactApplicationContext();
+            ContentResolver cr = ctx.getContentResolver();
+            ContactsProvider contactsProvider = new ContactsProvider(cr);
+            WritableMap newlyModifiedContact = contactsProvider.getContactById(contactUri.getLastPathSegment());
+
+            updateContactCallback.invoke(null, newlyModifiedContact); // success
+        } catch (Exception e) {
+            updateContactCallback.invoke(e.getMessage(), null);
+        }
+        updateContactCallback = null;
+    }
+
+    /*
+     * Required for ActivityEventListener
+     */
+    @Override
+    public void onNewIntent(Intent intent) {
+    }
+
 }

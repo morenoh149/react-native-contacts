@@ -36,7 +36,9 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.Arguments;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.io.InputStream;
 import java.io.IOException;
@@ -146,6 +148,29 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
 
                 callback.invoke(null, photoUri);
+            }
+        });
+    }
+
+    @ReactMethod
+    public void writePhotoToPath(final String contactId, final String file, final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+
+                Uri uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, Long.parseLong(contactId));
+                try (InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(cr, uri)) {
+                    try (OutputStream outputStream = new FileOutputStream(file)) {
+                        BitmapFactory.decodeStream(inputStream).compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                        callback.invoke(null, true);
+                    } catch (IOException e) {
+                        callback.invoke(e.toString());
+                    }
+                } catch (IOException e) {
+                    callback.invoke(e.toString());
+                }
             }
         });
     }

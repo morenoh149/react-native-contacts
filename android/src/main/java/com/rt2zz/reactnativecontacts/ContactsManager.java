@@ -179,6 +179,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
+        String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -284,6 +285,19 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             //No state column in StructuredPostal
             //structuredPostal.put(CommonDataKinds.StructuredPostal.???, postalAddressesState[i]);
             contactData.add(structuredPostal);
+        }
+
+        if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
+            Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
+
+            if(photo != null) {
+                ContentValues thumbnail = new ContentValues();
+                thumbnail.put(ContactsContract.Data.RAW_CONTACT_ID, 0);
+                thumbnail.put(ContactsContract.Data.IS_SUPER_PRIMARY, 1);
+                thumbnail.put(ContactsContract.CommonDataKinds.Photo.PHOTO, toByteArray(photo));
+                thumbnail.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE );
+                contactData.add(thumbnail);
+            }
         }
 
         Intent intent = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);

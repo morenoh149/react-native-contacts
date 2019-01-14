@@ -444,7 +444,7 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
     if(updateContactCallback) {
         
         if (contact) {
-            NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:false];
+            NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:true];
             updateContactCallback(@[[NSNull null], contactDict]);
         } else {
             updateContactCallback(@[[NSNull null]]);

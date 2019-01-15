@@ -15,6 +15,7 @@ import android.graphics.BitmapFactory;
 import android.Manifest;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.Organization;
@@ -23,6 +24,7 @@ import android.provider.ContactsContract.RawContacts;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 
+import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -34,23 +36,30 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.Arguments;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.Hashtable;
 
-public class ContactsManager extends ReactContextBaseJavaModule {
+public class ContactsManager extends ReactContextBaseJavaModule implements ActivityEventListener {
 
     private static final String PERMISSION_DENIED = "denied";
     private static final String PERMISSION_AUTHORIZED = "authorized";
     private static final String PERMISSION_READ_CONTACTS = Manifest.permission.READ_CONTACTS;
     private static final int PERMISSION_REQUEST_CODE = 888;
 
+    private static final int REQUEST_OPEN_CONTACT_FORM = 52941;
+    private static final int REQUEST_OPEN_EXISTING_CONTACT = 52942;
+
+    private static Callback updateContactCallback;
     private static Callback requestCallback;
 
     public ContactsManager(ReactApplicationContext reactContext) {
         super(reactContext);
+        reactContext.addActivityEventListener(this);
     }
 
     /*
@@ -143,6 +152,29 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         });
     }
 
+    @ReactMethod
+    public void writePhotoToPath(final String contactId, final String file, final Callback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+
+                Uri uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, Long.parseLong(contactId));
+                try (InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(cr, uri)) {
+                    try (OutputStream outputStream = new FileOutputStream(file)) {
+                        BitmapFactory.decodeStream(inputStream).compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                        callback.invoke(null, true);
+                    } catch (IOException e) {
+                        callback.invoke(e.toString());
+                    }
+                } catch (IOException e) {
+                    callback.invoke(e.toString());
+                }
+            }
+        });
+    }
+
     private Bitmap getBitmapFromAsset(String filePath) {
         AssetManager assetManager = getReactApplicationContext().getAssets();
 
@@ -172,6 +204,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
+        String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -279,14 +312,48 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             contactData.add(structuredPostal);
         }
 
+        if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
+            Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
+
+            if(photo != null) {
+                ContentValues thumbnail = new ContentValues();
+                thumbnail.put(ContactsContract.Data.RAW_CONTACT_ID, 0);
+                thumbnail.put(ContactsContract.Data.IS_SUPER_PRIMARY, 1);
+                thumbnail.put(ContactsContract.CommonDataKinds.Photo.PHOTO, toByteArray(photo));
+                thumbnail.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE );
+                contactData.add(thumbnail);
+            }
+        }
+
         Intent intent = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
         intent.putExtra(ContactsContract.Intents.Insert.NAME, displayName);
+        intent.putExtra("finishActivityOnSaveCompleted", true);
         intent.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, contactData);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        Context context = getReactApplicationContext();
-        context.startActivity(intent);
+        updateContactCallback = callback;
+        getReactApplicationContext().startActivityForResult(intent, REQUEST_OPEN_CONTACT_FORM, Bundle.EMPTY);
+    }
 
+    /*
+     * Open contact in native app
+     */
+    @ReactMethod
+    public void openExistingContact(ReadableMap contact, Callback callback) {
+
+        String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
+
+        try {
+            Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, recordID);
+            Intent intent = new Intent(Intent.ACTION_EDIT);
+            intent.setDataAndType(uri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
+            intent.putExtra("finishActivityOnSaveCompleted", true);
+
+            updateContactCallback = callback;
+            getReactApplicationContext().startActivityForResult(intent, REQUEST_OPEN_EXISTING_CONTACT, Bundle.EMPTY);
+
+        } catch (Exception e) {
+            callback.invoke(e.toString());
+        }
     }
 
     /*
@@ -840,4 +907,58 @@ public class ContactsManager extends ReactContextBaseJavaModule {
     public String getName() {
         return "Contacts";
     }
+
+    /*
+     * Required for ActivityEventListener
+     */
+    @Override
+    public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+        if (requestCode != REQUEST_OPEN_CONTACT_FORM && requestCode != REQUEST_OPEN_EXISTING_CONTACT) {
+            return;
+        }
+
+        if (updateContactCallback == null) {
+            return;
+        }
+
+        if (resultCode != Activity.RESULT_OK) {
+            updateContactCallback.invoke(null, null); // user probably pressed cancel
+            updateContactCallback = null;
+            return;
+        }
+
+        if (data == null) {
+            updateContactCallback.invoke("Error received activity result with no data!", null);
+            updateContactCallback = null;
+            return;
+        }
+
+        try {
+            Uri contactUri = data.getData();
+
+            if (contactUri == null) {
+                updateContactCallback.invoke("Error wrong data. No content uri found!", null); // something was wrong
+                updateContactCallback = null;
+                return;
+            }
+
+            Context ctx = getReactApplicationContext();
+            ContentResolver cr = ctx.getContentResolver();
+            ContactsProvider contactsProvider = new ContactsProvider(cr);
+            WritableMap newlyModifiedContact = contactsProvider.getContactById(contactUri.getLastPathSegment());
+
+            updateContactCallback.invoke(null, newlyModifiedContact); // success
+        } catch (Exception e) {
+            updateContactCallback.invoke(e.getMessage(), null);
+        }
+        updateContactCallback = null;
+    }
+
+    /*
+     * Required for ActivityEventListener
+     */
+    @Override
+    public void onNewIntent(Intent intent) {
+    }
+
 }

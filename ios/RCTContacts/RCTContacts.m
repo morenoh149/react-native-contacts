@@ -5,8 +5,27 @@
 
 @implementation RCTContacts {
     CNContactStore * contactStore;
-    
+
     RCTResponseSenderBlock updateContactCallback;
+}
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        [self preLoadContactView];
+    }
+    return self;
+}
+
+- (void)preLoadContactView
+{
+    // Init the contactViewController so it will display quicker first time it's accessed
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        NSLog(@"Preloading CNContactViewController");
+        CNContactViewController *contactViewController = [CNContactViewController viewControllerForNewContact:nil];
+        [contactViewController view];
+    });
 }
 
 RCT_EXPORT_MODULE();
@@ -146,7 +165,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     NSString *company = person.organizationName;
     NSString *jobTitle = person.jobTitle;
     NSDateComponents *birthday = person.birthday;
-    
+
     [output setObject:recordID forKey: @"recordID"];
 
     if (givenName) {
@@ -169,7 +188,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         [output setObject: (jobTitle) ? jobTitle : @"" forKey:@"jobTitle"];
     }
 
-    
+
     if (birthday) {
         if (birthday.month != NSDateComponentUndefined && birthday.day != NSDateComponentUndefined) {
             //months are indexed to 0 in JavaScript (0 = January) so we subtract 1 from NSDateComponents.month
@@ -180,7 +199,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
             }
         }
     }
-    
+
     //handle phone numbers
     NSMutableArray *phoneNumbers = [[NSMutableArray alloc] init];
 
@@ -387,7 +406,7 @@ RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTRespo
     [self updateRecord:contact withData:contactData];
 
     CNContactViewController *controller = [CNContactViewController viewControllerForNewContact:contact];
-
+    
     controller.delegate = self;
 
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -404,9 +423,9 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
     if(!contactStore) {
         contactStore = [[CNContactStore alloc] init];
     }
-    
+
     NSString* recordID = [contactData valueForKey:@"recordID"];
-    
+
     NSArray *keys = @[CNContactIdentifierKey,
                       CNContactEmailAddressesKey,
                       CNContactBirthdayKey,
@@ -414,42 +433,82 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
                       CNContactPhoneNumbersKey,
                       [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName],
                       [CNContactViewController descriptorForRequiredKeys]];
-    
+
     @try {
-        
+
         CNContact *contact = [contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil];
-        CNContactViewController *controller = [CNContactViewController viewControllerForContact:contact];
-        
-        controller.delegate = self;
-        
+        CNContactViewController *contactViewController = [CNContactViewController viewControllerForContact:contact];
+
+        // Add a cancel button which will close the view
+        // TODO localize cancel button title (either through creating a localized strings file, or passing in the title)
+        contactViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Cancel" style:UIBarButtonItemStylePlain target:self action:@selector(cancelContactForm)];
+        contactViewController.delegate = self;
+
+
         dispatch_async(dispatch_get_main_queue(), ^{
-            // TODO: Change so this is not opened as a modal. We want the back button!
-            UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
-            UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
-            [viewController presentViewController:navigation animated:YES completion:nil];
-            
+            UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:contactViewController];
+            UIViewController *rooViewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+
+            // Cover the contact view with an activity indicator so we can put it in edit mode without user seeing the transition
+            UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+            activityIndicatorView.frame = UIScreen.mainScreen.applicationFrame;
+            [activityIndicatorView startAnimating];
+            activityIndicatorView.backgroundColor = [UIColor whiteColor];
+            [navigation.view addSubview:activityIndicatorView];
+
+            [rooViewController presentViewController:navigation animated:YES completion:nil];
+
+            // TODO should this 'fake click' method be used? For a brief instance
+            // Fake click edit button to enter edit mode
+            //                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            //                    SEL selector = contactViewController.navigationItem.rightBarButtonItem.action;
+            //                    NSLog(@"!!!!!!!!!!!!!!!!!! FAKE CLICK!!!  %@", NSStringFromSelector(selector));
+            //                    id  target = contactViewController.navigationItem.rightBarButtonItem.target;
+            //                    [target performSelector:selector];
+            //                });
+
+
+            // We need to wait for a short while otherwise contactViewController will not respond to the selector (it has not initialized)
+            [contactViewController performSelector:@selector(toggleEditing:) withObject:nil afterDelay:0.1];
+
+            // remove the activity indicator after a delay so the underlying transition will have time to complete
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [activityIndicatorView removeFromSuperview];
+            });
+
             updateContactCallback = callback;
         });
-        
+
     }
     @catch (NSException *exception) {
         callback(@[[exception description], [NSNull null]]);
     }
 }
 
+- (void)cancelContactForm
+{
+    if (updateContactCallback != nil) {
+        UIViewController *rootViewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        [rootViewController dismissViewControllerAnimated:YES completion:nil];
+
+        updateContactCallback(@[[NSNull null]]);
+        updateContactCallback = nil;
+    }
+}
+
 //dismiss open contact page after done or cancel is clicked
 - (void)contactViewController:(CNContactViewController *)viewController didCompleteWithContact:(CNContact *)contact {
     [viewController dismissViewControllerAnimated:YES completion:nil];
-    
+
     if(updateContactCallback) {
-        
+
         if (contact) {
             NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:true];
             updateContactCallback(@[[NSNull null], contactDict]);
         } else {
             updateContactCallback(@[[NSNull null]]);
         }
-        
+
         updateContactCallback = nil;
     }
 }
@@ -502,13 +561,13 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     NSString *company = [contactData valueForKey:@"company"];
     NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
     NSDictionary *birthday = [contactData valueForKey:@"birthday"];
-    
+
     contact.givenName = givenName;
     contact.familyName = familyName;
     contact.middleName = middleName;
     contact.organizationName = company;
     contact.jobTitle = jobTitle;
-    
+
     if (birthday) {
         NSDateComponents *components;
         if (contact.birthday != nil) {
@@ -527,7 +586,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 
         contact.birthday = components;
     }
-    
+
     NSMutableArray *phoneNumbers = [[NSMutableArray alloc]init];
 
     for (id phoneData in [contactData valueForKey:@"phoneNumbers"]) {
@@ -656,10 +715,10 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData callback:(RCTRespons
     NSString* recordID = [contactData valueForKey:@"recordID"];
 
     NSArray *keys = @[CNContactIdentifierKey];
-    
-    
+
+
     @try {
-        
+
         CNMutableContact *contact = [[contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil] mutableCopy];
         NSError *error;
         CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];

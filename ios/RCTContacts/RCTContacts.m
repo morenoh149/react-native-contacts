@@ -673,6 +673,11 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData callback:(RCTRespons
     }
 }
 
+RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) callback)
+{
+    callback(@[@"not implemented", [NSNull null]]);
+}
+
 -(CNContactStore*) contactsStore: (RCTResponseSenderBlock)callback {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];

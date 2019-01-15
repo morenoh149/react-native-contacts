@@ -928,7 +928,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         }
 
         if (data == null) {
-            updateContactCallback.invoke("No data", null);
+            updateContactCallback.invoke("Error received activity result with no data!", null);
             updateContactCallback = null;
             return;
         }
@@ -937,7 +937,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             Uri contactUri = data.getData();
 
             if (contactUri == null) {
-                updateContactCallback.invoke(null, null); // something was wrong
+                updateContactCallback.invoke("Error wrong data. No content uri found!", null); // something was wrong
                 updateContactCallback = null;
                 return;
             }

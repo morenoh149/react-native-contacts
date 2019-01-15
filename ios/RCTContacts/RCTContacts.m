@@ -406,6 +406,7 @@ RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTRespo
     [self updateRecord:contact withData:contactData];
 
     CNContactViewController *controller = [CNContactViewController viewControllerForNewContact:contact];
+    
     controller.delegate = self;
 
     dispatch_async(dispatch_get_main_queue(), ^{

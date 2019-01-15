@@ -405,14 +405,13 @@ RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTRespo
 
     [self updateRecord:contact withData:contactData];
 
-    CNContactViewController *contactViewController = [CNContactViewController viewControllerForNewContact:contact];
-    contactViewController.delegate = self;
+    CNContactViewController *controller = [CNContactViewController viewControllerForNewContact:contact];
+    controller.delegate = self;
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:contactViewController];
-        UIViewController *rootViewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
-
-        [rootViewController presentViewController:navigation animated:YES completion:nil];
+        UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
+        UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        [viewController presentViewController:navigation animated:YES completion:nil];
 
         updateContactCallback = callback;
     });

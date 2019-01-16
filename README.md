@@ -98,6 +98,17 @@ public class MainActivity extends ReactActivity {
 }
 
 ```
+
+##### ProGuard
+
+If you use Proguard, the snippet below on proguard-rules.pro 
+Without it, your apk release version could failed
+
+```
+-keep class com.rt2zz.reactnativecontacts.** {*;}
+-keepclassmembers class com.rt2zz.reactnativecontacts.** {*;}
+```
+
 ### Permissions
 #### iOS
 
@@ -123,16 +134,6 @@ Add `READ_PROFILE` and/or `WRITE_PROFILE` permissions to `AndroidManifest.xml`
 ...
 <uses-permission android:name="android.permission.READ_PROFILE" />
 ...
-```
-
-##### ProGuard
-
-If you use Proguard, the snippet below on proguard-rules.pro 
-Without it, your apk release version could failed
-
-```
--keep class com.rt2zz.reactnativecontacts.** {*;}
--keepclassmembers class com.rt2zz.reactnativecontacts.** {*;}
 ```
 
 ## API

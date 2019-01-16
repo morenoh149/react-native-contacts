@@ -98,6 +98,17 @@ public class MainActivity extends ReactActivity {
 }
 
 ```
+
+##### ProGuard
+
+If you use Proguard, the snippet below on proguard-rules.pro 
+Without it, your apk release version could failed
+
+```
+-keep class com.rt2zz.reactnativecontacts.** {*;}
+-keepclassmembers class com.rt2zz.reactnativecontacts.** {*;}
+```
+
 ### Permissions
 #### iOS
 

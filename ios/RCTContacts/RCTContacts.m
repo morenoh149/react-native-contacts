@@ -84,6 +84,8 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResp
                       CNContactOrganizationNameKey,
                       CNContactJobTitleKey,
                       CNContactImageDataAvailableKey,
+                      CNContactNoteKey,
+                      CNContactUrlAddressesKey,
                       CNContactBirthdayKey
                       ];
     NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingName:searchString]
@@ -137,6 +139,8 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
                                        CNContactOrganizationNameKey,
                                        CNContactJobTitleKey,
                                        CNContactImageDataAvailableKey,
+                                       CNContactNoteKey,
+                                       CNContactUrlAddressesKey,
                                        CNContactBirthdayKey
                                        ]];
 
@@ -164,6 +168,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     NSString *middleName = person.middleName;
     NSString *company = person.organizationName;
     NSString *jobTitle = person.jobTitle;
+    NSString *note = person.note;
     NSDateComponents *birthday = person.birthday;
 
     [output setObject:recordID forKey: @"recordID"];
@@ -188,6 +193,9 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         [output setObject: (jobTitle) ? jobTitle : @"" forKey:@"jobTitle"];
     }
 
+    if(note){
+        [output setObject: (note) ? note : @"" forKey:@"note"];
+    }
 
     if (birthday) {
         if (birthday.month != NSDateComponentUndefined && birthday.day != NSDateComponentUndefined) {
@@ -220,6 +228,30 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
 
     [output setObject: phoneNumbers forKey:@"phoneNumbers"];
     //end phone numbers
+
+    //handle urls
+    NSMutableArray *urlAddresses = [[NSMutableArray alloc] init];
+
+    for (CNLabeledValue<NSString*>* labeledValue in person.urlAddresses) {
+        NSMutableDictionary* url = [NSMutableDictionary dictionary];
+        NSString* label = [CNLabeledValue localizedStringForLabel:[labeledValue label]];
+        NSString* value = [labeledValue value];
+
+        if(value) {
+            if(!label) {
+                label = [CNLabeledValue localizedStringForLabel:@"home"];
+            }
+            [url setObject: value forKey:@"url"];
+            [url setObject: label forKey:@"label"];
+            [urlAddresses addObject:url];
+        } else {
+            NSLog(@"ignoring blank url");
+        }
+    }
+
+    [output setObject: urlAddresses forKey:@"urlAddresses"];
+
+    //end urls
 
     //handle emails
     NSMutableArray *emailAddreses = [[NSMutableArray alloc] init];
@@ -533,6 +565,8 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
                              CNContactImageDataAvailableKey,
                              CNContactThumbnailImageDataKey,
                              CNContactImageDataKey,
+                             CNContactNoteKey,
+                             CNContactUrlAddressesKey,
                              CNContactBirthdayKey
                              ];
 
@@ -560,6 +594,8 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     NSString *middleName = [contactData valueForKey:@"middleName"];
     NSString *company = [contactData valueForKey:@"company"];
     NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
+    NSString *note = [contactData valueForKey:@"note"];
+
     NSDictionary *birthday = [contactData valueForKey:@"birthday"];
 
     contact.givenName = givenName;
@@ -567,6 +603,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     contact.middleName = middleName;
     contact.organizationName = company;
     contact.jobTitle = jobTitle;
+    contact.note = note;
 
     if (birthday) {
         NSDateComponents *components;
@@ -610,6 +647,21 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
         [phoneNumbers addObject:phone];
     }
     contact.phoneNumbers = phoneNumbers;
+
+
+    NSMutableArray *urls = [[NSMutableArray alloc]init];
+
+    for (id urlData in [contactData valueForKey:@"urlAddresses"]) {
+        NSString *label = [urlData valueForKey:@"label"];
+        NSString *url = [urlData valueForKey:@"url"];
+
+        if(label && url) {
+            [urls addObject:[[CNLabeledValue alloc] initWithLabel:label value:url]];
+        }
+    }
+
+    contact.urlAddresses = urls;
+
 
     NSMutableArray *emails = [[NSMutableArray alloc]init];
 

@@ -20,6 +20,8 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
+import android.provider.ContactsContract.CommonDataKinds.Note;
+import android.provider.ContactsContract.CommonDataKinds.Website;
 import android.provider.ContactsContract.RawContacts;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -221,6 +223,17 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             }
         }
 
+        ReadableArray urlAddresses = contact.hasKey("urlAddresses") ? contact.getArray("urlAddresses") : null;
+        int numOfUrls = 0;
+        String[] urls = null;
+        if (urlAddresses != null) {
+            numOfUrls = urlAddresses.size();
+            urls = new String[numOfUrls];
+            for (int i = 0; i < numOfUrls; i++) {
+                urls[i] = urlAddresses.getMap(i).getString("url");
+            }
+        }
+
         ReadableArray emailAddresses = contact.hasKey("emailAddresses") ? contact.getArray("emailAddresses") : null;
         int numOfEmails = 0;
         String[] emails = null;
@@ -282,6 +295,13 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         organization.put(Organization.TITLE, jobTitle);
         organization.put(Organization.DEPARTMENT, department);
         contactData.add(organization);
+
+        for (int i = 0; i < numOfUrls; i++) {
+            ContentValues url = new ContentValues();
+            url.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            url.put(CommonDataKinds.Website.URL, urls[i]);
+            contactData.add(url);
+        }
 
         for (int i = 0; i < numOfEmails; i++) {
             ContentValues email = new ContentValues();
@@ -369,6 +389,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
+        String note = contact.hasKey("note") ? contact.getString("note") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         // String name = givenName;
@@ -390,6 +411,17 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 String label = phoneNumbers.getMap(i).getString("label");
                 phonesLabels[i] = mapStringToPhoneType(label);
                 phonesCustomLabels[i] = label;
+            }
+        }
+
+        ReadableArray urlAddresses = contact.hasKey("urlAddresses") ? contact.getArray("urlAddresses") : null;
+        int numOfUrls = 0;
+        String[] urls = null;
+        if (urlAddresses != null) {
+            numOfUrls = urlAddresses.size();
+            urls = new String[numOfUrls];
+            for (int i = 0; i < numOfUrls; i++) {
+                urls[i] = urlAddresses.getMap(i).getString("url");
             }
         }
 
@@ -425,6 +457,12 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 .withValue(StructuredName.PREFIX, prefix)
                 .withValue(StructuredName.SUFFIX, suffix);
         ops.add(op.build());
+        
+        op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                .withValue(ContactsContract.Data.MIMETYPE, Note.CONTENT_ITEM_TYPE)
+                .withValue(ContactsContract.CommonDataKinds.Note.NOTE, note);
+        ops.add(op.build());
 
         op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                 .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
@@ -446,6 +484,14 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             if (phonesLabels[i] == CommonDataKinds.Phone.TYPE_CUSTOM) {
                 op = op.withValue(CommonDataKinds.Phone.LABEL, phonesCustomLabels[i]);
             }
+            ops.add(op.build());
+        }
+
+        for (int i = 0; i < numOfUrls; i++) {
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Website.CONTENT_ITEM_TYPE)
+                    .withValue(CommonDataKinds.Website.URL, urls[i]);
             ops.add(op.build());
         }
 
@@ -561,6 +607,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
+        String note = contact.hasKey("note") ? contact.getString("note") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
@@ -584,6 +631,22 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 phonesLabels[i] = mapStringToPhoneType(phoneLabel);
                 phonesCustomLabels[i] = phoneLabel;
                 phoneIds[i] = phoneId;
+            }
+        }
+
+        ReadableArray urlAddresses = contact.hasKey("urlAddresses") ? contact.getArray("urlAddresses") : null;
+        int numOfUrls = 0;
+        String[] urls = null;
+        String[] urlIds = null;
+
+        if (urlAddresses != null) {
+            numOfUrls = urlAddresses.size();
+            urls = new String[numOfUrls];
+            urlIds = new String[numOfUrls];
+            for (int i = 0; i < numOfUrls; i++) {
+                ReadableMap urlMap = urlAddresses.getMap(i);
+                urls[i] = urlMap.getString("url");
+                urlIds[i] = urlMap.hasKey("id") ? urlMap.getString("id") : null;
             }
         }
 
@@ -659,6 +722,20 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
 
             if (phonesLabels[i] == CommonDataKinds.Phone.TYPE_CUSTOM) {
                 op = op.withValue(CommonDataKinds.Phone.LABEL, phonesCustomLabels[i]);
+            }
+            ops.add(op.build());
+        }
+
+        for (int i = 0; i < numOfUrls; i++) {
+            if (urlIds[i] == null) {
+                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Website.CONTENT_ITEM_TYPE)
+                        .withValue(CommonDataKinds.Website.URL, urls[i]);
+            } else {
+                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(urlIds[i])})
+                        .withValue(CommonDataKinds.Website.URL, urls[i]);
             }
             ops.add(op.build());
         }

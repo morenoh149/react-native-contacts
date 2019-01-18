@@ -15,18 +15,7 @@ Contacts.getAll((err, contacts) => {
   // contacts returned
 })
 ```
-
-`getContactMatchingString` is meant to alleviate the amount of time it takes to get all contacts, by filtering on the native side based on a string.
-```es
-import Contacts from 'react-native-contacts';
-
-Contacts.getContactsMatchingString("filter", (err, contacts) => {
-  if (err) {
-    throw err;
-  }
-  // contacts matching "filter"
-})
-```
+See the full [API](#api) for more methods.
 
 ### Android permissions
 On android you must request permissions beforehand

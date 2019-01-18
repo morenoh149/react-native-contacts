@@ -10,10 +10,10 @@ Ask questions on [stackoverflow](https://stackoverflow.com/questions/tagged/reac
 import Contacts from 'react-native-contacts';
 
 Contacts.getAll((err, contacts) => {
-  if (err) throw err;
-
+  if (err) {
+    throw err;
+  }
   // contacts returned
-  console.log(contacts)
 })
 ```
 
@@ -23,10 +23,32 @@ Contacts.getAll((err, contacts) => {
 import Contacts from 'react-native-contacts';
 
 Contacts.getContactsMatchingString("filter", (err, contacts) => {
-  if (err) throw err;
-
+  if (err) {
+    throw err;
+  }
   // contacts matching "filter"
-  console.log(contacts)
+})
+```
+### Android permissions
+On android you must request permissions beforehand
+```es
+import { PermissionsAndroid } from 'react-native';
+import Contacts from 'react-native-contacts';
+
+PermissionsAndroid.request(
+  PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+  {
+    'title': 'Contacts',
+    'message': 'This app would like to view your contacts.'
+  }
+).then(() => {
+  Contacts.getAll((err, contacts) => {
+    if (err === 'denied'){
+      // error
+    } else {
+      // contacts returned in Array
+    }
+  })
 })
 ```
 ## Installation

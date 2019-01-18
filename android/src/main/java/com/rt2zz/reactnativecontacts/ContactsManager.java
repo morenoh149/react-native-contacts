@@ -581,6 +581,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 );
         ops.add(op.build());
         
+        // add passed phonenumbers
         for (int i = 0; i < numOfPhones; i++) {
             op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                     .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
@@ -612,9 +613,11 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 );
         ops.add(op.build());
 
+        // add passed email addresses
         for (int i = 0; i < numOfEmails; i++) {
-            op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(emailIds[i])})
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
                     .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
             ops.add(op.build());
@@ -796,7 +799,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 emailType = CommonDataKinds.Email.TYPE_MOBILE;
                 break;
             default:
-                emailType = CommonDataKinds.Email.TYPE_OTHER;
+                emailType = CommonDataKinds.Email.TYPE_CUSTOM;
                 break;
         }
         return emailType;

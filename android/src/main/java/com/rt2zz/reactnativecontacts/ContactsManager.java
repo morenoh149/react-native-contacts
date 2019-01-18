@@ -474,7 +474,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void updateContact(ReadableMap contact, Callback callback) {
-
+        
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
         String rawContactId = contact.hasKey("rawContactId") ? contact.getString("rawContactId") : null;
 
@@ -573,19 +573,21 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
         op.withYieldAllowed(true);
 
+        // remove existing phoneNumbers first
+        op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                .withSelection(
+                    ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.CONTACT_ID + " = ?", 
+                    new String[]{String.valueOf(CommonDataKinds.Phone.CONTENT_ITEM_TYPE), String.valueOf(recordID)}
+                );
+        ops.add(op.build());
+        
+        // add passed phonenumbers
         for (int i = 0; i < numOfPhones; i++) {
-            if (phoneIds[i] == null) {
-                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
-                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                        .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-                        .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
-            } else {
-                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(phoneIds[i])})
-                        .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-                        .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
-            }
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                    .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
+                    .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
             ops.add(op.build());
         }
 
@@ -603,19 +605,21 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             ops.add(op.build());
         }
 
+        // remove existing emails first
+        op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                .withSelection(
+                    ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.CONTACT_ID + " = ?", 
+                    new String[]{String.valueOf(CommonDataKinds.Email.CONTENT_ITEM_TYPE), String.valueOf(recordID)}
+                );
+        ops.add(op.build());
+
+        // add passed email addresses
         for (int i = 0; i < numOfEmails; i++) {
-            if (emailIds[i] == null) {
-                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
-                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
-                        .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-                        .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
-            } else {
-                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(emailIds[i])})
-                        .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-                        .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
-            }
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
+                    .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
+                    .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
             ops.add(op.build());
         }
 

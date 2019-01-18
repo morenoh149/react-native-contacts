@@ -799,7 +799,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 emailType = CommonDataKinds.Email.TYPE_MOBILE;
                 break;
             default:
-                emailType = CommonDataKinds.Email.TYPE_CUSTOM;
+                emailType = CommonDataKinds.Email.TYPE_OTHER;
                 break;
         }
         return emailType;

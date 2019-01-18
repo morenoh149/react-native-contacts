@@ -573,6 +573,14 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
         op.withYieldAllowed(true);
 
+        // remove existing phoneNumbers first
+        op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                .withSelection(
+                    ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.CONTACT_ID + " = ?", 
+                    new String[]{String.valueOf(CommonDataKinds.Phone.CONTENT_ITEM_TYPE), String.valueOf(recordID)}
+                );
+        ops.add(op.build());
+        
         for (int i = 0; i < numOfPhones; i++) {
             if (phoneIds[i] == null) {
                 op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)

@@ -267,7 +267,6 @@ Update reference contacts by their recordID (as returned by the OS in getContact
 There are issues with updating contacts on Android:
 1. custom labels get overwritten to "Other",
 1. postal address update code doesn't exist. (it exists for addContact)
-1. phoneNumbers and emails insert instead of update.
 See https://github.com/rt2zz/react-native-contacts/issues/332#issuecomment-455675041 for current discussions.
 
 ## Delete Contacts

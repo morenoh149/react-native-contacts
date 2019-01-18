@@ -474,7 +474,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void updateContact(ReadableMap contact, Callback callback) {
-
+        
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
         String rawContactId = contact.hasKey("rawContactId") ? contact.getString("rawContactId") : null;
 
@@ -610,6 +610,14 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             }
             ops.add(op.build());
         }
+
+        // remove existing emails first
+        op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                .withSelection(
+                    ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.CONTACT_ID + " = ?", 
+                    new String[]{String.valueOf(CommonDataKinds.Email.CONTENT_ITEM_TYPE), String.valueOf(recordID)}
+                );
+        ops.add(op.build());
 
         for (int i = 0; i < numOfEmails; i++) {
             if (emailIds[i] == null) {

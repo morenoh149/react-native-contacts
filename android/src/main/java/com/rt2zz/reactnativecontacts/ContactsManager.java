@@ -602,23 +602,26 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
         op.withYieldAllowed(true);
 
-        // remove existing phoneNumbers first
-        op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
-                .withSelection(
-                    ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.CONTACT_ID + " = ?", 
-                    new String[]{String.valueOf(CommonDataKinds.Phone.CONTENT_ITEM_TYPE), String.valueOf(recordID)}
-                );
-        ops.add(op.build());
-        
-        // add passed phonenumbers
-        for (int i = 0; i < numOfPhones; i++) {
-            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
-                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                    .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-                    .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
-            ops.add(op.build());
-        }
+		
+        if (phoneNumbers != null) {		
+			// remove existing phoneNumbers first
+			op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+					.withSelection(
+						ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
+						new String[]{String.valueOf(CommonDataKinds.Phone.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
+					);
+			ops.add(op.build());
+			
+			// add passed phonenumbers
+			for (int i = 0; i < numOfPhones; i++) {
+				op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+						.withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+						.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+						.withValue(CommonDataKinds.Phone.NUMBER, phones[i])
+						.withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+				ops.add(op.build());
+			}
+		}
 
         for (int i = 0; i < numOfUrls; i++) {
             if (urlIds[i] == null) {
@@ -634,23 +637,25 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             ops.add(op.build());
         }
 
-        // remove existing emails first
-        op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
-                .withSelection(
-                    ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.CONTACT_ID + " = ?", 
-                    new String[]{String.valueOf(CommonDataKinds.Email.CONTENT_ITEM_TYPE), String.valueOf(recordID)}
-                );
-        ops.add(op.build());
+		if (emailAddresses != null){
+			// remove existing emails first
+			op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+					.withSelection(
+						ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
+						new String[]{String.valueOf(CommonDataKinds.Email.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
+					);
+			ops.add(op.build());
 
-        // add passed email addresses
-        for (int i = 0; i < numOfEmails; i++) {
-            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
-                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
-                    .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-                    .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
-            ops.add(op.build());
-        }
+			// add passed email addresses
+			for (int i = 0; i < numOfEmails; i++) {
+				op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+						.withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+						.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
+						.withValue(CommonDataKinds.Email.ADDRESS, emails[i])
+						.withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
+				ops.add(op.build());
+			}
+		}
 
          if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
             Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
@@ -668,8 +673,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 			//remove existing addresses
 			 op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
 					.withSelection(
-						ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.CONTACT_ID + " = ?", 
-						new String[]{String.valueOf(CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE), String.valueOf(recordID)}
+						ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
+						new String[]{String.valueOf(CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
 					);
        		ops.add(op.build());
 

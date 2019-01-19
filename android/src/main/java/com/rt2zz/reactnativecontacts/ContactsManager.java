@@ -314,15 +314,18 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
         String[] phones = null;
-        Integer[] phonesLabels = null;
+        Integer[] phonesTypes = null;
+		String[] phonesLabels = null;
         if (phoneNumbers != null) {
             numOfPhones = phoneNumbers.size();
             phones = new String[numOfPhones];
-            phonesLabels = new Integer[numOfPhones];
+            phonesTypes = new Integer[numOfPhones];
+			phonesLabels = new String[numOfPhones];
             for (int i = 0; i < numOfPhones; i++) {
                 phones[i] = phoneNumbers.getMap(i).getString("number");
                 String label = phoneNumbers.getMap(i).getString("label");
-                phonesLabels[i] = mapStringToPhoneType(label);
+                phonesTypes[i] = mapStringToPhoneType(label);
+				phonesLabels[i] = label;
             }
         }
 
@@ -340,15 +343,18 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         ReadableArray emailAddresses = contact.hasKey("emailAddresses") ? contact.getArray("emailAddresses") : null;
         int numOfEmails = 0;
         String[] emails = null;
-        Integer[] emailsLabels = null;
+        Integer[] emailsTypes = null;
+		String[] emailsLabels = null;
         if (emailAddresses != null) {
             numOfEmails = emailAddresses.size();
             emails = new String[numOfEmails];
-            emailsLabels = new Integer[numOfEmails];
+            emailsTypes = new Integer[numOfEmails];
+			emailsLabels = new String[numOfEmails];
             for (int i = 0; i < numOfEmails; i++) {
                 emails[i] = emailAddresses.getMap(i).getString("email");
                 String label = emailAddresses.getMap(i).getString("label");
-                emailsLabels[i] = mapStringToEmailType(label);
+                emailsTypes[i] = mapStringToEmailType(label);
+				emailsLabels[i] = label;
             }
         }
 
@@ -392,7 +398,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-                    .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+                    .withValue(CommonDataKinds.Phone.TYPE, phonesTypes[i])
+					.withValue(CommonDataKinds.Phone.LABEL, phonesLabels[i]);
             ops.add(op.build());
         }
 
@@ -409,7 +416,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-                    .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
+                    .withValue(CommonDataKinds.Email.TYPE, emailsTypes[i])
+					.withValue(CommonDataKinds.Email.LABEL, emailsLabels[i]);
             ops.add(op.build());
         }
 
@@ -434,6 +442,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                         .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE)
                         .withValue(CommonDataKinds.StructuredPostal.TYPE, mapStringToPostalAddressType(address.getString("label")))
+						.withValue(CommonDataKinds.StructuredPostal.LABEL, address.getString("label"))
                         .withValue(CommonDataKinds.StructuredPostal.STREET, address.getString("street"))
                         .withValue(CommonDataKinds.StructuredPostal.CITY, address.getString("city"))
                         .withValue(CommonDataKinds.StructuredPostal.REGION, address.getString("state"))
@@ -492,12 +501,14 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
         String[] phones = null;
-        Integer[] phonesLabels = null;
+        Integer[] phonesTypes = null;
+		String[] phonesLabels = null;
         String[] phoneIds = null;
         if (phoneNumbers != null) {
             numOfPhones = phoneNumbers.size();
             phones = new String[numOfPhones];
-            phonesLabels = new Integer[numOfPhones];
+            phonesTypes = new Integer[numOfPhones];
+			phonesLabels = new String[numOfPhones];
             phoneIds = new String[numOfPhones];
             for (int i = 0; i < numOfPhones; i++) {
                 ReadableMap phoneMap = phoneNumbers.getMap(i);
@@ -505,7 +516,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 String phoneLabel = phoneMap.getString("label");
                 String phoneId = phoneMap.hasKey("id") ? phoneMap.getString("id") : null;
                 phones[i] = phoneNumber;
-                phonesLabels[i] = mapStringToPhoneType(phoneLabel);
+                phonesTypes[i] = mapStringToPhoneType(phoneLabel);
+				phonesLabels[i] = phoneLabel;
                 phoneIds[i] = phoneId;
             }
         }
@@ -529,19 +541,22 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         ReadableArray emailAddresses = contact.hasKey("emailAddresses") ? contact.getArray("emailAddresses") : null;
         int numOfEmails = 0;
         String[] emails = null;
-        Integer[] emailsLabels = null;
+		Integer[] emailsTypes = null;
+        String[] emailsLabels = null;
         String[] emailIds = null;
 
         if (emailAddresses != null) {
             numOfEmails = emailAddresses.size();
             emails = new String[numOfEmails];
             emailIds = new String[numOfEmails];
-            emailsLabels = new Integer[numOfEmails];
+			emailsTypes = new Integer[numOfEmails];
+            emailsLabels = new String[numOfEmails];
             for (int i = 0; i < numOfEmails; i++) {
                 ReadableMap emailMap = emailAddresses.getMap(i);
                 emails[i] = emailMap.getString("email");
                 String label = emailMap.getString("label");
-                emailsLabels[i] = mapStringToEmailType(label);
+                emailsTypes[i] = mapStringToEmailType(label);
+				emailsLabels[i] = label;
                 emailIds[i] = emailMap.hasKey("id") ? emailMap.getString("id") : null;
             }
         }
@@ -554,7 +569,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String[] postalAddressesRegion = null;
         String[] postalAddressesPostCode = null;
         String[] postalAddressesCountry = null;
-        Integer[] postalAddressesLabel = null;
+        Integer[] postalAddressesType = null;
+		String[] postalAddressesLabel = null;
         if (postalAddresses != null) {
             numOfPostalAddresses = postalAddresses.size();
             postalAddressesStreet = new String[numOfPostalAddresses];
@@ -563,15 +579,18 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             postalAddressesRegion = new String[numOfPostalAddresses];
             postalAddressesPostCode = new String[numOfPostalAddresses];
             postalAddressesCountry = new String[numOfPostalAddresses];
-            postalAddressesLabel = new Integer[numOfPostalAddresses];
+            postalAddressesType = new Integer[numOfPostalAddresses];
+			postalAddressesLabel = new String[numOfPostalAddresses];
             for (int i = 0; i < numOfPostalAddresses; i++) {
+				String postalLabel = postalAddresses.getMap(i).getString("label");
                 postalAddressesStreet[i] = postalAddresses.getMap(i).getString("street");
                 postalAddressesCity[i] = postalAddresses.getMap(i).getString("city");
                 postalAddressesState[i] = postalAddresses.getMap(i).getString("state");
                 postalAddressesRegion[i] = postalAddresses.getMap(i).getString("region");
                 postalAddressesPostCode[i] = postalAddresses.getMap(i).getString("postCode");
                 postalAddressesCountry[i] = postalAddresses.getMap(i).getString("country");
-                postalAddressesLabel[i] = mapStringToPostalAddressType(postalAddresses.getMap(i).getString("label"));
+                postalAddressesType[i] = mapStringToPostalAddressType(postalLabel);
+				postalAddressesLabel[i] = postalLabel;
             }
         }
 
@@ -618,7 +637,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 						.withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
 						.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
 						.withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-						.withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+						.withValue(CommonDataKinds.Phone.TYPE, phonesTypes[i])
+						.withValue(CommonDataKinds.Phone.LABEL, phonesLabels[i]);
 				ops.add(op.build());
 			}
 		}
@@ -652,7 +672,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 						.withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
 						.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
 						.withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-						.withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
+						.withValue(CommonDataKinds.Email.TYPE, emailsTypes[i])
+						.withValue(CommonDataKinds.Email.LABEL, emailsLabels[i]);
 				ops.add(op.build());
 			}
 		}
@@ -682,7 +703,8 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
                         .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE)
-                        .withValue(CommonDataKinds.StructuredPostal.TYPE, postalAddressesLabel[i])
+                        .withValue(CommonDataKinds.StructuredPostal.TYPE, postalAddressesType[i])
+						.withValue(CommonDataKinds.StructuredPostal.LABEL, postalAddressesLabel[i])
                         .withValue(CommonDataKinds.StructuredPostal.STREET, postalAddressesStreet[i])
                         .withValue(CommonDataKinds.StructuredPostal.CITY, postalAddressesCity[i])
                         .withValue(CommonDataKinds.StructuredPostal.REGION, postalAddressesState[i])
@@ -815,8 +837,26 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             case "mobile":
                 phoneType = CommonDataKinds.Phone.TYPE_MOBILE;
                 break;
+			case "main":
+				phoneType = CommonDataKinds.Phone.TYPE_MAIN;
+				break;
+			case "work fax":
+				phoneType = CommonDataKinds.Phone.TYPE_FAX_WORK;
+				break;
+			case "home fax":
+				phoneType = CommonDataKinds.Phone.TYPE_FAX_HOME;
+				break;
+			case "pager":
+				phoneType = CommonDataKinds.Phone.TYPE_PAGER;
+				break;
+			case "work_pager":
+				phoneType = CommonDataKinds.Phone.TYPE_WORK_PAGER;
+				break;
+			case "work_mobile":
+				phoneType = CommonDataKinds.Phone.TYPE_WORK_MOBILE;
+				break;
             default:
-                phoneType = CommonDataKinds.Phone.TYPE_OTHER;
+                phoneType = CommonDataKinds.Phone.TYPE_CUSTOM;
                 break;
         }
         return phoneType;
@@ -839,7 +879,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 emailType = CommonDataKinds.Email.TYPE_MOBILE;
                 break;
             default:
-                emailType = CommonDataKinds.Email.TYPE_OTHER;
+                emailType = CommonDataKinds.Email.TYPE_CUSTOM;
                 break;
         }
         return emailType;
@@ -855,7 +895,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 postalAddressType = CommonDataKinds.StructuredPostal.TYPE_WORK;
                 break;
             default:
-                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_OTHER;
+                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_CUSTOM;
                 break;
         }
         return postalAddressType;

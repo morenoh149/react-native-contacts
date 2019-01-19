@@ -349,7 +349,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             numOfEmails = emailAddresses.size();
             emails = new String[numOfEmails];
             emailsTypes = new Integer[numOfEmails];
-			emailsLabels = new String[numOfEmails];
+            emailsLabels = new String[numOfEmails];
             for (int i = 0; i < numOfEmails; i++) {
                 emails[i] = emailAddresses.getMap(i).getString("email");
                 String label = emailAddresses.getMap(i).getString("label");
@@ -399,7 +399,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
                     .withValue(CommonDataKinds.Phone.TYPE, phonesTypes[i])
-					.withValue(CommonDataKinds.Phone.LABEL, phonesLabels[i]);
+                    .withValue(CommonDataKinds.Phone.LABEL, phonesLabels[i]);
             ops.add(op.build());
         }
 
@@ -417,7 +417,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
                     .withValue(CommonDataKinds.Email.TYPE, emailsTypes[i])
-					.withValue(CommonDataKinds.Email.LABEL, emailsLabels[i]);
+                    .withValue(CommonDataKinds.Email.LABEL, emailsLabels[i]);
             ops.add(op.build());
         }
 
@@ -442,7 +442,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                         .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE)
                         .withValue(CommonDataKinds.StructuredPostal.TYPE, mapStringToPostalAddressType(address.getString("label")))
-						.withValue(CommonDataKinds.StructuredPostal.LABEL, address.getString("label"))
+                        .withValue(CommonDataKinds.StructuredPostal.LABEL, address.getString("label"))
                         .withValue(CommonDataKinds.StructuredPostal.STREET, address.getString("street"))
                         .withValue(CommonDataKinds.StructuredPostal.CITY, address.getString("city"))
                         .withValue(CommonDataKinds.StructuredPostal.REGION, address.getString("state"))
@@ -541,7 +541,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         ReadableArray emailAddresses = contact.hasKey("emailAddresses") ? contact.getArray("emailAddresses") : null;
         int numOfEmails = 0;
         String[] emails = null;
-		Integer[] emailsTypes = null;
+        Integer[] emailsTypes = null;
         String[] emailsLabels = null;
         String[] emailIds = null;
 
@@ -549,14 +549,14 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             numOfEmails = emailAddresses.size();
             emails = new String[numOfEmails];
             emailIds = new String[numOfEmails];
-			emailsTypes = new Integer[numOfEmails];
+            emailsTypes = new Integer[numOfEmails];
             emailsLabels = new String[numOfEmails];
             for (int i = 0; i < numOfEmails; i++) {
                 ReadableMap emailMap = emailAddresses.getMap(i);
                 emails[i] = emailMap.getString("email");
                 String label = emailMap.getString("label");
                 emailsTypes[i] = mapStringToEmailType(label);
-				emailsLabels[i] = label;
+                emailsLabels[i] = label;
                 emailIds[i] = emailMap.hasKey("id") ? emailMap.getString("id") : null;
             }
         }
@@ -582,7 +582,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             postalAddressesType = new Integer[numOfPostalAddresses];
             postalAddressesLabel = new String[numOfPostalAddresses];
             for (int i = 0; i < numOfPostalAddresses; i++) {
-				String postalLabel = postalAddresses.getMap(i).getString("label");
+                String postalLabel = postalAddresses.getMap(i).getString("label");
                 postalAddressesStreet[i] = postalAddresses.getMap(i).getString("street");
                 postalAddressesCity[i] = postalAddresses.getMap(i).getString("city");
                 postalAddressesState[i] = postalAddresses.getMap(i).getString("state");
@@ -621,27 +621,27 @@ public class ContactsManager extends ReactContextBaseJavaModule {
 
         op.withYieldAllowed(true);
 
-		
-        if (phoneNumbers != null) {		
-			// remove existing phoneNumbers first
-			op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
-					.withSelection(
-						ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
-						new String[]{String.valueOf(CommonDataKinds.Phone.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
-					);
-			ops.add(op.build());
-			
-			// add passed phonenumbers
-			for (int i = 0; i < numOfPhones; i++) {
-				op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-						.withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
-						.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-						.withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-						.withValue(CommonDataKinds.Phone.TYPE, phonesTypes[i])
-						.withValue(CommonDataKinds.Phone.LABEL, phonesLabels[i]);
-				ops.add(op.build());
-			}
-		}
+        
+        if (phoneNumbers != null) {     
+            // remove existing phoneNumbers first
+            op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(
+                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
+                        new String[]{String.valueOf(CommonDataKinds.Phone.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
+                    );
+            ops.add(op.build());
+            
+            // add passed phonenumbers
+            for (int i = 0; i < numOfPhones; i++) {
+                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                        .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
+                        .withValue(CommonDataKinds.Phone.TYPE, phonesTypes[i])
+                        .withValue(CommonDataKinds.Phone.LABEL, phonesLabels[i]);
+                ops.add(op.build());
+            }
+        }
 
         for (int i = 0; i < numOfUrls; i++) {
             if (urlIds[i] == null) {
@@ -657,26 +657,26 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             ops.add(op.build());
         }
 
-		if (emailAddresses != null){
-			// remove existing emails first
-			op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
-					.withSelection(
-						ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
-						new String[]{String.valueOf(CommonDataKinds.Email.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
-					);
-			ops.add(op.build());
+        if (emailAddresses != null){
+            // remove existing emails first
+            op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(
+                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
+                        new String[]{String.valueOf(CommonDataKinds.Email.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
+                    );
+            ops.add(op.build());
 
-			// add passed email addresses
-			for (int i = 0; i < numOfEmails; i++) {
-				op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-						.withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
-						.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
-						.withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-						.withValue(CommonDataKinds.Email.TYPE, emailsTypes[i])
-						.withValue(CommonDataKinds.Email.LABEL, emailsLabels[i]);
-				ops.add(op.build());
-			}
-		}
+            // add passed email addresses
+            for (int i = 0; i < numOfEmails; i++) {
+                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
+                        .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
+                        .withValue(CommonDataKinds.Email.TYPE, emailsTypes[i])
+                        .withValue(CommonDataKinds.Email.LABEL, emailsLabels[i]);
+                ops.add(op.build());
+            }
+        }
 
          if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
             Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
@@ -690,21 +690,21 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             }
         }
 
-		if (postalAddresses != null){
-			//remove existing addresses
-			 op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
-					.withSelection(
-						ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
-						new String[]{String.valueOf(CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
-					);
-       		ops.add(op.build());
+        if (postalAddresses != null){
+            //remove existing addresses
+             op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(
+                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
+                        new String[]{String.valueOf(CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
+                    );
+            ops.add(op.build());
 
             for (int i = 0; i < numOfPostalAddresses; i++) {
                 op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
                         .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE)
                         .withValue(CommonDataKinds.StructuredPostal.TYPE, postalAddressesType[i])
-						.withValue(CommonDataKinds.StructuredPostal.LABEL, postalAddressesLabel[i])
+                        .withValue(CommonDataKinds.StructuredPostal.LABEL, postalAddressesLabel[i])
                         .withValue(CommonDataKinds.StructuredPostal.STREET, postalAddressesStreet[i])
                         .withValue(CommonDataKinds.StructuredPostal.CITY, postalAddressesCity[i])
                         .withValue(CommonDataKinds.StructuredPostal.REGION, postalAddressesState[i])
@@ -837,24 +837,24 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             case "mobile":
                 phoneType = CommonDataKinds.Phone.TYPE_MOBILE;
                 break;
-			case "main":
-				phoneType = CommonDataKinds.Phone.TYPE_MAIN;
-				break;
-			case "work fax":
-				phoneType = CommonDataKinds.Phone.TYPE_FAX_WORK;
-				break;
-			case "home fax":
-				phoneType = CommonDataKinds.Phone.TYPE_FAX_HOME;
-				break;
-			case "pager":
-				phoneType = CommonDataKinds.Phone.TYPE_PAGER;
-				break;
-			case "work_pager":
-				phoneType = CommonDataKinds.Phone.TYPE_WORK_PAGER;
-				break;
-			case "work_mobile":
-				phoneType = CommonDataKinds.Phone.TYPE_WORK_MOBILE;
-				break;
+            case "main":
+                phoneType = CommonDataKinds.Phone.TYPE_MAIN;
+                break;
+            case "work fax":
+                phoneType = CommonDataKinds.Phone.TYPE_FAX_WORK;
+                break;
+            case "home fax":
+                phoneType = CommonDataKinds.Phone.TYPE_FAX_HOME;
+                break;
+            case "pager":
+                phoneType = CommonDataKinds.Phone.TYPE_PAGER;
+                break;
+            case "work_pager":
+                phoneType = CommonDataKinds.Phone.TYPE_WORK_PAGER;
+                break;
+            case "work_mobile":
+                phoneType = CommonDataKinds.Phone.TYPE_WORK_MOBILE;
+                break;
             default:
                 phoneType = CommonDataKinds.Phone.TYPE_CUSTOM;
                 break;

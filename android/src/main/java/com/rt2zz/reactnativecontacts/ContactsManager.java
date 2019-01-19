@@ -546,6 +546,35 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             }
         }
 
+		ReadableArray postalAddresses = contact.hasKey("postalAddresses") ? contact.getArray("postalAddresses") : null;
+        int numOfPostalAddresses = 0;
+        String[] postalAddressesStreet = null;
+        String[] postalAddressesCity = null;
+        String[] postalAddressesState = null;
+        String[] postalAddressesRegion = null;
+        String[] postalAddressesPostCode = null;
+        String[] postalAddressesCountry = null;
+        Integer[] postalAddressesLabel = null;
+        if (postalAddresses != null) {
+            numOfPostalAddresses = postalAddresses.size();
+            postalAddressesStreet = new String[numOfPostalAddresses];
+            postalAddressesCity = new String[numOfPostalAddresses];
+            postalAddressesState = new String[numOfPostalAddresses];
+            postalAddressesRegion = new String[numOfPostalAddresses];
+            postalAddressesPostCode = new String[numOfPostalAddresses];
+            postalAddressesCountry = new String[numOfPostalAddresses];
+            postalAddressesLabel = new Integer[numOfPostalAddresses];
+            for (int i = 0; i < numOfPostalAddresses; i++) {
+                postalAddressesStreet[i] = postalAddresses.getMap(i).getString("street");
+                postalAddressesCity[i] = postalAddresses.getMap(i).getString("city");
+                postalAddressesState[i] = postalAddresses.getMap(i).getString("state");
+                postalAddressesRegion[i] = postalAddresses.getMap(i).getString("region");
+                postalAddressesPostCode[i] = postalAddresses.getMap(i).getString("postCode");
+                postalAddressesCountry[i] = postalAddresses.getMap(i).getString("country");
+                postalAddressesLabel[i] = mapStringToPostalAddressType(postalAddresses.getMap(i).getString("label"));
+            }
+        }
+
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
         ContentProviderOperation.Builder op = ContentProviderOperation.newUpdate(RawContacts.CONTENT_URI)
@@ -635,19 +664,25 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             }
         }
 
-        ReadableArray postalAddresses = contact.hasKey("postalAddresses") ? contact.getArray("postalAddresses") : null;
-        if (postalAddresses != null) {
-            for (int i = 0; i < postalAddresses.size(); i++) {
-                ReadableMap address = postalAddresses.getMap(i);
-                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE})
+		if (postalAddresses != null){
+			//remove existing addresses
+			 op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+					.withSelection(
+						ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.CONTACT_ID + " = ?", 
+						new String[]{String.valueOf(CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE), String.valueOf(recordID)}
+					);
+       		ops.add(op.build());
+
+            for (int i = 0; i < numOfPostalAddresses; i++) {
+                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
                         .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE)
-                        .withValue(CommonDataKinds.StructuredPostal.TYPE, mapStringToPostalAddressType(address.getString("label")))
-                        .withValue(CommonDataKinds.StructuredPostal.STREET, address.getString("street"))
-                        .withValue(CommonDataKinds.StructuredPostal.CITY, address.getString("city"))
-                        .withValue(CommonDataKinds.StructuredPostal.REGION, address.getString("state"))
-                        .withValue(CommonDataKinds.StructuredPostal.POSTCODE, address.getString("postCode"))
-                        .withValue(CommonDataKinds.StructuredPostal.COUNTRY, address.getString("country"));
+                        .withValue(CommonDataKinds.StructuredPostal.TYPE, postalAddressesLabel[i])
+                        .withValue(CommonDataKinds.StructuredPostal.STREET, postalAddressesStreet[i])
+                        .withValue(CommonDataKinds.StructuredPostal.CITY, postalAddressesCity[i])
+                        .withValue(CommonDataKinds.StructuredPostal.REGION, postalAddressesState[i])
+                        .withValue(CommonDataKinds.StructuredPostal.POSTCODE, postalAddressesPostCode[i])
+                        .withValue(CommonDataKinds.StructuredPostal.COUNTRY, postalAddressesCountry[i]);
                 ops.add(op.build());
             }
         }

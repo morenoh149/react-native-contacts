@@ -315,17 +315,17 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         int numOfPhones = 0;
         String[] phones = null;
         Integer[] phonesTypes = null;
-		String[] phonesLabels = null;
+        String[] phonesLabels = null;
         if (phoneNumbers != null) {
             numOfPhones = phoneNumbers.size();
             phones = new String[numOfPhones];
             phonesTypes = new Integer[numOfPhones];
-			phonesLabels = new String[numOfPhones];
+            phonesLabels = new String[numOfPhones];
             for (int i = 0; i < numOfPhones; i++) {
                 phones[i] = phoneNumbers.getMap(i).getString("number");
                 String label = phoneNumbers.getMap(i).getString("label");
                 phonesTypes[i] = mapStringToPhoneType(label);
-				phonesLabels[i] = label;
+                phonesLabels[i] = label;
             }
         }
 
@@ -344,7 +344,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         int numOfEmails = 0;
         String[] emails = null;
         Integer[] emailsTypes = null;
-		String[] emailsLabels = null;
+        String[] emailsLabels = null;
         if (emailAddresses != null) {
             numOfEmails = emailAddresses.size();
             emails = new String[numOfEmails];
@@ -354,7 +354,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 emails[i] = emailAddresses.getMap(i).getString("email");
                 String label = emailAddresses.getMap(i).getString("label");
                 emailsTypes[i] = mapStringToEmailType(label);
-				emailsLabels[i] = label;
+                emailsLabels[i] = label;
             }
         }
 
@@ -502,13 +502,13 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         int numOfPhones = 0;
         String[] phones = null;
         Integer[] phonesTypes = null;
-		String[] phonesLabels = null;
+        String[] phonesLabels = null;
         String[] phoneIds = null;
         if (phoneNumbers != null) {
             numOfPhones = phoneNumbers.size();
             phones = new String[numOfPhones];
             phonesTypes = new Integer[numOfPhones];
-			phonesLabels = new String[numOfPhones];
+            phonesLabels = new String[numOfPhones];
             phoneIds = new String[numOfPhones];
             for (int i = 0; i < numOfPhones; i++) {
                 ReadableMap phoneMap = phoneNumbers.getMap(i);
@@ -517,7 +517,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 String phoneId = phoneMap.hasKey("id") ? phoneMap.getString("id") : null;
                 phones[i] = phoneNumber;
                 phonesTypes[i] = mapStringToPhoneType(phoneLabel);
-				phonesLabels[i] = phoneLabel;
+                phonesLabels[i] = phoneLabel;
                 phoneIds[i] = phoneId;
             }
         }
@@ -561,7 +561,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             }
         }
 
-		ReadableArray postalAddresses = contact.hasKey("postalAddresses") ? contact.getArray("postalAddresses") : null;
+        ReadableArray postalAddresses = contact.hasKey("postalAddresses") ? contact.getArray("postalAddresses") : null;
         int numOfPostalAddresses = 0;
         String[] postalAddressesStreet = null;
         String[] postalAddressesCity = null;
@@ -570,7 +570,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String[] postalAddressesPostCode = null;
         String[] postalAddressesCountry = null;
         Integer[] postalAddressesType = null;
-		String[] postalAddressesLabel = null;
+        String[] postalAddressesLabel = null;
         if (postalAddresses != null) {
             numOfPostalAddresses = postalAddresses.size();
             postalAddressesStreet = new String[numOfPostalAddresses];
@@ -580,7 +580,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             postalAddressesPostCode = new String[numOfPostalAddresses];
             postalAddressesCountry = new String[numOfPostalAddresses];
             postalAddressesType = new Integer[numOfPostalAddresses];
-			postalAddressesLabel = new String[numOfPostalAddresses];
+            postalAddressesLabel = new String[numOfPostalAddresses];
             for (int i = 0; i < numOfPostalAddresses; i++) {
 				String postalLabel = postalAddresses.getMap(i).getString("label");
                 postalAddressesStreet[i] = postalAddresses.getMap(i).getString("street");
@@ -590,7 +590,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 postalAddressesPostCode[i] = postalAddresses.getMap(i).getString("postCode");
                 postalAddressesCountry[i] = postalAddresses.getMap(i).getString("country");
                 postalAddressesType[i] = mapStringToPostalAddressType(postalLabel);
-				postalAddressesLabel[i] = postalLabel;
+                postalAddressesLabel[i] = postalLabel;
             }
         }
 

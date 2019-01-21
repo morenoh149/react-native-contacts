@@ -708,17 +708,21 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 
 + (NSData*) imageData:(NSString*)sourceUri
 {
-    if ([sourceUri isEqualToString:@"LOCALL_CONTACT"]) {
-        sourceUri = [[NSBundle mainBundle] pathForResource:@"locall_contact" ofType:@"png"];
-        //NSLog(@"Contact image uri %@", sourceUri);
-    }
-
+    NSURL *url = [NSURL URLWithString:sourceUri];
+    
     if([sourceUri hasPrefix:@"assets-library"]){
         return [RCTContacts loadImageAsset:[NSURL URLWithString:sourceUri]];
+    } else if (url && url.scheme && url.host) {
+        return [NSData dataWithContentsOfURL:url];
     } else if ([sourceUri isAbsolutePath]) {
         return [NSData dataWithContentsOfFile:sourceUri];
     } else {
-        return [NSData dataWithContentsOfURL:[NSURL URLWithString:sourceUri]];
+        // Convert relative path to absolute path
+        NSUInteger index = [sourceUri rangeOfString:@"." options:NSBackwardsSearch].location;
+        NSString *path = [sourceUri substringToIndex:index];
+        NSString *type = [sourceUri substringFromIndex:(index+1)];
+        sourceUri = [[NSBundle mainBundle] pathForResource:path ofType:type];
+        return [NSData dataWithContentsOfFile:sourceUri];
     }
 }
 

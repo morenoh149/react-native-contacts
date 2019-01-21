@@ -5,50 +5,61 @@ Ask questions on [stackoverflow](https://stackoverflow.com/questions/tagged/reac
 
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
-
 ```es
 import Contacts from 'react-native-contacts';
 
 Contacts.getAll((err, contacts) => {
-  if (err) throw err;
-
+  if (err) {
+    throw err;
+  }
   // contacts returned
-  console.log(contacts)
 })
 ```
+See the full [API](#api) for more methods.
 
-`getContactMatchingString` is meant to alleviate the amount of time it takes to get all contacts, by filtering on the native side based on a string.
-
+### Android permissions
+On android you must request permissions beforehand
 ```es
+import { PermissionsAndroid } from 'react-native';
 import Contacts from 'react-native-contacts';
 
-Contacts.getContactsMatchingString("filter", (err, contacts) => {
-  if (err) throw err;
-
-  // contacts matching "filter"
-  console.log(contacts)
+PermissionsAndroid.request(
+  PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+  {
+    'title': 'Contacts',
+    'message': 'This app would like to view your contacts.'
+  }
+).then(() => {
+  Contacts.getAll((err, contacts) => {
+    if (err === 'denied'){
+      // error
+    } else {
+      // contacts returned in Array
+    }
+  })
 })
 ```
+
 ## Installation
 To use this module you have to install it and configure the permissions. Please read this entire section.
 
 ### Automatic
 with npm
-
-    npm install react-native-contacts --save
+```
+npm install react-native-contacts --save
+```
 _the `--save` is necessary for [automatic linking](https://facebook.github.io/react-native/docs/linking-libraries-ios.html#automatic-linking)_
 
 with yarn
-
-    yarn add react-native-contacts
+```
+yarn add react-native-contacts
+```
 and then do
-
-    react-native link
+```
+react-native link
+```
 If you get an error about
-`import Contacts from 'react-native-contacts'; is undefined.` try manual linking
-below.  
-
-Also, supporting older versions of Android (API level <= 22) requires extra permissions; see the [Android permissions](#android-1) section.
+`import Contacts from 'react-native-contacts'; is undefined.` try manual linking below.
 
 ### Manual
 #### iOS
@@ -92,11 +103,8 @@ public class MainActivity extends ReactActivity {
             new MainReactPackage(),
             new ReactNativeContacts()); // <------ add this
   }
-
   ......
-
 }
-
 ```
 
 ##### ProGuard
@@ -235,11 +243,13 @@ Contacts.openContactForm(newPerson, (err) => {
 ```
 You may want to edit the contact before saving it into your phone book. So using `openContactForm` allow you to prompt default phone create contacts UI and the new to-be-added contact will be display on the contacts UI view. Click save or cancel button will exit the contacts UI view.
 
-## Updating and Deleting Contacts
+## Updating Contacts
 Example
 ```es
 Contacts.getAll((err, contacts) => {
-  if (err) throw err;
+  if (err) {
+    throw err;
+  }
 
   // update the first record
   let someRecord = contacts[0]
@@ -251,20 +261,32 @@ Contacts.getAll((err, contacts) => {
     if (err) throw err;
     // record updated
   })
-
-  //delete the second record
-  Contacts.deleteContact(contacts[1], (err, recordId) => {
-    if (err) throw err;
-    // contact deleted
-  })
 })
 ```
-Update and delete reference contacts by their recordID (as returned by the OS in getContacts). Apple does not guarantee the recordID will not change, e.g. it may be reassigned during a phone migration. Consequently you should always grab a fresh contact list with `getContacts` before performing update and delete operations.
+Update reference contacts by their recordID (as returned by the OS in getContacts). Apple does not guarantee the recordID will not change, e.g. it may be reassigned during a phone migration. Consequently you should always grab a fresh contact list with `getContacts` before performing update operations.
 
-You can also delete a record using only it's recordID
+### Bugs
+There are issues with updating contacts on Android:
+1. custom labels get overwritten to "Other",
+1. postal address update code doesn't exist. (it exists for addContact)
+See https://github.com/rt2zz/react-native-contacts/issues/332#issuecomment-455675041 for current discussions.
+
+## Delete Contacts
+You can delete a record using only it's recordID
 ```es
 Contacts.deleteContact({recordID: 1}, (err, recordId) => {
-  if (err) throw err;
+  if (err) {
+    throw err;
+  }
+  // contact deleted
+})
+```
+Or by passing the full contact object with a `recordID` field.
+```es
+Contacts.deleteContact(contact, (err, recordId) => {
+  if (err) {
+    throw err;
+  }
   // contact deleted
 })
 ```

@@ -38,6 +38,7 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.Arguments;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -163,15 +164,25 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContentResolver cr = context.getContentResolver();
 
                 Uri uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, Long.parseLong(contactId));
-                try (InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(cr, uri)) {
-                    try (OutputStream outputStream = new FileOutputStream(file)) {
-                        BitmapFactory.decodeStream(inputStream).compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                        callback.invoke(null, true);
-                    } catch (IOException e) {
-                        callback.invoke(e.toString());
-                    }
-                } catch (IOException e) {
+                InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(cr, uri);
+                OutputStream outputStream = null;
+                try {
+                    outputStream = new FileOutputStream(file);
+                    BitmapFactory.decodeStream(inputStream).compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                    callback.invoke(null, true);
+                } catch (FileNotFoundException e) {
                     callback.invoke(e.toString());
+                } finally {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -591,6 +602,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      */
     @ReactMethod
     public void updateContact(ReadableMap contact, Callback callback) {
+
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
         String rawContactId = contact.hasKey("rawContactId") ? contact.getString("rawContactId") : null;
 
@@ -697,32 +709,21 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
 
         op.withYieldAllowed(true);
 
+        // remove existing phoneNumbers first
+        op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                .withSelection(
+                    ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.CONTACT_ID + " = ?", 
+                    new String[]{String.valueOf(CommonDataKinds.Phone.CONTENT_ITEM_TYPE), String.valueOf(recordID)}
+                );
+        ops.add(op.build());
+        
+        // add passed phonenumbers
         for (int i = 0; i < numOfPhones; i++) {
-            if (i == 0) {
-                // first delete old numbers
-                op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Phone.CONTENT_ITEM_TYPE});
-
-                ops.add(op.build());
-                // op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        // .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Phone.CONTENT_ITEM_TYPE});
-            }
-            if (phoneIds[i] == null) {
-                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
-                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                        .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-                        .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
-            } else {
-                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(phoneIds[i])})
-                        .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-                        .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
-            }
-
-            if (phonesLabels[i] == CommonDataKinds.Phone.TYPE_CUSTOM) {
-                op = op.withValue(CommonDataKinds.Phone.LABEL, phonesCustomLabels[i]);
-            }
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                    .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
+                    .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
             ops.add(op.build());
         }
 
@@ -740,19 +741,21 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             ops.add(op.build());
         }
 
+        // remove existing emails first
+        op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                .withSelection(
+                    ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.CONTACT_ID + " = ?", 
+                    new String[]{String.valueOf(CommonDataKinds.Email.CONTENT_ITEM_TYPE), String.valueOf(recordID)}
+                );
+        ops.add(op.build());
+
+        // add passed email addresses
         for (int i = 0; i < numOfEmails; i++) {
-            if (emailIds[i] == null) {
-                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
-                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
-                        .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-                        .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
-            } else {
-                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(emailIds[i])})
-                        .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-                        .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
-            }
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
+                    .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
+                    .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
             ops.add(op.build());
         }
 

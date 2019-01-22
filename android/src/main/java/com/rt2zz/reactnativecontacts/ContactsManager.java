@@ -188,20 +188,26 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         });
     }
 
-    private Bitmap getBitmapFromAsset(String filePath) {
-        AssetManager assetManager = getReactApplicationContext().getAssets();
+    private Bitmap getThumbnailBitmap(String thumbnailPath) {
+        // Thumbnail from absolute path
+        Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
 
-        InputStream istr;
-        Bitmap bitmap = null;
-        try {
-            istr = assetManager.open(filePath);
-            bitmap = BitmapFactory.decodeStream(istr);
-        } catch (IOException e) {
-            // handle exception
+        if (photo == null) {
+            // Try to find the thumbnail from assets
+            AssetManager assetManager = getReactApplicationContext().getAssets();
+            InputStream  inputStream = null;
+            try {
+                inputStream = assetManager.open(thumbnailPath);
+                photo = BitmapFactory.decodeStream(inputStream);
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        return bitmap;
+        return photo;
     }
+
     /*
      * Start open contact form
      */
@@ -344,7 +350,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         }
 
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
-            Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
+            Bitmap photo = getThumbnailBitmap(thumbnailPath);
 
             if(photo != null) {
                 ContentValues thumbnail = new ContentValues();
@@ -402,10 +408,6 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String department = contact.hasKey("department") ? contact.getString("department") : null;
         String note = contact.hasKey("note") ? contact.getString("note") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
-
-        // String name = givenName;
-        // name += middleName != "" ? " " + middleName : "";
-        // name += familyName != "" ? " " + familyName : "";
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -515,34 +517,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             ops.add(op.build());
         }
 
-        // Read locall contact image
-        Bitmap bitmap = null;
-        if ("LOCALL_CONTACT".equals(thumbnailPath)) {
-            bitmap = getBitmapFromAsset("locall_contact.png");
-        }
-
-        if(bitmap!=null){    // If an image is selected successfully
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG , 75, stream);
-
-            // Adding insert operation to operations list
-            // to insert Photo in the table ContactsContract.Data
-            ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                    .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1)
-                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, stream.toByteArray())
-                    .build());
-
-            try {
-                stream.flush();
-            }catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
-            Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
+            Bitmap photo = getThumbnailBitmap(thumbnailPath);
 
             if(photo != null) {
                 ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
@@ -759,34 +735,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             ops.add(op.build());
         }
 
-        // Read locall contact image
-        Bitmap bitmap = null;
-        if ("LOCALL_CONTACT".equals(thumbnailPath)) {
-            bitmap = getBitmapFromAsset("locall_contact.png");
-        }
-
-        if(bitmap!=null){    // If an image is selected successfully
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG , 75, stream);
-
-            // Adding insert operation to operations list
-            // to insert Photo in the table ContactsContract.Data
-            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), CommonDataKinds.Photo.CONTENT_ITEM_TYPE})
-                    .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1)
-                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, stream.toByteArray())
-                    .build());
-
-            try {
-                stream.flush();
-            }catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
-            Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
+            Bitmap photo = getThumbnailBitmap(thumbnailPath);
 
             if(photo != null) {
                 ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)

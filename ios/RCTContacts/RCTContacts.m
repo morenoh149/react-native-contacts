@@ -717,11 +717,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     } else if ([sourceUri isAbsolutePath]) {
         return [NSData dataWithContentsOfFile:sourceUri];
     } else {
-        // Convert relative path to absolute path
-        NSUInteger index = [sourceUri rangeOfString:@"." options:NSBackwardsSearch].location;
-        NSString *path = [sourceUri substringToIndex:index];
-        NSString *type = [sourceUri substringFromIndex:(index+1)];
-        sourceUri = [[NSBundle mainBundle] pathForResource:path ofType:type];
+        sourceUri = [[NSBundle mainBundle] pathForResource:[sourceUri stringByDeletingPathExtension] ofType:[sourceUri pathExtension]];
         return [NSData dataWithContentsOfFile:sourceUri];
     }
 }

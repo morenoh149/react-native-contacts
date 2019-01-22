@@ -188,20 +188,26 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         });
     }
 
-    private Bitmap getBitmapFromAsset(String filePath) {
-        AssetManager assetManager = getReactApplicationContext().getAssets();
+    private Bitmap getThumbnailBitmap(String thumbnailPath) {
+        // Thumbnail from absolute path
+        Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
 
-        InputStream istr;
-        Bitmap bitmap = null;
-        try {
-            istr = assetManager.open(filePath);
-            bitmap = BitmapFactory.decodeStream(istr);
-        } catch (IOException e) {
-            // handle exception
+        if (photo == null) {
+            // Try to find the thumbnail from assets
+            AssetManager assetManager = getReactApplicationContext().getAssets();
+            InputStream  inputStream = null;
+            try {
+                inputStream = assetManager.open(thumbnailPath);
+                photo = BitmapFactory.decodeStream(inputStream);
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        return bitmap;
+        return photo;
     }
+
     /*
      * Start open contact form
      */
@@ -344,11 +350,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         }
 
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
-            Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
-            if(photo == null) {
-                // Try to find the image in assets
-                photo = getBitmapFromAsset(thumbnailPath);
-            }
+            Bitmap photo = getThumbnailBitmap(thumbnailPath);
 
             if(photo != null) {
                 ContentValues thumbnail = new ContentValues();
@@ -406,10 +408,6 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String department = contact.hasKey("department") ? contact.getString("department") : null;
         String note = contact.hasKey("note") ? contact.getString("note") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
-
-        // String name = givenName;
-        // name += middleName != "" ? " " + middleName : "";
-        // name += familyName != "" ? " " + familyName : "";
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -520,11 +518,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         }
 
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
-            Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
-            if(photo == null) {
-                // Try to find the image in assets
-                photo = getBitmapFromAsset(thumbnailPath);
-            }
+            Bitmap photo = getThumbnailBitmap(thumbnailPath);
 
             if(photo != null) {
                 ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
@@ -742,11 +736,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         }
 
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
-            Bitmap photo = BitmapFactory.decodeFile(thumbnailPath);
-            if(photo == null) {
-                // Try to find the image in assets
-                photo = getBitmapFromAsset(thumbnailPath);
-            }
+            Bitmap photo = getThumbnailBitmap(thumbnailPath);
 
             if(photo != null) {
                 ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)

@@ -236,9 +236,10 @@ public class ContactsProvider {
     private Map<String, Contact> loadContactsFrom(Cursor cursor) {
 
         Map<String, Contact> map = new LinkedHashMap<>();
-
+        HashSet<String> normalizedNumbers = new HashSet<>();
         while (cursor != null && cursor.moveToNext()) {
-
+            String phone = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER));
+            if (normalizedNumbers.add(phone) == true){
             int columnIndexContactId = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
             int columnIndexId = cursor.getColumnIndex(ContactsContract.Data._ID);
             int columnIndexRawContactId = cursor.getColumnIndex(ContactsContract.Data.RAW_CONTACT_ID);
@@ -383,6 +384,7 @@ public class ContactsProvider {
                         }
                     }
                     break;
+            }
             }
         }
 

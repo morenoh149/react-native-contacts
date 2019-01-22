@@ -279,7 +279,7 @@ public class ContactsProvider {
             if (!TextUtils.isEmpty(name) && TextUtils.isEmpty(contact.displayName)) {
                 contact.displayName = name;
             }
-
+            contact.normalizeNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER));
             if (TextUtils.isEmpty(contact.photoUri)) {
                 String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
                 if (!TextUtils.isEmpty(rawPhotoURI)) {
@@ -316,6 +316,7 @@ public class ContactsProvider {
                                 label = "other";
                         }
                         contact.phones.add(new Contact.Item(label, phoneNumber, id));
+                     
                     }
                     break;
                 case Email.CONTENT_ITEM_TYPE:
@@ -427,7 +428,8 @@ public class ContactsProvider {
         private String company = "";
         private String jobTitle = "";
         private String department = "";
-        private String note ="";
+        private String note = "";
+        private String normalizeNumber = "";
         private List<Item> urls = new ArrayList<>();
         private boolean hasPhoto = false;
         private String photoUri;
@@ -454,6 +456,7 @@ public class ContactsProvider {
             contact.putString("jobTitle", jobTitle);
             contact.putString("department", department);
             contact.putString("note", note);
+            contact.putString("normalizeNumber", normalizeNumber);
             contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
 

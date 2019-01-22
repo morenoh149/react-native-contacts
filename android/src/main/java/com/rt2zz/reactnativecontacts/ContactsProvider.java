@@ -160,11 +160,11 @@ public class ContactsProvider {
                 }
             }
         }
-        
+
         if(matchingContacts.values().size() > 0) {
             return matchingContacts.values().iterator().next().toMap();
         }
-        
+
        return null;
     }
 

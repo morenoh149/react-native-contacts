@@ -46,6 +46,7 @@ public class ContactsProvider {
         add(StructuredName.PREFIX);
         add(StructuredName.SUFFIX);
         add(Phone.NUMBER);
+        add(Phone.NORMALIZED_NUMBER);
         add(Phone.TYPE);
         add(Phone.LABEL);
         add(Email.DATA);

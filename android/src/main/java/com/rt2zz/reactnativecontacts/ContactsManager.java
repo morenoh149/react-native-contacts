@@ -91,9 +91,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * @param callback user provided callback to run at completion
      */
     private void getAllContacts(final Callback callback) {
-        AsyncTask.execute(new Runnable() {
+        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
-            public void run() {
+            protected Void doInBackground(final Void ... params) {
                 Context context = getReactApplicationContext();
                 ContentResolver cr = context.getContentResolver();
 
@@ -101,8 +101,10 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 WritableArray contacts = contactsProvider.getContacts();
 
                 callback.invoke(null, contacts);
+                return null;
             }
-        });
+        };
+        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /*
@@ -121,17 +123,19 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * @param callback user provided callback to run at completion
      */
     private void getAllContactsMatchingString(final String searchString, final Callback callback) {
-        AsyncTask.execute(new Runnable() {
+        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
-            public void run() {
+            protected Void doInBackground(final Void ... params) {
                 Context context = getReactApplicationContext();
                 ContentResolver cr = context.getContentResolver();
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContactsMatchingString(searchString);
 
                 callback.invoke(null, contacts);
+                return null;
             }
-        });
+        };
+        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -142,24 +146,26 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      */
     @ReactMethod
     public void getPhotoForId(final String contactId, final Callback callback) {
-        AsyncTask.execute(new Runnable() {
+        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
-            public void run() {
+            protected Void doInBackground(final Void ... params) {
                 Context context = getReactApplicationContext();
                 ContentResolver cr = context.getContentResolver();
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
 
                 callback.invoke(null, photoUri);
+                return null;
             }
-        });
+        };
+        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @ReactMethod
     public void writePhotoToPath(final String contactId, final String file, final Callback callback) {
-        AsyncTask.execute(new Runnable() {
+        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
-            public void run() {
+            protected Void doInBackground(final Void ... params) {
                 Context context = getReactApplicationContext();
                 ContentResolver cr = context.getContentResolver();
 
@@ -184,8 +190,10 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
-        });
+        };
+        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private Bitmap getThumbnailBitmap(String thumbnailPath) {
@@ -473,7 +481,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 .withValue(StructuredName.PREFIX, prefix)
                 .withValue(StructuredName.SUFFIX, suffix);
         ops.add(op.build());
-        
+
         op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                 .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                 .withValue(ContactsContract.Data.MIMETYPE, Note.CONTENT_ITEM_TYPE)
@@ -724,16 +732,16 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
 
         op.withYieldAllowed(true);
 
-        
-        if (phoneNumbers != null) {     
+
+        if (phoneNumbers != null) {
             // remove existing phoneNumbers first
             op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
                     .withSelection(
-                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
+                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?",
                         new String[]{String.valueOf(CommonDataKinds.Phone.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
                     );
             ops.add(op.build());
-            
+
             // add passed phonenumbers
             for (int i = 0; i < numOfPhones; i++) {
                 op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
@@ -764,7 +772,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             // remove existing emails first
             op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
                     .withSelection(
-                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
+                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?",
                         new String[]{String.valueOf(CommonDataKinds.Email.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
                     );
             ops.add(op.build());
@@ -797,7 +805,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             //remove existing addresses
              op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
                     .withSelection(
-                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?", 
+                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?",
                         new String[]{String.valueOf(CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
                     );
             ops.add(op.build());

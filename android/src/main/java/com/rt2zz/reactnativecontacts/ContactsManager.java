@@ -693,13 +693,13 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             postalAddressesType = new Integer[numOfPostalAddresses];
             postalAddressesLabel = new String[numOfPostalAddresses];
             for (int i = 0; i < numOfPostalAddresses; i++) {
-                String postalLabel = postalAddresses.getMap(i).getString("label");
-                postalAddressesStreet[i] = postalAddresses.getMap(i).getString("street");
-                postalAddressesCity[i] = postalAddresses.getMap(i).getString("city");
-                postalAddressesState[i] = postalAddresses.getMap(i).getString("state");
-                postalAddressesRegion[i] = postalAddresses.getMap(i).getString("region");
-                postalAddressesPostCode[i] = postalAddresses.getMap(i).getString("postCode");
-                postalAddressesCountry[i] = postalAddresses.getMap(i).getString("country");
+                String postalLabel = getValueFromKey(postalAddresses.getMap(i), "label");
+                postalAddressesStreet[i] = getValueFromKey(postalAddresses.getMap(i), "street");
+                postalAddressesCity[i] =  getValueFromKey(postalAddresses.getMap(i), "city");
+                postalAddressesState[i] = getValueFromKey(postalAddresses.getMap(i), "state");
+                postalAddressesRegion[i] = getValueFromKey(postalAddresses.getMap(i),"region");
+                postalAddressesPostCode[i] = getValueFromKey(postalAddresses.getMap(i), "postCode");
+                postalAddressesCountry[i] = getValueFromKey(postalAddresses.getMap(i), "country");
                 postalAddressesType[i] = mapStringToPostalAddressType(postalLabel);
                 postalAddressesLabel[i] = postalLabel;
             }
@@ -921,6 +921,13 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         }
 
         requestCallback = null;
+    }
+
+    /*
+     * Get string value from key
+     */
+    private String getValueFromKey(ReadableMap item, String key) {
+        return item.hasKey(key) ? item.getString(key) : "";
     }
 
     /*

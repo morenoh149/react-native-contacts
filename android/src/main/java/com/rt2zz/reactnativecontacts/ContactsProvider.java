@@ -274,7 +274,7 @@ public class ContactsProvider {
             Contact contact = map.get(rawContactId);
             String mimeType = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.MIMETYPE));
             String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            contact.rawContactId = rawContactId;
+            contact.contactId = contactId;
             if (!TextUtils.isEmpty(name) && TextUtils.isEmpty(contact.displayName)) {
                 contact.displayName = name;
             }
@@ -435,8 +435,8 @@ public class ContactsProvider {
         private Birthday birthday;
 
 
-        public Contact(String contactId) {
-            this.contactId = contactId;
+        public Contact(String rawContactId) {
+            this.rawContactId = rawContactId;
         }
 
         public WritableMap toMap() {

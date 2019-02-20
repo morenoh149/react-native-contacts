@@ -267,11 +267,11 @@ public class ContactsProvider {
                 rawContactId = String.valueOf(ID_FOR_PROFILE_CONTACT);//no contact id for 'ME' user
             }
 
-            if (!map.containsKey(rawContactId)) {
-                map.put(rawContactId, new Contact(rawContactId));
+            if (!map.containsKey(contactId)) {
+                map.put(contactId, new Contact(contactId));
             }
 
-            Contact contact = map.get(rawContactId);
+            Contact contact = map.get(contactId);
             String mimeType = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.MIMETYPE));
             String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             contact.rawContactId = rawContactId;

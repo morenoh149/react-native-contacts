@@ -63,13 +63,11 @@ Using the same instructions as https://facebook.github.io/react-native/docs/link
 1. drag `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj` to `Libraries` in you project view.
 1. In the XCode project navigator, select your project,
 select the `Build Phases` tab drag `Libraries > RCTContacts.xcodeproj > Products > libRCTContacts.a` into the `Link Binary With Libraries` section.
-1. Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission.
-
-Open Xcode > open ios/yourApp.xcodeproj > Info.plist > Add key `Privacy - Contacts Usage Description` with your kit specific permission. The value for the key is optional in development. If you submit to the App Store the value must explain why you need this permission.
+1. Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission. Open `Info.plist`. Add key `Privacy - Contacts Usage Description` with your kit specific permission. The value for the key is optional in development. If you submit to the App Store the value must explain why you need this permission.
 
 <img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
-1. Click the Run button in the upper left hand corner.
+You should be able to run the app via the Run button in xcode or `react-native run-ios` in the terminal.
 
 ### Android
 1. In `android/settings.gradle`

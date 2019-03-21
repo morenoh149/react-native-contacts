@@ -43,26 +43,20 @@ PermissionsAndroid.request(
 ## Installation
 To use this module you have to install it and configure the permissions. Please read this entire section.
 
-### Automatic
-with npm
+Install with npm or yarn.
+
+With npm
 ```
 npm install react-native-contacts --save
 ```
-_the `--save` is necessary for [automatic linking](https://facebook.github.io/react-native/docs/linking-libraries-ios.html#automatic-linking)_
 
-with yarn
+With yarn
 ```
 yarn add react-native-contacts
 ```
-and then do
-```
-react-native link
-```
-If you get an error about
-`import Contacts from 'react-native-contacts'; is undefined.` try manual linking below.
+and then configure your project as follows
 
-### Manual
-#### iOS
+### iOS
 
 1. In XCode, in the project navigator, right click Libraries `Add Files to [your project's name]`
 1. add `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj`
@@ -70,7 +64,7 @@ If you get an error about
 select the `Build Phases` tab and in the `Link Binary With Libraries` section
 add `libRCTContacts.a`
 
-#### Android
+### Android
 1. In `android/settings.gradle`
 
 ```gradle
@@ -107,7 +101,7 @@ public class MainActivity extends ReactActivity {
 }
 ```
 
-##### ProGuard
+#### ProGuard
 
 If you use Proguard, the snippet below on proguard-rules.pro 
 Without it, your apk release version could failed

@@ -54,15 +54,16 @@ With yarn
 ```
 yarn add react-native-contacts
 ```
-and then configure your project as follows
+and then configure your project.
 
 ### iOS
 
-1. In XCode, in the project navigator, right click Libraries `Add Files to [your project's name]`
-1. add `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj`
+Using the same instructions as https://facebook.github.io/react-native/docs/linking-libraries-ios.html
+1. open in xcode `open ios/yourProject.xcodeproj/`
+1. drag `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj` to `Libraries` in you project view.
 1. In the XCode project navigator, select your project,
-select the `Build Phases` tab and in the `Link Binary With Libraries` section
-add `libRCTContacts.a`
+select the `Build Phases` tab drag `Libraries > RCTContacts.xcodeproj > Products > libRCTContacts.a` into the `Link Binary With Libraries` section.
+1. Click the Run button in the upper left hand corner.
 
 ### Android
 1. In `android/settings.gradle`

@@ -2,6 +2,7 @@
 #import <UIKit/UIKit.h>
 #import "RCTContacts.h"
 #import <AssetsLibrary/AssetsLibrary.h>
+#import <React/RCTLog.h>
 
 @implementation RCTContacts {
     CNContactStore * contactStore;
@@ -269,7 +270,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
             [email setObject: label forKey:@"label"];
             [emailAddreses addObject:email];
         } else {
-            NSLog(@"ignoring blank email");
+            RCTLog(@"ignoring blank email");
         }
     }
 
@@ -348,7 +349,7 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
         BOOL success = [[NSFileManager defaultManager] createFileAtPath:filepath contents:contactImageData attributes:nil];
 
         if (!success) {
-            NSLog(@"Unable to copy image");
+            RCTLog(@"Unable to copy image");
             return @"";
         }
 
@@ -743,7 +744,7 @@ enum { WDASSETURL_PENDINGREADS = 1, WDASSETURL_ALLFINISHED = 0};
                           [albumReadLock lock];
                           [albumReadLock unlockWithCondition:WDASSETURL_ALLFINISHED];
                       } failureBlock:^(NSError *error) {
-                          NSLog(@"asset error: %@", [error localizedDescription]);
+                          RCTLog(@"asset error: %@", [error localizedDescription]);
 
                           [albumReadLock lock];
                           [albumReadLock unlockWithCondition:WDASSETURL_ALLFINISHED];
@@ -753,7 +754,7 @@ enum { WDASSETURL_PENDINGREADS = 1, WDASSETURL_ALLFINISHED = 0};
     [albumReadLock lockWhenCondition:WDASSETURL_ALLFINISHED];
     [albumReadLock unlock];
 
-    NSLog(@"asset lookup finished: %@ %@", [assetURL absoluteString], (data ? @"exists" : @"does not exist"));
+    RCTLog(@"asset lookup finished: %@ %@", [assetURL absoluteString], (data ? @"exists" : @"does not exist"));
 
     return data;
 }
@@ -794,7 +795,7 @@ RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) callback)
         CNContactStore* store = [[CNContactStore alloc] init];
 
         if(!store.defaultContainerIdentifier) {
-            NSLog(@"warn - no contact store container id");
+            RCTLog(@"warn - no contact store container id");
 
             CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
             if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){

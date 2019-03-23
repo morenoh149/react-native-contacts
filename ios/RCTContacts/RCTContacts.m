@@ -426,14 +426,21 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID callback:(RCTRespo
                                addressBook:(CNContactStore*)addressBook
                                withThumbnails:(BOOL) withThumbnails
 {
-    NSString *filepath = [self thumbnailFilePath:recordID];
-
-    if([[NSFileManager defaultManager] fileExistsAtPath:filepath]) {
-        return filepath;
-    }
-
     NSError* contactError;
-    NSArray * keysToFetch =@[CNContactThumbnailImageDataKey, CNContactImageDataAvailableKey];
+    NSArray *keysToFetch = @[
+                      CNContactEmailAddressesKey,
+                      CNContactPhoneNumbersKey,
+                      CNContactFamilyNameKey,
+                      CNContactGivenNameKey,
+                      CNContactMiddleNameKey,
+                      CNContactPostalAddressesKey,
+                      CNContactOrganizationNameKey,
+                      CNContactJobTitleKey,
+                      CNContactImageDataAvailableKey,
+                      CNContactNoteKey,
+                      CNContactUrlAddressesKey,
+                      CNContactBirthdayKey
+                      ];
     CNContact* contact = [addressBook unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError];
 
     return [self contactToDictionary: contact withThumbnails:withThumbnails];

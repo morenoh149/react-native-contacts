@@ -1,4 +1,4 @@
-declare module 'react-native-contacts' {
+
   export function getAll(callback: (error: any, contacts: Contact[]) => void): void;
   export function getAllWithoutPhotos(callback: (error: any, contacts: Contact[]) => void): void;
   export function getContactById(contactId: string, callback: (error: any, contact: Contact) => void): void;
@@ -16,6 +16,11 @@ declare module 'react-native-contacts' {
   export interface EmailAddress {
       label: string;
       email: string;
+  }
+
+  export interface UrlAddress {
+    label: string;
+    url: string;
   }
 
   export interface PhoneNumber {
@@ -46,6 +51,7 @@ declare module 'react-native-contacts' {
       recordID: string;
       company: string;
       emailAddresses: EmailAddress[];
+      urlAddresses: UrlAddress[];
       familyName: string;
       givenName: string;
       middleName: string;
@@ -59,4 +65,4 @@ declare module 'react-native-contacts' {
       department: string;
       birthday: Birthday;
   }
-}
+

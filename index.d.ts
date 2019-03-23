@@ -17,11 +17,6 @@ export interface EmailAddress {
     email: string;
 }
 
-export interface UrlAddress {
-label: string;
-url: string;
-}
-
 export interface PhoneNumber {
     label: string;
     number: string;
@@ -50,7 +45,6 @@ export interface Contact {
     recordID: string;
     company: string;
     emailAddresses: EmailAddress[];
-    urlAddresses: UrlAddress[];
     familyName: string;
     givenName: string;
     middleName: string;

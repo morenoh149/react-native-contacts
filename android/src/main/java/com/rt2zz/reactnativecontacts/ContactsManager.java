@@ -161,6 +161,29 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    /**
+     * Retrieves <code>contact</code> for contact, or <code>null</code> if not available.
+     *
+     * @param contactId contact identifier, <code>recordID</code>
+     * @param callback callback
+     */
+    @ReactMethod
+    public void getContactById(final String contactId, final Callback callback) {
+        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
+            @Override
+            protected Void doInBackground(final Void ... params) {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
+                WritableMap contact = contactsProvider.getContactById(contactId);
+
+                callback.invoke(null, contact);
+                return null;
+            }
+        };
+        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     @ReactMethod
     public void writePhotoToPath(final String contactId, final String file, final Callback callback) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {

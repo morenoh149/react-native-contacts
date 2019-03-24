@@ -402,6 +402,51 @@ RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID callback:(RCTRespon
     return [self getFilePathForThumbnailImage:contact recordID:recordID];
 }
 
+RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID callback:(RCTResponseSenderBlock)callback)
+{
+    CNContactStore* contactStore = [self contactsStore:callback];
+    if(!contactStore)
+        return;
+
+    CNEntityType entityType = CNEntityTypeContacts;
+    if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusNotDetermined)
+    {
+        [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            if(granted){
+                callback(@[[NSNull null], [self getContact:recordID addressBook:contactStore withThumbnails:false]]);
+            }
+        }];
+    }
+    else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
+    {
+        callback(@[[NSNull null], [self getContact:recordID addressBook:contactStore withThumbnails:false]]);
+    }
+}
+
+-(NSString *) getContact:(NSString *)recordID
+                               addressBook:(CNContactStore*)addressBook
+                               withThumbnails:(BOOL) withThumbnails
+{
+    NSError* contactError;
+    NSArray *keysToFetch = @[
+                      CNContactEmailAddressesKey,
+                      CNContactPhoneNumbersKey,
+                      CNContactFamilyNameKey,
+                      CNContactGivenNameKey,
+                      CNContactMiddleNameKey,
+                      CNContactPostalAddressesKey,
+                      CNContactOrganizationNameKey,
+                      CNContactJobTitleKey,
+                      CNContactImageDataAvailableKey,
+                      CNContactNoteKey,
+                      CNContactUrlAddressesKey,
+                      CNContactBirthdayKey
+                      ];
+    CNContact* contact = [addressBook unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError];
+
+    return [self contactToDictionary: contact withThumbnails:withThumbnails];
+}
+
 
 RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
 {

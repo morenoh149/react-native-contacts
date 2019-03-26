@@ -43,34 +43,34 @@ PermissionsAndroid.request(
 ## Installation
 To use this module you have to install it and configure the permissions. Please read this entire section.
 
-### Automatic
-with npm
+Install with npm or yarn.
+
+With npm
 ```
 npm install react-native-contacts --save
 ```
-_the `--save` is necessary for [automatic linking](https://facebook.github.io/react-native/docs/linking-libraries-ios.html#automatic-linking)_
 
-with yarn
+With yarn
 ```
 yarn add react-native-contacts
 ```
-and then do
-```
-react-native link
-```
-If you get an error about
-`import Contacts from 'react-native-contacts'; is undefined.` try manual linking below.
+and then configure your project.
 
-### Manual
-#### iOS
+### iOS
 
-1. In XCode, in the project navigator, right click Libraries `Add Files to [your project's name]`
-1. add `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj`
+Using the same instructions as https://facebook.github.io/react-native/docs/linking-libraries-ios.html
+1. open in xcode `open ios/yourProject.xcodeproj/`
+1. drag `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj` to `Libraries` in you project view.
 1. In the XCode project navigator, select your project,
-select the `Build Phases` tab and in the `Link Binary With Libraries` section
-add `libRCTContacts.a`
+select the `Build Phases` tab drag `Libraries > RCTContacts.xcodeproj > Products > libRCTContacts.a` into the `Link Binary With Libraries` section. Video to clarify 
+  [Adding Camera Roll to an ios project in React Native](https://www.youtube.com/watch?v=e3ReNbQu79c).
+1. Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission. Open `Info.plist`. Add key `Privacy - Contacts Usage Description` with your kit specific permission. The value for the key is optional in development. If you submit to the App Store the value must explain why you need this permission.
 
-#### Android
+<img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
+
+You should be able to run the app via the Run button in xcode or `react-native run-ios` in the terminal.
+
+### Android
 1. In `android/settings.gradle`
 
 ```gradle
@@ -107,26 +107,7 @@ public class MainActivity extends ReactActivity {
 }
 ```
 
-##### ProGuard
-
-If you use Proguard, the snippet below on proguard-rules.pro 
-Without it, your apk release version could failed
-
-```
--keep class com.rt2zz.reactnativecontacts.** {*;}
--keepclassmembers class com.rt2zz.reactnativecontacts.** {*;}
-```
-
-### Permissions
-#### iOS
-
-Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission.
-
-Open Xcode > open ios/yourApp.xcodeproj > Info.plist > Add key `Privacy - Contacts Usage Description` with your kit specific permission. The value for the key is optional in development. If you submit to the App Store the value must explain why you need this permission.
-
-<img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
-
-#### Android
+#### Permissions
 ##### API 23+
 Android requires allowing permissions with https://facebook.github.io/react-native/docs/permissionsandroid.html
 The `READ_CONTACTS` permission is automatically added to `AndroidManifest.xml`, so you just need request it. If your app creates contacts add `WRITE_CONTACTS` permission to `AndroidManifest.xml` and request the permission at runtime.
@@ -142,6 +123,16 @@ Add `READ_PROFILE` and/or `WRITE_PROFILE` permissions to `AndroidManifest.xml`
 ...
 <uses-permission android:name="android.permission.READ_PROFILE" />
 ...
+```
+
+#### ProGuard
+
+If you use Proguard, the snippet below on proguard-rules.pro 
+Without it, your apk release version could failed
+
+```
+-keep class com.rt2zz.reactnativecontacts.** {*;}
+-keepclassmembers class com.rt2zz.reactnativecontacts.** {*;}
 ```
 
 ## API

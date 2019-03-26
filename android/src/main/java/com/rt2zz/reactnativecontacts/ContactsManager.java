@@ -274,11 +274,15 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         ReadableArray urlAddresses = contact.hasKey("urlAddresses") ? contact.getArray("urlAddresses") : null;
         int numOfUrls = 0;
         String[] urls = null;
+        Integer[] urlsLabels = null;
         if (urlAddresses != null) {
             numOfUrls = urlAddresses.size();
             urls = new String[numOfUrls];
+            urlsLabels = new Integer[numOfUrls];
             for (int i = 0; i < numOfUrls; i++) {
                 urls[i] = urlAddresses.getMap(i).getString("url");
+                String label = urlAddresses.getMap(i).getString("label");
+                urlsLabels[i] = mapStringToUrlType(label);
             }
         }
 
@@ -347,6 +351,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         for (int i = 0; i < numOfUrls; i++) {
             ContentValues url = new ContentValues();
             url.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            url.put(CommonDataKinds.Website.TYPE, urlsLabels[i]);
             url.put(CommonDataKinds.Website.URL, urls[i]);
             contactData.add(url);
         }
@@ -461,11 +466,18 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         ReadableArray urlAddresses = contact.hasKey("urlAddresses") ? contact.getArray("urlAddresses") : null;
         int numOfUrls = 0;
         String[] urls = null;
+        Integer[] urlsTypes = null;
+        String[] urlsLabels = null;
         if (urlAddresses != null) {
             numOfUrls = urlAddresses.size();
             urls = new String[numOfUrls];
+            urlsTypes = new Integer[numOfUrls];
+            urlsLabels = new String[numOfUrls];
             for (int i = 0; i < numOfUrls; i++) {
                 urls[i] = urlAddresses.getMap(i).getString("url");
+                String label = urlAddresses.getMap(i).getString("label");
+                urlsTypes[i] = mapStringToEmailType(label);
+                urlsLabels[i] = label;
             }
         }
 
@@ -536,7 +548,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Website.CONTENT_ITEM_TYPE)
-                    .withValue(CommonDataKinds.Website.URL, urls[i]);
+                    .withValue(CommonDataKinds.Website.URL, urls[i])
+                    .withValue(CommonDataKinds.Website.TYPE, urlsTypes[i])
+                    .withValue(CommonDataKinds.Website.LABEL, urlsLabels[i]);
             ops.add(op.build());
         }
 
@@ -616,9 +630,21 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
         String rawContactId = contact.hasKey("rawContactId") ? contact.getString("rawContactId") : null;
 
+        // try resolve rawContactId and recordID
         if (rawContactId == null || recordID == null) {
-            callback.invoke("Invalid recordId or rawContactId");
-            return;
+            Context context = getReactApplicationContext();
+            ContentResolver cr = context.getContentResolver();
+            ContactsProvider contactsProvider = new ContactsProvider(cr);
+            if (recordID != null){
+                rawContactId = contactsProvider.getContactById(recordID).getString("rawContactId") ;
+            }
+            else if (rawContactId != null) {
+                recordID = contactsProvider.getContactByRawId(rawContactId).getString("recordID") ;
+            }
+            else {
+                callback.invoke("Invalid recordId or rawContactId");
+                return;
+            }
         }
 
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
@@ -659,15 +685,22 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         ReadableArray urlAddresses = contact.hasKey("urlAddresses") ? contact.getArray("urlAddresses") : null;
         int numOfUrls = 0;
         String[] urls = null;
+        Integer[] urlsTypes = null;
+        String[] urlsLabels = null;
         String[] urlIds = null;
 
         if (urlAddresses != null) {
             numOfUrls = urlAddresses.size();
             urls = new String[numOfUrls];
             urlIds = new String[numOfUrls];
+            urlsTypes = new Integer[numOfUrls];
+            urlsLabels = new String[numOfUrls];
             for (int i = 0; i < numOfUrls; i++) {
                 ReadableMap urlMap = urlAddresses.getMap(i);
                 urls[i] = urlMap.getString("url");
+                String label = urlMap.getString("label");
+                urlsTypes[i] = mapStringToEmailType(label);
+                urlsLabels[i] = label;
                 urlIds[i] = urlMap.hasKey("id") ? urlMap.getString("id") : null;
             }
         }
@@ -736,25 +769,43 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 .withValue(RawContacts.ACCOUNT_NAME, null);
         ops.add(op.build());
 
-        op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                .withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{String.valueOf(recordID)})
-                .withValue(ContactsContract.Data.MIMETYPE, StructuredName.CONTENT_ITEM_TYPE)
-                .withValue(StructuredName.GIVEN_NAME, givenName)
-                .withValue(StructuredName.MIDDLE_NAME, middleName)
-                .withValue(StructuredName.FAMILY_NAME, familyName)
-                .withValue(StructuredName.PREFIX, prefix)
-                .withValue(StructuredName.SUFFIX, suffix);
-        ops.add(op.build());
+        if (givenName != null || middleName != null || familyName != null || prefix != null || suffix != null) {
+            op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{String.valueOf(recordID)});
+            if (givenName != null){
+                op = op.withValue(StructuredName.GIVEN_NAME, givenName);
+            }
+            if (middleName != null){
+                op = op.withValue(StructuredName.MIDDLE_NAME, middleName);
+            }
+            if (familyName != null){
+                op = op.withValue(StructuredName.FAMILY_NAME, familyName);
+            }
+            if (prefix != null){
+                op = op.withValue(StructuredName.PREFIX, prefix);
+            }
+            if (suffix != null){
+                op = op.withValue(StructuredName.SUFFIX, suffix);
+            }
+            ops.add(op.build());
+        }
 
-        op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), Organization.CONTENT_ITEM_TYPE})
-                .withValue(Organization.COMPANY, company)
-                .withValue(Organization.TITLE, jobTitle)
-                .withValue(Organization.DEPARTMENT, department);
-        ops.add(op.build());
+        if (company != null || jobTitle != null || department != null) {
+            op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), Organization.CONTENT_ITEM_TYPE});
+            if (company != null){
+                op = op.withValue(Organization.COMPANY, company);
+            }
+            if (jobTitle != null){
+                op = op.withValue(Organization.TITLE, jobTitle);
+            }
+            if (department != null){
+                op = op.withValue(Organization.DEPARTMENT, department);
+            }
+            ops.add(op.build());
+        }
 
         op.withYieldAllowed(true);
-
 
         if (phoneNumbers != null) {
             // remove existing phoneNumbers first
@@ -777,18 +828,25 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             }
         }
 
-        for (int i = 0; i < numOfUrls; i++) {
-            if (urlIds[i] == null) {
+        if (urlAddresses != null){
+            // remove existing urls first
+            op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(
+                            ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?",
+                            new String[]{String.valueOf(CommonDataKinds.Website.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
+                    );
+            ops.add(op.build());
+
+            // add passed urls
+            for (int i = 0; i < numOfUrls; i++) {
                 op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
                         .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Website.CONTENT_ITEM_TYPE)
-                        .withValue(CommonDataKinds.Website.URL, urls[i]);
-            } else {
-                op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(urlIds[i])})
-                        .withValue(CommonDataKinds.Website.URL, urls[i]);
+                        .withValue(CommonDataKinds.Website.URL, urls[i])
+                        .withValue(CommonDataKinds.Website.TYPE, urlsTypes[i])
+                        .withValue(CommonDataKinds.Website.LABEL, urlsLabels[i]);
+                ops.add(op.build());
             }
-            ops.add(op.build());
         }
 
         if (emailAddresses != null){
@@ -1024,6 +1082,37 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 break;
         }
         return emailType;
+    }
+
+    private int mapStringToUrlType(String label) {
+        int urlType;
+        switch (label) {
+            case "blog":
+                urlType = CommonDataKinds.Website.TYPE_BLOG;
+                break;
+            case "ftp":
+                urlType = CommonDataKinds.Website.TYPE_FTP;
+                break;
+            case "home":
+                urlType = CommonDataKinds.Website.TYPE_HOME;
+                break;
+            case "homepage":
+                urlType = CommonDataKinds.Website.TYPE_HOMEPAGE;
+                break;
+            case "profile":
+                urlType = CommonDataKinds.Website.TYPE_PROFILE;
+                break;
+            case "work":
+                urlType = CommonDataKinds.Website.TYPE_WORK;
+                break;
+            case "other":
+                urlType = CommonDataKinds.Website.TYPE_OTHER;
+                break;
+            default:
+                urlType = CommonDataKinds.Website.TYPE_CUSTOM;
+                break;
+        }
+        return urlType;
     }
 
     private int mapStringToPostalAddressType(String label) {

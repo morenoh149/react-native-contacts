@@ -68,6 +68,8 @@ public class ContactsProvider {
         add(StructuredPostal.COUNTRY);
         add(Note.NOTE);
         add(Website.URL);
+        add(Website.TYPE);
+        add(Website.LABEL);
         add(Event.START_DATE);
         add(Event.TYPE);
     }};
@@ -334,7 +336,7 @@ public class ContactsProvider {
                                 break;
                             case Email.TYPE_CUSTOM:
                                 if (cursor.getString(cursor.getColumnIndex(Email.LABEL)) != null) {
-                                    label = cursor.getString(cursor.getColumnIndex(Email.LABEL)).toLowerCase();
+                                    label = cursor.getString(cursor.getColumnIndex(Email.LABEL));
                                 } else {
                                     label = "";
                                 }
@@ -352,6 +354,43 @@ public class ContactsProvider {
                     break;
                 case StructuredPostal.CONTENT_ITEM_TYPE:
                     contact.postalAddresses.add(new Contact.PostalAddressItem(cursor));
+                    break;
+                case Website.CONTENT_ITEM_TYPE:
+                    String url = cursor.getString(cursor.getColumnIndex(Website.URL));
+                    int urlType = cursor.getInt(cursor.getColumnIndex(Website.TYPE));
+                    if (!TextUtils.isEmpty(url)) {
+                        String label;
+                        switch (urlType) {
+                            case Website.TYPE_BLOG:
+                                label = "blog";
+                                break;
+                            case Website.TYPE_FTP:
+                                label = "ftp";
+                                break;
+                            case Website.TYPE_HOME:
+                                label = "home";
+                                break;
+                            case Website.TYPE_HOMEPAGE:
+                                label = "homepage";
+                                break;
+                            case Website.TYPE_PROFILE:
+                                label = "profile";
+                                break;
+                            case Website.TYPE_WORK:
+                                label = "work";
+                                break;
+                            case Website.TYPE_CUSTOM:
+                                if (cursor.getString(cursor.getColumnIndex(Website.LABEL)) != null) {
+                                    label = cursor.getString(cursor.getColumnIndex(Website.LABEL));
+                                } else {
+                                    label = "";
+                                }
+                                break;
+                            default:
+                                label = "other";
+                        }
+                        contact.urls.add(new Contact.Item(label, url, id));
+                    }
                     break;
                 case Event.CONTENT_ITEM_TYPE:
                     int eventType = cursor.getInt(cursor.getColumnIndex(Event.TYPE));
@@ -469,6 +508,7 @@ public class ContactsProvider {
             for (Item item : urls) {
                 WritableMap map = Arguments.createMap();
                 map.putString("url", item.value);
+                map.putString("label", item.label);
                 map.putString("id", item.id);
                 urlAddresses.pushMap(map);
             }

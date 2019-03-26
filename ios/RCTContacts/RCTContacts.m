@@ -644,12 +644,24 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 
     NSDictionary *birthday = [contactData valueForKey:@"birthday"];
 
-    contact.givenName = givenName;
-    contact.familyName = familyName;
-    contact.middleName = middleName;
-    contact.organizationName = company;
-    contact.jobTitle = jobTitle;
-    contact.note = note;
+    if (givenName) {
+        contact.givenName = givenName;
+    }
+    if (givenName) {
+        contact.familyName = familyName;
+    }
+    if (givenName) {
+       contact.middleName = middleName;
+    }
+    if (givenName) {
+        contact.organizationName = company;
+    }
+    if (givenName) {
+        contact.jobTitle = jobTitle;
+    }
+    if (givenName) {
+        contact.note = note;
+    }
 
     if (birthday) {
         NSDateComponents *components;
@@ -669,81 +681,87 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 
         contact.birthday = components;
     }
-
-    NSMutableArray *phoneNumbers = [[NSMutableArray alloc]init];
-
-    for (id phoneData in [contactData valueForKey:@"phoneNumbers"]) {
-        NSString *label = [phoneData valueForKey:@"label"];
-        NSString *number = [phoneData valueForKey:@"number"];
-
-        CNLabeledValue *phone;
-        if ([label isEqual: @"main"]){
-            phone = [[CNLabeledValue alloc] initWithLabel:CNLabelPhoneNumberMain value:[[CNPhoneNumber alloc] initWithStringValue:number]];
+    
+    if ([contactData valueForKey:@"phoneNumbers"]) {
+        NSMutableArray *phoneNumbers = [[NSMutableArray alloc]init];
+        
+        for (id phoneData in [contactData valueForKey:@"phoneNumbers"]) {
+            NSString *label = [phoneData valueForKey:@"label"];
+            NSString *number = [phoneData valueForKey:@"number"];
+            
+            CNLabeledValue *phone;
+            if ([label isEqual: @"main"]){
+                phone = [[CNLabeledValue alloc] initWithLabel:CNLabelPhoneNumberMain value:[[CNPhoneNumber alloc] initWithStringValue:number]];
+            }
+            else if ([label isEqual: @"mobile"]){
+                phone = [[CNLabeledValue alloc] initWithLabel:CNLabelPhoneNumberMobile value:[[CNPhoneNumber alloc] initWithStringValue:number]];
+            }
+            else if ([label isEqual: @"iPhone"]){
+                phone = [[CNLabeledValue alloc] initWithLabel:CNLabelPhoneNumberiPhone value:[[CNPhoneNumber alloc] initWithStringValue:number]];
+            }
+            else{
+                phone = [[CNLabeledValue alloc] initWithLabel:label value:[[CNPhoneNumber alloc] initWithStringValue:number]];
+            }
+            
+            [phoneNumbers addObject:phone];
         }
-        else if ([label isEqual: @"mobile"]){
-            phone = [[CNLabeledValue alloc] initWithLabel:CNLabelPhoneNumberMobile value:[[CNPhoneNumber alloc] initWithStringValue:number]];
-        }
-        else if ([label isEqual: @"iPhone"]){
-            phone = [[CNLabeledValue alloc] initWithLabel:CNLabelPhoneNumberiPhone value:[[CNPhoneNumber alloc] initWithStringValue:number]];
-        }
-        else{
-            phone = [[CNLabeledValue alloc] initWithLabel:label value:[[CNPhoneNumber alloc] initWithStringValue:number]];
-        }
-
-        [phoneNumbers addObject:phone];
+        contact.phoneNumbers = phoneNumbers;
     }
-    contact.phoneNumbers = phoneNumbers;
-
-
-    NSMutableArray *urls = [[NSMutableArray alloc]init];
-
-    for (id urlData in [contactData valueForKey:@"urlAddresses"]) {
-        NSString *label = [urlData valueForKey:@"label"];
-        NSString *url = [urlData valueForKey:@"url"];
-
-        if(label && url) {
-            [urls addObject:[[CNLabeledValue alloc] initWithLabel:label value:url]];
+    
+    if ([contactData valueForKey:@"urlAddresses"]) {
+        NSMutableArray *urls = [[NSMutableArray alloc]init];
+        
+        for (id urlData in [contactData valueForKey:@"urlAddresses"]) {
+            NSString *label = [urlData valueForKey:@"label"];
+            NSString *url = [urlData valueForKey:@"url"];
+            
+            if(label && url) {
+                [urls addObject:[[CNLabeledValue alloc] initWithLabel:label value:url]];
+            }
         }
+        
+        contact.urlAddresses = urls;
     }
-
-    contact.urlAddresses = urls;
-
-
-    NSMutableArray *emails = [[NSMutableArray alloc]init];
-
-    for (id emailData in [contactData valueForKey:@"emailAddresses"]) {
-        NSString *label = [emailData valueForKey:@"label"];
-        NSString *email = [emailData valueForKey:@"email"];
-
-        if(label && email) {
-            [emails addObject:[[CNLabeledValue alloc] initWithLabel:label value:email]];
+    
+    if ([contactData valueForKey:@"emailAddresses"]) {
+        NSMutableArray *emails = [[NSMutableArray alloc]init];
+        
+        for (id emailData in [contactData valueForKey:@"emailAddresses"]) {
+            NSString *label = [emailData valueForKey:@"label"];
+            NSString *email = [emailData valueForKey:@"email"];
+            
+            if(label && email) {
+                [emails addObject:[[CNLabeledValue alloc] initWithLabel:label value:email]];
+            }
         }
+        
+        contact.emailAddresses = emails;
     }
-
-    contact.emailAddresses = emails;
-
-    NSMutableArray *postalAddresses = [[NSMutableArray alloc]init];
-
-    for (id addressData in [contactData valueForKey:@"postalAddresses"]) {
-        NSString *label = [addressData valueForKey:@"label"];
-        NSString *street = [addressData valueForKey:@"street"];
-        NSString *postalCode = [addressData valueForKey:@"postCode"];
-        NSString *city = [addressData valueForKey:@"city"];
-        NSString *country = [addressData valueForKey:@"country"];
-        NSString *state = [addressData valueForKey:@"state"];
-
-        if(label && street) {
-            CNMutablePostalAddress *postalAddr = [[CNMutablePostalAddress alloc] init];
-            postalAddr.street = street;
-            postalAddr.postalCode = postalCode;
-            postalAddr.city = city;
-            postalAddr.country = country;
-            postalAddr.state = state;
-            [postalAddresses addObject:[[CNLabeledValue alloc] initWithLabel:label value: postalAddr]];
+    
+    if ([contactData valueForKey:@"postalAddresses"]) {
+        NSMutableArray *postalAddresses = [[NSMutableArray alloc]init];
+        
+        for (id addressData in [contactData valueForKey:@"postalAddresses"]) {
+            NSString *label = [addressData valueForKey:@"label"];
+            NSString *street = [addressData valueForKey:@"street"];
+            NSString *postalCode = [addressData valueForKey:@"postCode"];
+            NSString *city = [addressData valueForKey:@"city"];
+            NSString *country = [addressData valueForKey:@"country"];
+            NSString *state = [addressData valueForKey:@"state"];
+            
+            if(label && street) {
+                CNMutablePostalAddress *postalAddr = [[CNMutablePostalAddress alloc] init];
+                postalAddr.street = street;
+                postalAddr.postalCode = postalCode;
+                postalAddr.city = city;
+                postalAddr.country = country;
+                postalAddr.state = state;
+                [postalAddresses addObject:[[CNLabeledValue alloc] initWithLabel:label value: postalAddr]];
+            }
         }
-    }
 
-    contact.postalAddresses = postalAddresses;
+        contact.postalAddresses = postalAddresses;
+    }
 
     NSString *thumbnailPath = [contactData valueForKey:@"thumbnailPath"];
 

@@ -92,8 +92,9 @@ public class ContactsProvider {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ?",
-                    new String[]{"%" + searchString + "%"},
+                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ? OR " +
+                            Organization.COMPANY + " LIKE ?",
+                    new String[]{"%" + searchString + "%", "%" + searchString + "%"},
                     null
             );
 

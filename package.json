@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/rt2zz/react-native-contacts.git"
   },
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "React Native Contacts (android & ios)",
   "nativePackage": true,
   "keywords": [
@@ -25,10 +25,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "rt2zz <zack@root-two.com>",
   "contributors": [
-    "Harry Moreno <morenoh149@gmail.com> (http://harrymoreno.com/)",
-    "Nick Pomfret"
+    {
+      "name": "Harry Moreno",
+      "email": "morenoh149@gmail.com",
+      "url": "http://harrymoreno.com/"
+    },
+    { "name": "Nick Pomfret" },
+    { "name": "rt2zz <zack@root-two.com>" }
   ],
   "license": "MIT"
 }

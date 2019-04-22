@@ -337,14 +337,17 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
 
 -(NSString *) getFilePathForThumbnailImage:(CNContact*) contact recordID:(NSString*) recordID
 {
-    NSString *filepath = [self thumbnailFilePath:recordID];
-
-    if([[NSFileManager defaultManager] fileExistsAtPath:filepath]) {
-        return filepath;
-    }
-
     if (contact.imageDataAvailable){
+        NSString *filepath = [self thumbnailFilePath:recordID];
         NSData *contactImageData = contact.thumbnailImageData;
+
+        if ([[NSFileManager defaultManager] fileExistsAtPath:filepath]) {
+            NSData *existingImageData = [NSData dataWithContentsOfFile: filepath];
+
+            if([contactImageData isEqual: existingImageData]) {
+                return filepath;
+            }
+        }
 
         BOOL success = [[NSFileManager defaultManager] createFileAtPath:filepath contents:contactImageData attributes:nil];
 

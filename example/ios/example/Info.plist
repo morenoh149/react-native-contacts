@@ -56,5 +56,7 @@
 			</dict>
 		</dict>
 	</dict>
+    <key>NSContactsUsageDescription</key>
+    <string>The example app needs permission to show contacts</string>
 </dict>
 </plist>

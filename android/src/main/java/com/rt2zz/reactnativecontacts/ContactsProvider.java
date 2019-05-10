@@ -201,6 +201,7 @@ public class ContactsProvider {
                     + ContactsContract.Data.MIMETYPE + "=? OR "
                     + ContactsContract.Data.MIMETYPE + "=? OR "
                     + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
                     + ContactsContract.Data.MIMETYPE + "=?",
                     new String[]{
                         Email.CONTENT_ITEM_TYPE,
@@ -210,6 +211,7 @@ public class ContactsProvider {
                         StructuredPostal.CONTENT_ITEM_TYPE,
                         Note.CONTENT_ITEM_TYPE,
                         Website.CONTENT_ITEM_TYPE,
+                        Event.CONTENT_ITEM_TYPE,
                     },
                     null
             );

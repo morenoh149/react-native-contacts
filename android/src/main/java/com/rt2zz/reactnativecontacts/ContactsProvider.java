@@ -38,6 +38,7 @@ public class ContactsProvider {
         add(ContactsContract.Data.LOOKUP_KEY);
         add(ContactsContract.Contacts.Data.MIMETYPE);
         add(ContactsContract.Profile.DISPLAY_NAME);
+        add(ContactsContract.RawContacts.ACCOUNT_TYPE);
         add(Contactables.PHOTO_URI);
         add(StructuredName.DISPLAY_NAME);
         add(StructuredName.GIVEN_NAME);
@@ -86,6 +87,35 @@ public class ContactsProvider {
         this.contentResolver = contentResolver;
     }
 
+
+    public WritableArray getContactsMatchingAccountType(String searchType) {
+
+        Map<String, Contact> matchingContacts;
+        {
+            Cursor cursor = contentResolver.query(
+                    ContactsContract.Data.CONTENT_URI,
+                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                    ContactsContract.RawContacts.ACCOUNT_TYPE + "= ?",
+                    new String[]{searchType},
+                    null
+            );
+            try {
+                matchingContacts = loadContactsFrom(cursor);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+
+        WritableArray contacts = Arguments.createArray();
+        for (Contact contact : matchingContacts.values()) {
+            contacts.pushMap(contact.toMap());
+        }
+        return contacts;
+    }
+
+
     public WritableArray getContactsMatchingString(String searchString) {
         Map<String, Contact> matchingContacts;
         {
@@ -114,7 +144,7 @@ public class ContactsProvider {
         return contacts;
     }
 
-     public WritableMap getContactByRawId(String contactRawId) {
+    public WritableMap getContactByRawId(String contactRawId) {
 
         // Get Contact Id from Raw Contact Id
         String[] projections = new String[]{ContactsContract.RawContacts.CONTACT_ID};
@@ -147,11 +177,11 @@ public class ContactsProvider {
         Map<String, Contact> matchingContacts;
         {
             Cursor cursor = contentResolver.query(
-                ContactsContract.Data.CONTENT_URI,
-                FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                ContactsContract.RawContacts.CONTACT_ID + " = ?",
-                new String[]{contactId},
-                null
+                    ContactsContract.Data.CONTENT_URI,
+                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                    ContactsContract.RawContacts.CONTACT_ID + " = ?",
+                    new String[]{contactId},
+                    null
             );
 
             try {
@@ -163,11 +193,11 @@ public class ContactsProvider {
             }
         }
 
-        if(matchingContacts.values().size() > 0) {
+        if (matchingContacts.values().size() > 0) {
             return matchingContacts.values().iterator().next().toMap();
         }
 
-       return null;
+        return null;
     }
 
     public WritableArray getContacts() {
@@ -196,22 +226,22 @@ public class ContactsProvider {
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
                     ContactsContract.Data.MIMETYPE + "=? OR "
-                    + ContactsContract.Data.MIMETYPE + "=? OR "
-                    + ContactsContract.Data.MIMETYPE + "=? OR "
-                    + ContactsContract.Data.MIMETYPE + "=? OR "
-                    + ContactsContract.Data.MIMETYPE + "=? OR "
-                    + ContactsContract.Data.MIMETYPE + "=? OR "
-                    + ContactsContract.Data.MIMETYPE + "=? OR "
-                    + ContactsContract.Data.MIMETYPE + "=?",
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=?",
                     new String[]{
-                        Email.CONTENT_ITEM_TYPE,
-                        Phone.CONTENT_ITEM_TYPE,
-                        StructuredName.CONTENT_ITEM_TYPE,
-                        Organization.CONTENT_ITEM_TYPE,
-                        StructuredPostal.CONTENT_ITEM_TYPE,
-                        Note.CONTENT_ITEM_TYPE,
-                        Website.CONTENT_ITEM_TYPE,
-                        Event.CONTENT_ITEM_TYPE,
+                            Email.CONTENT_ITEM_TYPE,
+                            Phone.CONTENT_ITEM_TYPE,
+                            StructuredName.CONTENT_ITEM_TYPE,
+                            Organization.CONTENT_ITEM_TYPE,
+                            StructuredPostal.CONTENT_ITEM_TYPE,
+                            Note.CONTENT_ITEM_TYPE,
+                            Website.CONTENT_ITEM_TYPE,
+                            Event.CONTENT_ITEM_TYPE,
                     },
                     null
             );
@@ -276,6 +306,12 @@ public class ContactsProvider {
 
             Contact contact = map.get(contactId);
             String mimeType = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.MIMETYPE));
+
+            String accountType = cursor.getString(cursor.getColumnIndex(ContactsContract.RawContacts.ACCOUNT_TYPE));
+            if (!TextUtils.isEmpty(accountType)) {
+                contact.accountType = accountType;
+            }
+
             String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             contact.rawContactId = rawContactId;
             if (!TextUtils.isEmpty(name) && TextUtils.isEmpty(contact.displayName)) {
@@ -290,7 +326,8 @@ public class ContactsProvider {
                 }
             }
 
-            switch(mimeType) {
+            switch (mimeType) {
+
                 case StructuredName.CONTENT_ITEM_TYPE:
                     contact.givenName = cursor.getString(cursor.getColumnIndex(StructuredName.GIVEN_NAME));
                     contact.middleName = cursor.getString(cursor.getColumnIndex(StructuredName.MIDDLE_NAME));
@@ -428,7 +465,8 @@ public class ContactsProvider {
         private String company = "";
         private String jobTitle = "";
         private String department = "";
-        private String note ="";
+        private String accountType = "";
+        private String note = "";
         private List<Item> urls = new ArrayList<>();
         private boolean hasPhoto = false;
         private String photoUri;
@@ -454,6 +492,7 @@ public class ContactsProvider {
             contact.putString("company", company);
             contact.putString("jobTitle", jobTitle);
             contact.putString("department", department);
+            contact.putString("accountType", accountType);
             contact.putString("note", note);
             contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);

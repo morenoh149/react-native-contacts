@@ -447,6 +447,7 @@ public class ContactsProvider {
             contact.putString("recordID", contactId);
             contact.putString("rawContactId", rawContactId);
             contact.putString("givenName", TextUtils.isEmpty(givenName) ? displayName : givenName);
+            contact.putString("displayName", displayName);
             contact.putString("middleName", middleName);
             contact.putString("familyName", familyName);
             contact.putString("prefix", prefix);

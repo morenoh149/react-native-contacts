@@ -35,7 +35,8 @@
     { "name": "rt2zz <zack@root-two.com>" }
   ],
   "license": "MIT",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "react-native-cli": "^2.0.1"
   }
 }

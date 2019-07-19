@@ -197,6 +197,7 @@ callback <Function>
 ```
 **NOTE**
 * on Android versions below 8 the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
+* on iOS the note field is not available.
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing

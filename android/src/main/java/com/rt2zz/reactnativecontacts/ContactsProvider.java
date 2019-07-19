@@ -4,7 +4,8 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import androidx.annotation.NonNull;
+// import androidx.annotation.NonNull; //TODO: uncomment this dep and replace the below NonNull one once we've upgraded to androidx
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 

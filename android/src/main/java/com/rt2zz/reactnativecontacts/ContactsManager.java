@@ -23,8 +23,10 @@ import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.Website;
 import android.provider.ContactsContract.RawContacts;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
+// import androidx.annotation.NonNull; //TODO: uncomment and replace the two lines below when upgraded to Androidx
+// import androidx.core.app.ActivityCompat;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Callback;

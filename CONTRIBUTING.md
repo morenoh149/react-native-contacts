@@ -6,7 +6,7 @@ We welcome contributions from anyone beginner or advanced. Please before working
 closed issues as well.
 * if there is no open issue for your feature request please open one up to coordinate all collaborators
 * write your feature
-* submit a feature test on https://github.com/morenoh149/react-native-contacts-test to test it's integration
+* add example usage to the example app https://github.com/rt2zz/react-native-contacts/tree/master/example
 * submit a pull request on this repo, and describe:
   * a brief description
   * what operating systems are affected

@@ -161,6 +161,7 @@ Without it, your apk release version could failed
  * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
  * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
  * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
+ * `getContactsByPhoneNumber` (string, callback) - where string is a phone number to match to.
  * `checkPermission` (callback) - checks permission to access Contacts _ios only_
  * `requestPermission` (callback) - request permission to access Contacts _ios only_
  * `writePhotoToPath` (callback) - writes the contact photo to a given path _android only_

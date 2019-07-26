@@ -70,6 +70,21 @@ select the `Build Phases` tab drag `Libraries > RCTContacts.xcodeproj > Products
 
 You should be able to run the app via the Run button in xcode or `react-native run-ios` in the terminal.
 
+#### Using CocoaPods (react-native 0.60 and above)
+Starting with 0.60, the above instructions stop working on iOS. Instead, you have to do the following:
+
+- Add the following line inside `ios/Podfile`
+
+```
+target 'app' do
+  ...
+  pod 'react-native-contacts', :path => '../node_modules/react-native-contacts' <-- add me
+  ...
+end
+```
+
+- Run `pod install` in folder `ios`
+
 ### Android
 1. In `android/settings.gradle`
 

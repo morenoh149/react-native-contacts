@@ -1,4 +1,6 @@
-# React Native Contacts
+
+<img width="500" alt="react-native-contacts" src="https://github.com/hatemalimam/react-native-contacts/blob/feature/getContactsByPhoneNumber/example/logo.png?raw=true">
+
 To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Ask questions on [stackoverflow](https://stackoverflow.com/questions/tagged/react-native-contacts) not the issue tracker.
@@ -335,6 +337,11 @@ Contacts.checkPermission((err, permission) => {
 These methods are only useful on iOS. For Android you'll have to use https://facebook.github.io/react-native/docs/permissionsandroid.html
 
 These methods do **not** re-request permission if permission has already been granted or denied. This is a limitation in iOS, the best you can do is prompt the user with instructions for how to enable contacts from the phone settings page `Settings > [app name] > contacts`.
+
+## Example
+You can find an example app/showcase [here](https://github.com/rt2zz/react-native-contacts/tree/master/example)
+
+<img width="432" alt="react-native-contacts" src="https://github.com/hatemalimam/react-native-contacts/blob/feature/getContactsByPhoneNumber/example/react-native-contacts.gif?raw=true">
 
 <h2 align="center">Maintainers</h2>
 

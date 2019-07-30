@@ -114,6 +114,35 @@ public class ContactsProvider {
         return contacts;
     }
 
+
+    public WritableArray getContactsByPhoneNumber(String phoneNumber) {
+        Map<String, Contact> matchingContacts;
+        {
+            Cursor cursor = contentResolver.query(
+                    ContactsContract.Data.CONTENT_URI,
+                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                    ContactsContract.CommonDataKinds.Phone.NUMBER + " LIKE ? OR "
+                            + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " LIKE ?",
+                    new String[]{"%" + phoneNumber + "%", "%" + phoneNumber + "%"},
+                    null
+            );
+
+            try {
+                matchingContacts = loadContactsFrom(cursor);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+
+        WritableArray contacts = Arguments.createArray();
+        for (Contact contact : matchingContacts.values()) {
+            contacts.pushMap(contact.toMap());
+        }
+        return contacts;
+    }
+
      public WritableMap getContactByRawId(String contactRawId) {
 
         // Get Contact Id from Raw Contact Id

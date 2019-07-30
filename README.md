@@ -1,5 +1,5 @@
 
-<img width="500" alt="react-native-contacts" src="https://github.com/hatemalimam/react-native-contacts/blob/feature/getContactsByPhoneNumber/example/logo.png?raw=true">
+<img width="500" alt="react-native-contacts" src="https://github.com/rt2zz/react-native-contacts/blob/feature/getContactsByPhoneNumber/example/logo.png?raw=true">
 
 To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -340,7 +340,7 @@ These methods do **not** re-request permission if permission has already been gr
 ## Example
 You can find an example app/showcase [here](https://github.com/rt2zz/react-native-contacts/tree/master/example)
 
-<img width="432" alt="react-native-contacts" src="https://github.com/hatemalimam/react-native-contacts/blob/feature/getContactsByPhoneNumber/example/react-native-contacts.gif?raw=true">
+<img width="432" alt="react-native-contacts" src="https://github.com/rt2zz/react-native-contacts/blob/feature/getContactsByPhoneNumber/example/react-native-contacts.gif?raw=true">
 
 <h2 align="center">Maintainers</h2>
 

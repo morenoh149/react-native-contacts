@@ -240,8 +240,7 @@ var newPerson = {
     label: "work",
     email: "mrniet@example.com",
   }],
-  familyName: "Nietzsche",
-  givenName: "Friedrich",
+  displayName: "Friedrich Nietzsche"
 }
 
 Contacts.openContactForm(newPerson, (err, contact) => {

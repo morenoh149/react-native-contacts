@@ -1,3 +1,5 @@
+![react-native-contacts](https://github.com/rt2zz/react-native-contacts/raw/master/example/logo.png)
+
 To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Ask questions on [stackoverflow](https://stackoverflow.com/questions/tagged/react-native-contacts) not the issue tracker.
@@ -336,6 +338,9 @@ These methods do **not** re-request permission if permission has already been gr
 
 ## Example
 You can find an example app/showcase [here](https://github.com/rt2zz/react-native-contacts/tree/master/example)
+
+![react-native-contacts example](https://github.com/rt2zz/react-native-contacts/raw/master/example/react-native-contacts.gif)
+
 
 <h2 align="center">Maintainers</h2>
 

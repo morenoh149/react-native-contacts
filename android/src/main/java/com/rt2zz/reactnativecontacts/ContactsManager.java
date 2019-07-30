@@ -138,6 +138,38 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+
+    /*
+     * Returns all contacts matching a phone number
+     */
+    @ReactMethod
+    public void getContactsByPhoneNumber(final String phoneNumber, final Callback callback) {
+        getAllContactsByPhoneNumber(phoneNumber, callback);
+    }
+
+    /**
+     * Retrieves contacts matching a phone number.
+     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
+     *
+     * @param phoneNumber phone number to match
+     * @param callback user provided callback to run at completion
+     */
+    private void getAllContactsByPhoneNumber(final String phoneNumber, final Callback callback) {
+        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
+            @Override
+            protected Void doInBackground(final Void ... params) {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
+                WritableArray contacts = contactsProvider.getContactsByPhoneNumber(phoneNumber);
+
+                callback.invoke(null, contacts);
+                return null;
+            }
+        };
+        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     /**
      * Retrieves <code>thumbnailPath</code> for contact, or <code>null</code> if not available.
      *

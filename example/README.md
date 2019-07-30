@@ -1,4 +1,4 @@
-# react-native-device-info example project
+# react-native-contacts example project
 
 ## Installation
 

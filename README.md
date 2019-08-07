@@ -87,6 +87,8 @@ end
 - Run `pod install` in folder `ios`
 
 ### Android
+For react native versions 0.60 and above you have to use Android X. Android X support was added to react-native-contacts in version 5.x+. If you are using rn 0.59 and below install rnc versions 4.x instead.
+
 1. In `android/settings.gradle`
 
 ```gradle

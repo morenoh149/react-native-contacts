@@ -87,7 +87,9 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResp
                       CNContactImageDataAvailableKey,
                       CNContactThumbnailImageDataKey,
                       CNContactUrlAddressesKey,
-                      CNContactBirthdayKey
+                      CNContactBirthdayKey,
+                      CNContactSocialProfilesKey,
+                      CNContactInstantMessageAddressesKey,
                       ];
     NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingName:searchString]
                                                            keysToFetch:keys
@@ -125,7 +127,9 @@ RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string callback:(RCTRespo
                       CNContactImageDataAvailableKey,
                       CNContactThumbnailImageDataKey,
                       CNContactUrlAddressesKey,
-                      CNContactBirthdayKey
+                      CNContactBirthdayKey,
+                      CNContactSocialProfilesKey,
+                      CNContactInstantMessageAddressesKey,
                       ];
     CNPhoneNumber *cnPhoneNumber = [[CNPhoneNumber alloc] initWithStringValue:phoneNumber];
     NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingPhoneNumber:cnPhoneNumber]
@@ -180,7 +184,9 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
                                        CNContactJobTitleKey,
                                        CNContactImageDataAvailableKey,
                                        CNContactUrlAddressesKey,
-                                       CNContactBirthdayKey
+                                       CNContactBirthdayKey,
+                                       CNContactSocialProfilesKey,
+                                       CNContactInstantMessageAddressesKey,
                                        ]];
 
     if(withThumbnails) {
@@ -531,7 +537,9 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID callback:(RCTRespo
                       CNContactJobTitleKey,
                       CNContactImageDataAvailableKey,
                       CNContactUrlAddressesKey,
-                      CNContactBirthdayKey
+                      CNContactBirthdayKey,
+                      CNContactSocialProfilesKey,
+                      CNContactInstantMessageAddressesKey,
                       ];
     CNContact* contact = [addressBook unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError];
 
@@ -703,7 +711,9 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
                              CNContactThumbnailImageDataKey,
                              CNContactImageDataKey,
                              CNContactUrlAddressesKey,
-                             CNContactBirthdayKey
+                             CNContactBirthdayKey,
+                             CNContactSocialProfilesKey,
+                             CNContactInstantMessageAddressesKey,
                              ];
 
     @try {

@@ -357,6 +357,62 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
     if (withThumbnails) {
         [output setObject:[self getFilePathForThumbnailImage:person recordID:recordID] forKey:@"thumbnailPath"];
     }
+    
+    //handle social profiles
+    NSMutableArray *socialProfiles = [[NSMutableArray alloc] init];
+    
+    for (CNLabeledValue<CNSocialProfile*>* labeledValue in person.socialProfiles) {
+        NSString * label = [CNLabeledValue localizedStringForLabel:[labeledValue label]];
+        CNSocialProfile* socialProfile = labeledValue.value;
+        NSMutableDictionary* profile = [NSMutableDictionary dictionary];
+        
+        if(socialProfile) {
+            if(!label) {
+                label = [CNLabeledValue localizedStringForLabel:@"other"];
+            }
+            if (socialProfile.service) {
+                [profile setObject: socialProfile.service forKey:@"service"];
+            }
+            if (socialProfile.username) {
+                [profile setObject: socialProfile.username forKey:@"username"];
+            }
+            if (socialProfile.urlString) {
+                [profile setObject: socialProfile.urlString forKey:@"url"];
+            }
+            if (socialProfile.userIdentifier) {
+                [profile setObject: socialProfile.urlString forKey:@"userIdentifier"];
+            }
+            [socialProfiles addObject:profile];
+        }
+    }
+    
+    [output setObject: socialProfiles forKey:@"socialProfiles"];
+    //end social profiles
+    
+    //handle instant messaging addresses
+    NSMutableArray *addresses = [[NSMutableArray alloc] init];
+    
+    for (CNLabeledValue<CNInstantMessageAddress*>* labeledValue in person.instantMessageAddresses) {
+        NSString * label = [CNLabeledValue localizedStringForLabel:[labeledValue label]];
+        CNInstantMessageAddress* instantMessageAddress = labeledValue.value;
+        NSMutableDictionary* address = [NSMutableDictionary dictionary];
+        
+        if(instantMessageAddress) {
+            if(!label) {
+                label = [CNLabeledValue localizedStringForLabel:@"other"];
+            }
+            if (instantMessageAddress.service) {
+                [address setObject: instantMessageAddress.service forKey:@"service"];
+            }
+            if (instantMessageAddress.username) {
+                [address setObject: instantMessageAddress.username forKey:@"username"];
+            }
+            [addresses addObject:address];
+        }
+    }
+    
+    [output setObject: addresses forKey:@"instantMessageAddresses"];
+    //end instant messaging addresses
 
     return output;
 }

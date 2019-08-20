@@ -528,16 +528,23 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
 
         dispatch_async(dispatch_get_main_queue(), ^{
             UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:contactViewController];
-            UIViewController *rooViewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+            
+            UIViewController *yourCurrentViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
+            
+            while (yourCurrentViewController.presentedViewController)
+            {
+                yourCurrentViewController = yourCurrentViewController.presentedViewController;
+            }
 
             // Cover the contact view with an activity indicator so we can put it in edit mode without user seeing the transition
             UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-            activityIndicatorView.frame = UIScreen.mainScreen.applicationFrame;
+            activityIndicatorView.frame = UIApplication.sharedApplication.keyWindow.frame;
             [activityIndicatorView startAnimating];
             activityIndicatorView.backgroundColor = [UIColor whiteColor];
             [navigation.view addSubview:activityIndicatorView];
 
-            [rooViewController presentViewController:navigation animated:YES completion:nil];
+            [yourCurrentViewController presentViewController:navigation animated:YES completion:nil];
+
 
             // TODO should this 'fake click' method be used? For a brief instance
             // Fake click edit button to enter edit mode

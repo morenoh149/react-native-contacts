@@ -1,7 +1,6 @@
 package com.rt2zz.reactnativecontacts;
 
-// import androidx.annotation.NonNull; //TODO: uncomment this dep and replace the below NonNull one once we've upgraded to androidx
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;

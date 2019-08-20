@@ -23,10 +23,8 @@ import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.Website;
 import android.provider.ContactsContract.RawContacts;
-// import androidx.annotation.NonNull; //TODO: uncomment and replace the two lines below when upgraded to Androidx
-// import androidx.core.app.ActivityCompat;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Callback;
@@ -1086,8 +1084,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             Context ctx = getReactApplicationContext();
             ContentResolver cr = ctx.getContentResolver();
             ContactsProvider contactsProvider = new ContactsProvider(cr);
-            String rawId = String.valueOf(ContentUris.parseId(contactUri));
-            WritableMap newlyModifiedContact = contactsProvider.getContactByRawId(rawId);
+            WritableMap newlyModifiedContact = contactsProvider.getContactById(contactUri.getLastPathSegment());
 
             updateContactCallback.invoke(null, newlyModifiedContact); // success
         } catch (Exception e) {

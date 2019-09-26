@@ -107,12 +107,13 @@ dependencies {
 }
 ```
 
-3. register module (in MainApplication.java)
+3. register module
 
 ```java
+//  MainApplication.java
 import com.rt2zz.reactnativecontacts.ReactNativeContacts; // <--- import
 
-public class MainActivity extends ReactActivity {
+public class MainApplication extends Application implements ReactApplication {
   ......
 
   @Override

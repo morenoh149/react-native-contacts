@@ -31,7 +31,8 @@ export default class App extends Component<Props> {
     this.search = this.search.bind(this);
 
     this.state = {
-      contacts: []
+      contacts: [],
+      searchPlaceholder: "Search"
     };
   }
 
@@ -55,6 +56,10 @@ export default class App extends Component<Props> {
       } else {
         this.setState({ contacts });
       }
+    });
+
+    Contacts.getCount(count => {
+      this.setState({ searchPlaceholder: `Search ${count} contacts` });
     });
   }
 
@@ -92,7 +97,10 @@ export default class App extends Component<Props> {
             }}
           />
         </View>
-        <SearchBar onChangeText={this.search} />
+        <SearchBar
+          searchPlaceholder={this.state.searchPlaceholder}
+          onChangeText={this.search}
+        />
         <ScrollView style={{ flex: 1 }}>
           {this.state.contacts.map(contact => {
             return (

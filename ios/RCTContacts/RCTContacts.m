@@ -148,6 +148,46 @@ RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string callback:(RCTRespo
     [self retrieveContactsFromAddressBook:contactStore withThumbnails:withThumbnails withCallback:callback];
 }
 
+-(void) getAllContactsCount:(RCTResponseSenderBlock) callback
+{
+    CNContactStore* contactStore = [self contactsStore:callback];
+    if(!contactStore)
+        return;
+
+    NSMutableArray *contacts = [[NSMutableArray alloc] init];
+
+    NSError* contactError;
+    [contactStore containersMatchingPredicate:[CNContainer predicateForContainersWithIdentifiers: @[contactStore.defaultContainerIdentifier]] error:&contactError];
+
+
+    NSMutableArray *keysToFetch = [[NSMutableArray alloc]init];
+    [keysToFetch addObjectsFromArray:@[
+                                       CNContactEmailAddressesKey,
+                                       CNContactPhoneNumbersKey,
+                                       CNContactFamilyNameKey,
+                                       CNContactGivenNameKey,
+                                       CNContactMiddleNameKey,
+                                       CNContactPostalAddressesKey,
+                                       CNContactOrganizationNameKey,
+                                       CNContactJobTitleKey,
+                                       CNContactImageDataAvailableKey,
+                                       CNContactUrlAddressesKey,
+                                       CNContactBirthdayKey
+                                       ]];
+
+    CNContactFetchRequest * request = [[CNContactFetchRequest alloc]initWithKeysToFetch:keysToFetch];
+    BOOL success = [contactStore enumerateContactsWithFetchRequest:request error:&contactError usingBlock:^(CNContact * __nonnull contact, BOOL * __nonnull stop){
+        NSDictionary *contactDict = [self contactToDictionary: contact withThumbnails:false];
+        [contacts addObject:contactDict];
+    }];
+
+    int contactsCount = [contacts count];
+
+    NSNumber *count = [NSNumber numberWithInt:contactsCount];
+
+    callback(@[count]);
+}
+
 RCT_EXPORT_METHOD(getAll:(RCTResponseSenderBlock) callback)
 {
     [self getAllContacts:callback withThumbnails:true];
@@ -156,6 +196,11 @@ RCT_EXPORT_METHOD(getAll:(RCTResponseSenderBlock) callback)
 RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
 {
     [self getAllContacts:callback withThumbnails:false];
+}
+
+RCT_EXPORT_METHOD(getCount:(RCTResponseSenderBlock) callback)
+{
+    [self getAllContactsCount:callback];
 }
 
 -(void) retrieveContactsFromAddressBook:(CNContactStore*)contactStore

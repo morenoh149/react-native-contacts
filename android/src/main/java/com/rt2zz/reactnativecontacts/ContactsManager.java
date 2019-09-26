@@ -107,6 +107,24 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    @ReactMethod
+    public void getCount(final Callback callback) {
+        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
+            @Override
+            protected Void doInBackground(final Void ... params) {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
+                Integer contacts = contactsProvider.getContactsCount();
+
+                callback.invoke(contacts);
+                return null;
+            }
+        };
+        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     /**
      * Retrieves contacts matching String.
      * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.

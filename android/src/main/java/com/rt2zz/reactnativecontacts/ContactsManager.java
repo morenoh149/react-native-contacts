@@ -174,6 +174,30 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
     }
 
     /**
+     * Retrieves contacts matching an email address.
+     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
+     *
+     * @param emailAddress email address to match
+     * @param callback user provided callback to run at completion
+     */
+    @ReactMethod
+    public void getContactsByEmailAddress(final String emailAddress, final Callback callback) {
+        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
+            @Override
+            protected Void doInBackground(final Void ... params) {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
+                WritableArray contacts = contactsProvider.getContactsByEmailAddress(emailAddress);
+
+                callback.invoke(null, contacts);
+                return null;
+            }
+        };
+        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
      * Retrieves <code>thumbnailPath</code> for contact, or <code>null</code> if not available.
      *
      * @param contactId contact identifier, <code>recordID</code>

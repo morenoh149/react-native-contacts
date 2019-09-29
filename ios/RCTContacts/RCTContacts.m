@@ -138,6 +138,44 @@ RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string callback:(RCTRespo
     callback(@[[NSNull null], contacts]);
 }
 
+RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string callback:(RCTResponseSenderBlock) callback)
+{
+    CNContactStore *contactStore = [[CNContactStore alloc] init];
+    if (!contactStore)
+        return;
+    [self getContactsFromAddressBook:contactStore byEmailAddress:string callback:callback];
+}
+
+-(void) getContactsFromAddressBook:(CNContactStore *)store
+                    byEmailAddress:(NSString *)emailAddress
+                          callback:(RCTResponseSenderBlock)callback
+{
+    NSMutableArray *contacts = [[NSMutableArray alloc] init];
+    NSError *contactError = nil;
+    NSArray *keys = @[
+                      CNContactEmailAddressesKey,
+                      CNContactPhoneNumbersKey,
+                      CNContactFamilyNameKey,
+                      CNContactGivenNameKey,
+                      CNContactMiddleNameKey,
+                      CNContactPostalAddressesKey,
+                      CNContactOrganizationNameKey,
+                      CNContactJobTitleKey,
+                      CNContactImageDataAvailableKey,
+                      CNContactThumbnailImageDataKey,
+                      CNContactUrlAddressesKey,
+                      CNContactBirthdayKey
+                      ];
+    NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingEmailAddress:emailAddress]
+                                                           keysToFetch:keys
+                                                                 error:&contactError];
+    [arrayOfContacts enumerateObjectsUsingBlock:^(CNContact * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *contactDictionary = [self contactToDictionary:obj withThumbnails:true];
+        [contacts addObject:contactDictionary];
+    }];
+    callback(@[[NSNull null], contacts]);
+}
+
 -(void) getAllContacts:(RCTResponseSenderBlock) callback
         withThumbnails:(BOOL) withThumbnails
 {

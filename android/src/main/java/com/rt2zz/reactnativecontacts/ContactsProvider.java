@@ -411,6 +411,43 @@ public class ContactsProvider {
                         contact.emails.add(new Contact.Item(label, email, id));
                     }
                     break;
+                case Website.CONTENT_ITEM_TYPE:
+                    String url = cursor.getString(cursor.getColumnIndex(Website.URL));
+                    int websiteType = cursor.getInt(cursor.getColumnIndex(Website.TYPE));
+                    if (!TextUtils.isEmpty(url)) {
+                        String label;
+                        switch (websiteType) {
+                            case Website.TYPE_HOMEPAGE:
+                                label = "homepage";
+                                break;
+                            case Website.TYPE_BLOG:
+                                label = "blog";
+                                break;
+                            case Website.TYPE_PROFILE:
+                                label = "profile";
+                                break;
+                            case Website.TYPE_HOME:
+                                label = "home";
+                                break;
+                            case Website.TYPE_WORK:
+                                label = "work";
+                                break;
+                            case Website.TYPE_FTP:
+                                label = "ftp";
+                                break;
+                            case Website.TYPE_CUSTOM:
+                                if (cursor.getString(cursor.getColumnIndex(Website.LABEL)) != null) {
+                                    label = cursor.getString(cursor.getColumnIndex(Website.LABEL)).toLowerCase();
+                                } else {
+                                    label = "";
+                                }
+                                break;
+                            default:
+                                label = "other";
+                        }
+                        contact.urls.add(new Contact.Item(label, url, id));
+                    }
+                    break;
                 case Organization.CONTENT_ITEM_TYPE:
                     contact.company = cursor.getString(cursor.getColumnIndex(Organization.COMPANY));
                     contact.jobTitle = cursor.getString(cursor.getColumnIndex(Organization.TITLE));

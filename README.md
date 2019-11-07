@@ -82,15 +82,12 @@ end
 
 Using the same instructions as https://facebook.github.io/react-native/docs/linking-libraries-ios.html
 1. open in xcode `open ios/yourProject.xcodeproj/`
-1. drag `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj` to `Libraries` in you project view.
+1. drag `./node_modules/react-native-contacts/ios/RCTContacts.xcodeproj` to `Libraries` in your project view.
 1. In the XCode project navigator, select your project,
 select the `Build Phases` tab drag `Libraries > RCTContacts.xcodeproj > Products > libRCTContacts.a` into the `Link Binary With Libraries` section. Video to clarify 
   [Adding Camera Roll to an ios project in React Native](https://www.youtube.com/watch?v=e3ReNbQu79c).
-1. Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission. Open `Info.plist`. Add key `Privacy - Contacts Usage Description` with your kit specific permission. The value for the key is optional in development. If you submit to the App Store the value must explain why you need this permission.
 
-<img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
-
-You should be able to run the app via the Run button in xcode or `react-native run-ios` in the terminal.
+Run the app via the Run button in xcode or `react-native run-ios` in the terminal.
 
 ### Android
 For react native versions 0.60 and above you have to use Android X. Android X support was added to react-native-contacts in version 5.x+. If you are using rn 0.59 and below install rnc versions 4.x instead.
@@ -159,6 +156,13 @@ Without it, your apk release version could failed
 -keep class com.rt2zz.reactnativecontacts.** {*;}
 -keepclassmembers class com.rt2zz.reactnativecontacts.** {*;}
 ```
+
+### All RN versions
+
+#### ios
+Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to make `requestPermission` work. Otherwise your app crashes when requesting the specific permission. Open `Info.plist`. Add key `Privacy - Contacts Usage Description` with your kit specific permission. The value for the key is optional in development. If you submit to the App Store the value must explain why you need this permission.
+
+<img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
 ## API
  * `getAll` (callback) - returns *all* contacts as an array of objects

@@ -73,6 +73,17 @@ target 'app' do
 end
 ```
 
+- Add the following line inside `ios/yourProject/Info.plist`
+
+```
+<dict>
+  ...
+  <key>NSContactsUsageDescription</key>
+  <string>Reason your app needs permission to access contacts</string>
+  ...
+</dict>
+```
+
 - Run `pod install` in folder `ios`
 
 

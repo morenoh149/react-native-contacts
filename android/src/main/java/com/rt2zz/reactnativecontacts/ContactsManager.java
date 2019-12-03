@@ -364,6 +364,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String[] postalAddressesRegion = null;
         String[] postalAddressesPostCode = null;
         String[] postalAddressesCountry = null;
+        String[] postalAddressesFormattedAddress = null;
         Integer[] postalAddressesLabel = null;
         if (postalAddresses != null) {
             numOfPostalAddresses = postalAddresses.size();
@@ -373,6 +374,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             postalAddressesRegion = new String[numOfPostalAddresses];
             postalAddressesPostCode = new String[numOfPostalAddresses];
             postalAddressesCountry = new String[numOfPostalAddresses];
+            postalAddressesFormattedAddress = new String[numOfPostalAddresses];
             postalAddressesLabel = new Integer[numOfPostalAddresses];
             for (int i = 0; i < numOfPostalAddresses; i++) {
                 postalAddressesStreet[i] = postalAddresses.getMap(i).getString("street");
@@ -381,6 +383,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 postalAddressesRegion[i] = postalAddresses.getMap(i).getString("region");
                 postalAddressesPostCode[i] = postalAddresses.getMap(i).getString("postCode");
                 postalAddressesCountry[i] = postalAddresses.getMap(i).getString("country");
+                postalAddressesFormattedAddress[i] = postalAddresses.getMap(i).getString("formattedAddress");
                 postalAddressesLabel[i] = mapStringToPostalAddressType(postalAddresses.getMap(i).getString("label"));
             }
         }
@@ -434,6 +437,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             structuredPostal.put(CommonDataKinds.StructuredPostal.REGION, postalAddressesRegion[i]);
             structuredPostal.put(CommonDataKinds.StructuredPostal.COUNTRY, postalAddressesCountry[i]);
             structuredPostal.put(CommonDataKinds.StructuredPostal.POSTCODE, postalAddressesPostCode[i]);
+            structuredPostal.put(CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, postalAddressesFormattedAddress[i]);
             //No state column in StructuredPostal
             //structuredPostal.put(CommonDataKinds.StructuredPostal.???, postalAddressesState[i]);
             contactData.add(structuredPostal);

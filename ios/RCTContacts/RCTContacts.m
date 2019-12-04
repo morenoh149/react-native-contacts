@@ -596,10 +596,6 @@ RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData callback:(RCTResponseSe
 
 RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
 {
-    CNContactStore* contactStore = [self contactsStore:callback];
-    if(!contactStore)
-        return;
-
     CNMutableContact * contact = [[CNMutableContact alloc] init];
 
     [self updateRecord:contact withData:contactData];

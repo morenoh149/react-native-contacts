@@ -624,6 +624,7 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
     }
 
     NSString* recordID = [contactData valueForKey:@"recordID"];
+    NSString* backTitle = [contactData valueForKey:@"backTitle"];
 
     NSArray *keys = @[CNContactIdentifierKey,
                       CNContactEmailAddressesKey,
@@ -636,11 +637,11 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
     @try {
 
         CNContact *contact = [contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil];
+        
         CNContactViewController *contactViewController = [CNContactViewController viewControllerForContact:contact];
 
         // Add a cancel button which will close the view
-        // TODO localize cancel button title (either through creating a localized strings file, or passing in the title)
-        contactViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Cancel" style:UIBarButtonItemStylePlain target:self action:@selector(cancelContactForm)];
+        contactViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:backTitle == nil ? @"Cancel" : backTitle style:UIBarButtonSystemItemCancel target:self action:@selector(cancelContactForm)];
         contactViewController.delegate = self;
 
 

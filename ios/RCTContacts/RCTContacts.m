@@ -605,7 +605,7 @@ RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTRespo
     [self updateRecord:contact withData:contactData];
 
     CNContactViewController *controller = [CNContactViewController viewControllerForNewContact:contact];
-    
+
     controller.delegate = self;
 
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -637,7 +637,7 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
     @try {
 
         CNContact *contact = [contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil];
-        
+
         CNContactViewController *contactViewController = [CNContactViewController viewControllerForContact:contact];
 
         // Add a cancel button which will close the view
@@ -647,9 +647,9 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
 
         dispatch_async(dispatch_get_main_queue(), ^{
             UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:contactViewController];
-            
+
             UIViewController *currentViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
-            
+
             while (currentViewController.presentedViewController)
             {
                 currentViewController = currentViewController.presentedViewController;
@@ -881,7 +881,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 + (NSData*) imageData:(NSString*)sourceUri
 {
     NSURL *url = [NSURL URLWithString:sourceUri];
-    
+
     if([sourceUri hasPrefix:@"assets-library"]){
         return [RCTContacts loadImageAsset:[NSURL URLWithString:sourceUri]];
     } else if (url && url.scheme && url.host) {
@@ -965,20 +965,19 @@ RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) callback)
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];
 
-        if(!store.defaultContainerIdentifier) {
-            RCTLog(@"warn - no contact store container id");
+        contactStore = store;
+    }
+    if(!contactStore.defaultContainerIdentifier) {
+        RCTLog(@"warn - no contact store container id");
 
-            CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-            if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
-                callback(@[@"denied", [NSNull null]]);
-            } else {
-                callback(@[@"undefined", [NSNull null]]);
-            }
-
-            return nil;
+        CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
+        if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
+            callback(@[@"denied", [NSNull null]]);
+        } else {
+            callback(@[@"undefined", [NSNull null]]);
         }
 
-        contactStore = store;
+        return nil;
     }
 
     return contactStore;

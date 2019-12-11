@@ -132,7 +132,7 @@ public class MainApplication extends Application implements ReactApplication {
 #### Permissions
 ##### API 23+
 Android requires allowing permissions with https://facebook.github.io/react-native/docs/permissionsandroid.html
-The `READ_CONTACTS` permission is automatically added to `AndroidManifest.xml`, so you just need request it. If your app creates contacts add `WRITE_CONTACTS` permission to `AndroidManifest.xml` and request the permission at runtime.
+The `READ_CONTACTS` permission must be added to your main application's `AndroidManifest.xml`. If your app creates contacts add `WRITE_CONTACTS` permission to `AndroidManifest.xml` and request the permission at runtime.
 ```xml
 ...
 <uses-permission android:name="android.permission.WRITE_CONTACTS" />

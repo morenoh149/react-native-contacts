@@ -605,12 +605,17 @@ RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTRespo
     [self updateRecord:contact withData:contactData];
 
     CNContactViewController *controller = [CNContactViewController viewControllerForNewContact:contact];
+    
 
     controller.delegate = self;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
         UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        while (viewController.presentedViewController)
+            {
+                viewController = viewController.presentedViewController;
+            }
         [viewController presentViewController:navigation animated:YES completion:nil];
 
         updateContactCallback = callback;

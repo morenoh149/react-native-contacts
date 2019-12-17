@@ -168,6 +168,7 @@ Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to 
  * `getAll` (callback) - returns *all* contacts as an array of objects
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
  * `getContactById(contactId, callback)` - returns contact with defined contactId (or null if it doesn't exist)
+ * `getCount(callback)` - returns the number of contacts
  * `getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
  * `addContact` (contact, callback) - adds a contact to the AddressBook.  
  * `openContactForm` (contact, callback) - create a new contact and display in contactsUI.  

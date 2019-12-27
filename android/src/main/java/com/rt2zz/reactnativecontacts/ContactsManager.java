@@ -929,24 +929,34 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
     }
 
     /*
-     * Update contact to phone's addressbook
+     * Delete contact from phone's addressbook
      */
     @ReactMethod
     public void deleteContact(ReadableMap contact, Callback callback) {
 
-        String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
-
         try {
-               Context ctx = getReactApplicationContext();
+            String contactId;
+            Uri uri;
 
-               Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,recordID);
-               ContentResolver cr = ctx.getContentResolver();
-               int deleted = cr.delete(uri,null,null);
+            if (contact.hasKey("recordID")) {
+                contactId = contact.getString("recordID");
+                uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contactId);
+            } else if (contact.hasKey("rawContactId")) {
+                contactId = contact.getString("rawContactId");
+                uri = Uri.withAppendedPath(RawContacts.CONTENT_URI, contactId);
+            } else {
+                callback.invoke("Must provide either recordID or rawContactId to deleteContact method", null);
+                return;
+            }
+            Context ctx = getReactApplicationContext();
+            ContentResolver cr = ctx.getContentResolver();
 
-               if(deleted > 0)
-                 callback.invoke(null, recordID); // success
-               else
-                 callback.invoke(null, null); // something was wrong
+            int deleted = cr.delete(uri,null,null);
+
+            if(deleted > 0)
+                callback.invoke(null, contactId); // success
+            else
+                callback.invoke(null, null); // something was wrong
 
         } catch (Exception e) {
             callback.invoke(e.toString(), null);

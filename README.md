@@ -194,7 +194,7 @@ callback <Function>
 ```es
 {
   recordID: '6b2237ee0df85980',
-  backTitle: '' ,
+  backTitle: '',
   company: '',
   emailAddresses: [{
     label: 'work',

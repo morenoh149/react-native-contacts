@@ -480,7 +480,7 @@ public class ContactsProvider {
                                     contact.birthday = new Contact.Birthday(year, month, day);
                                 }
                             }
-                        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                        } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException e) {
                             // whoops, birthday isn't in the format we expect
                             Log.w("ContactsProvider", e.toString());
 

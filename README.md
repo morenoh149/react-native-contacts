@@ -359,12 +359,13 @@ You can find an example app/showcase [here](https://github.com/rt2zz/react-nativ
 
 
 <h2 align="center">Maintainers</h2>
-
+<p>If your business needs premium react native support please reach out to the maintainer.</p>
+<a href="https://harrymoreno.com/hire-me">harrymoreno.com</a>
 <table>
   <tbody>
     <tr>
       <td align="center">
-        <a href="https://github.com/morenoh149">
+        <a href="https://harrymoreno.com/hire-me">
           <img width="150" height="150" src="https://github.com/morenoh149.png?size=150">
           </br>
           Harry Moreno

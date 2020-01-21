@@ -56,6 +56,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
 
     private static final int REQUEST_OPEN_CONTACT_FORM = 52941;
     private static final int REQUEST_OPEN_EXISTING_CONTACT = 52942;
+    private static final int REQUEST_VIEW_EXISTING_CONTACT = 52943;
 
     private static Callback updateContactCallback;
     private static Callback requestCallback;
@@ -481,6 +482,24 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
 
             updateContactCallback = callback;
             getReactApplicationContext().startActivityForResult(intent, REQUEST_OPEN_EXISTING_CONTACT, Bundle.EMPTY);
+
+        } catch (Exception e) {
+            callback.invoke(e.toString());
+        }
+    }
+
+    @ReactMethod
+    public void viewExistingContact(ReadableMap contact, Callback callback) {
+
+        String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
+
+        try {
+            Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, recordID);
+            Intent intent = new Intent(ContactsContract.QuickContact.ACTION_QUICK_CONTACT);
+            intent.setDataAndType(uri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
+
+            updateContactCallback = callback;
+            getReactApplicationContext().startActivityForResult(intent, REQUEST_VIEW_EXISTING_CONTACT, Bundle.EMPTY);
 
         } catch (Exception e) {
             callback.invoke(e.toString());

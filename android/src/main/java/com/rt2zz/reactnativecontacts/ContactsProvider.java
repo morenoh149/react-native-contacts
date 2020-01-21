@@ -356,8 +356,16 @@ public class ContactsProvider {
             switch(mimeType) {
                 case StructuredName.CONTENT_ITEM_TYPE:
                     contact.givenName = cursor.getString(cursor.getColumnIndex(StructuredName.GIVEN_NAME));
-                    contact.middleName = cursor.getString(cursor.getColumnIndex(StructuredName.MIDDLE_NAME));
-                    contact.familyName = cursor.getString(cursor.getColumnIndex(StructuredName.FAMILY_NAME));
+                    if (cursor.getString(cursor.getColumnIndex(StructuredName.MIDDLE_NAME)) != null) {
+                        contact.middleName = cursor.getString(cursor.getColumnIndex(StructuredName.MIDDLE_NAME));
+                    } else {
+                        contact.middleName = "";
+                    }
+                    if (cursor.getString(cursor.getColumnIndex(StructuredName.FAMILY_NAME)) != null) {
+                        contact.familyName = cursor.getString(cursor.getColumnIndex(StructuredName.FAMILY_NAME));
+                    } else {
+                        contact.familyName = "";
+                    }
                     contact.prefix = cursor.getString(cursor.getColumnIndex(StructuredName.PREFIX));
                     contact.suffix = cursor.getString(cursor.getColumnIndex(StructuredName.SUFFIX));
                     break;

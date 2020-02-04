@@ -13,6 +13,7 @@ export function getContactsByPhoneNumber(phoneNumber: string, callback: (error: 
 export function checkPermission(callback: (error: any, result: 'authorized' | 'denied' | 'undefined') => void): void;
 export function requestPermission(callback: (error: any, result: 'authorized' | 'denied' | 'undefined') => void): void;
 export function writePhotoToPath(contactId: string, file: string, callback: (error: any, result: boolean) => void): void;
+export function enableNotesUsage(enabled: boolean): void;
 
 export interface EmailAddress {
     label: string;
@@ -60,4 +61,5 @@ export interface Contact {
     suffix: string;
     department: string;
     birthday: Birthday;
+    note: string;
 }

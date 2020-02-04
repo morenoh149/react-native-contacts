@@ -968,6 +968,14 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         requestReadContactsPermission(callback);
     }
 
+    /*
+     * Enable note usage
+     */
+    @ReactMethod
+    public void enableNotesUsage(boolean enabled) {
+        // this method is only needed for iOS
+    }
+
     private void requestReadContactsPermission(Callback callback) {
         Activity currentActivity = getCurrentActivity();
         if (currentActivity == null) {

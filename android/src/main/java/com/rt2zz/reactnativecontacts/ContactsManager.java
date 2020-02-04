@@ -21,7 +21,6 @@ import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.CommonDataKinds.Note;
-import android.provider.ContactsContract.CommonDataKinds.Website;
 import android.provider.ContactsContract.RawContacts;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -35,7 +34,6 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.Arguments;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -44,7 +42,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.io.InputStream;
-import java.io.IOException;
 import java.util.Hashtable;
 
 public class ContactsManager extends ReactContextBaseJavaModule implements ActivityEventListener {
@@ -104,7 +101,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 return null;
             }
         };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     @ReactMethod
@@ -122,7 +119,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 return null;
             }
         };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /**
@@ -146,7 +143,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 return null;
             }
         };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /**
@@ -170,7 +167,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 return null;
             }
         };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /**
@@ -194,7 +191,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 return null;
             }
         };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /**
@@ -217,7 +214,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 return null;
             }
         };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /**
@@ -240,7 +237,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 return null;
             }
         };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     @ReactMethod
@@ -275,7 +272,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 return null;
             }
         };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private Bitmap getThumbnailBitmap(String thumbnailPath) {

@@ -63,7 +63,7 @@ RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
     }];
 }
 
-RCT_EXPORT_METHOD(enableNotesUsage:(BOOL) enabled)
+RCT_EXPORT_METHOD(iosEnableNotesUsage:(BOOL) enabled)
 {
     notesUsageEnabled = enabled;
 }

@@ -972,7 +972,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Enable note usage
      */
     @ReactMethod
-    public void enableNotesUsage(boolean enabled) {
+    public void iosEnableNotesUsage(boolean enabled) {
         // this method is only needed for iOS
     }
 

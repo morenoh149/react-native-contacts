@@ -8,6 +8,8 @@
     CNContactStore * contactStore;
 
     RCTResponseSenderBlock updateContactCallback;
+    
+    BOOL notesUsageEnabled;
 }
 
 - (instancetype)init
@@ -61,6 +63,11 @@ RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
     }];
 }
 
+RCT_EXPORT_METHOD(iosEnableNotesUsage:(BOOL) enabled)
+{
+    notesUsageEnabled = enabled;
+}
+
 RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResponseSenderBlock) callback)
 {
     CNContactStore *contactStore = [[CNContactStore alloc] init];
@@ -75,7 +82,7 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResp
 {
     NSMutableArray *contacts = [[NSMutableArray alloc] init];
     NSError *contactError = nil;
-    NSArray *keys = @[
+    NSMutableArray *keys = @[
                       CNContactEmailAddressesKey,
                       CNContactPhoneNumbersKey,
                       CNContactFamilyNameKey,
@@ -89,6 +96,10 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResp
                       CNContactUrlAddressesKey,
                       CNContactBirthdayKey
                       ];
+    if(notesUsageEnabled){
+        [keys addObject: @[CNContactNoteKey]];
+    }
+    
     NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingName:searchString]
                                                            keysToFetch:keys
                                                                  error:&contactError];
@@ -265,6 +276,9 @@ RCT_EXPORT_METHOD(getCount:(RCTResponseSenderBlock) callback)
                                        CNContactUrlAddressesKey,
                                        CNContactBirthdayKey
                                        ]];
+    if(notesUsageEnabled){
+        [keysToFetch addObject: CNContactNoteKey];
+    }
 
     if(withThumbnails) {
         [keysToFetch addObject:CNContactThumbnailImageDataKey];
@@ -312,6 +326,13 @@ RCT_EXPORT_METHOD(getCount:(RCTResponseSenderBlock) callback)
 
     if(jobTitle){
         [output setObject: (jobTitle) ? jobTitle : @"" forKey:@"jobTitle"];
+    }
+
+    if(notesUsageEnabled){
+        NSString *note = person.note;
+        if(note){
+            [output setObject: (note) ? note : @"" forKey:@"note"];
+        }
     }
 
     if (birthday) {
@@ -547,7 +568,7 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID callback:(RCTRespo
                                withThumbnails:(BOOL) withThumbnails
 {
     NSError* contactError;
-    NSArray *keysToFetch = @[
+    NSMutableArray *keysToFetch = @[
                       CNContactEmailAddressesKey,
                       CNContactPhoneNumbersKey,
                       CNContactFamilyNameKey,
@@ -560,6 +581,10 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID callback:(RCTRespo
                       CNContactUrlAddressesKey,
                       CNContactBirthdayKey
                       ];
+    if(notesUsageEnabled){
+        [keysToFetch addObject: CNContactNoteKey];
+    }
+
     CNContact* contact = [addressBook unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError];
 
     if(!contact)
@@ -605,7 +630,7 @@ RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTRespo
     [self updateRecord:contact withData:contactData];
 
     CNContactViewController *controller = [CNContactViewController viewControllerForNewContact:contact];
-    
+
 
     controller.delegate = self;
 
@@ -733,7 +758,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 
     NSError* contactError;
     NSString* recordID = [contactData valueForKey:@"recordID"];
-    NSArray * keysToFetch =@[
+    NSMutableArray * keysToFetch =@[
                              CNContactEmailAddressesKey,
                              CNContactPhoneNumbersKey,
                              CNContactFamilyNameKey,
@@ -748,6 +773,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
                              CNContactUrlAddressesKey,
                              CNContactBirthdayKey
                              ];
+    [keysToFetch addObject: CNContactNoteKey];
 
     @try {
         CNMutableContact* record = [[contactStore unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError] mutableCopy];
@@ -781,6 +807,11 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     contact.middleName = middleName;
     contact.organizationName = company;
     contact.jobTitle = jobTitle;
+    
+    if(notesUsageEnabled){
+        NSString *note = [contactData valueForKey:@"note"];
+        contact.note = note;
+    }
 
     if (birthday) {
         NSDateComponents *components;

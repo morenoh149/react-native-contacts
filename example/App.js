@@ -42,7 +42,7 @@ export default class App extends Component<Props> {
     Contacts.iosEnableNotesUsage(true);
   }
 
-  async componentWillMount() {
+  async componentDidMount() {
     if (Platform.OS === "android") {
       PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_CONTACTS, {
         title: "Contacts",
@@ -133,7 +133,7 @@ export default class App extends Component<Props> {
                 key={contact.recordID}
                 title={`${contact.givenName} ${contact.familyName}`}
                 description={`${contact.company}`}
-                onPress={() => Contacts.openExistingContact(contact, () => {})}
+                onPress={() => Contacts.openExistingContact(contact, () => { })}
                 onDelete={() =>
                   Contacts.deleteContact(contact, () => {
                     this.loadContacts();

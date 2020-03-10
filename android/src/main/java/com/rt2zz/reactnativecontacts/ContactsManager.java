@@ -791,7 +791,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
         ContentProviderOperation.Builder op = ContentProviderOperation.newUpdate(RawContacts.CONTENT_URI)
-                .withSelection(ContactsContract.Data.CONTACT_ID + "=?", new String[]{String.valueOf(recordID)})
+                .withSelection(ContactsContract.Data.CONTACT_ID + "= ? AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[]{String.valueOf(recordID), StructuredName.CONTENT_ITEM_TYPE})
                 .withValue(RawContacts.ACCOUNT_TYPE, null)
                 .withValue(RawContacts.ACCOUNT_NAME, null);
         ops.add(op.build());

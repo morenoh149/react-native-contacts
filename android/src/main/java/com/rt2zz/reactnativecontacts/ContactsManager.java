@@ -385,6 +385,20 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             }
         }
 
+        ReadableArray imAddresses = contact.hasKey("imAddresses") ? contact.getArray("imAddresses") : null;
+        int numOfIMAddresses = 0;
+        String[] imAccounts = null;
+        String[] imProtocols = null;
+        if (imAddresses != null) {
+            numOfIMAddresses = imAddresses.size();
+            imAccounts = new String[numOfIMAddresses];
+            imProtocols = new String[numOfIMAddresses];
+            for (int i = 0; i < numOfIMAddresses; i++) {
+                imAccounts[i] = imAddresses.getMap(i).getString("username");
+                imProtocols[i] = imAddresses.getMap(i).getString("service");
+            }
+        }
+
         ArrayList<ContentValues> contactData = new ArrayList<>();
 
         ContentValues name = new ContentValues();
@@ -438,6 +452,17 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             //No state column in StructuredPostal
             //structuredPostal.put(CommonDataKinds.StructuredPostal.???, postalAddressesState[i]);
             contactData.add(structuredPostal);
+        }
+
+        for (int i = 0; i < numOfIMAddresses; i++)
+        {
+            ContentValues imAddress = new ContentValues();
+            imAddress.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.Im.CONTENT_ITEM_TYPE);
+            imAddress.put(CommonDataKinds.Im.DATA, imAccounts[i]);
+            imAddress.put(CommonDataKinds.Im.TYPE, CommonDataKinds.Im.TYPE_HOME);
+            imAddress.put(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.CUSTOM_PROTOCOL);
+            imAddress.put(CommonDataKinds.Im.CUSTOM_PROTOCOL, imProtocols[i]);
+            contactData.add(imAddress);
         }
 
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
@@ -547,6 +572,20 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             }
         }
 
+        ReadableArray imAddresses = contact.hasKey("imAddresses") ? contact.getArray("imAddresses") : null;
+        int numOfIMAddresses = 0;
+        String[] imAccounts = null;
+        String[] imProtocols = null;
+        if (imAddresses != null) {
+            numOfIMAddresses = imAddresses.size();
+            imAccounts = new String[numOfIMAddresses];
+            imProtocols = new String[numOfIMAddresses];
+            for (int i = 0; i < numOfIMAddresses; i++) {
+                imAccounts[i] = imAddresses.getMap(i).getString("username");
+                imProtocols[i] = imAddresses.getMap(i).getString("service");
+            }
+        }
+
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
         ContentProviderOperation.Builder op = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI)
@@ -640,6 +679,18 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
 
                 ops.add(op.build());
             }
+        }
+
+        for (int i = 0; i < numOfIMAddresses; i++)
+        {
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Im.CONTENT_ITEM_TYPE)
+                    .withValue(CommonDataKinds.Im.DATA, imAccounts[i])
+                    .withValue(CommonDataKinds.Im.TYPE, CommonDataKinds.Im.TYPE_HOME)
+                    .withValue(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.CUSTOM_PROTOCOL)
+                    .withValue(CommonDataKinds.Im.CUSTOM_PROTOCOL, imProtocols[i]);
+            ops.add(op.build());
         }
 
         Context ctx = getReactApplicationContext();
@@ -788,6 +839,25 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             }
         }
 
+        ReadableArray imAddresses = contact.hasKey("imAddresses") ? contact.getArray("imAddresses") : null;
+        int numOfIMAddresses = 0;
+        String[] imAccounts = null;
+        String[] imProtocols = null;
+        String[] imAddressIds = null;
+
+        if (imAddresses != null) {
+            numOfIMAddresses = imAddresses.size();
+            imAccounts = new String[numOfIMAddresses];
+            imProtocols = new String[numOfIMAddresses];
+            imAddressIds = new String[numOfIMAddresses];
+            for (int i = 0; i < numOfIMAddresses; i++) {
+                ReadableMap imAddressMap = imAddresses.getMap(i);
+                imAccounts[i] = imAddressMap.getString("username");
+                imProtocols[i] = imAddressMap.getString("service");
+                imAddressIds[i] = imAddressMap.hasKey("id") ? imAddressMap.getString("id") : null;
+            }
+        }
+
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
         ContentProviderOperation.Builder op = ContentProviderOperation.newUpdate(RawContacts.CONTENT_URI)
@@ -904,6 +974,28 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                         .withValue(CommonDataKinds.StructuredPostal.REGION, postalAddressesState[i])
                         .withValue(CommonDataKinds.StructuredPostal.POSTCODE, postalAddressesPostCode[i])
                         .withValue(CommonDataKinds.StructuredPostal.COUNTRY, postalAddressesCountry[i]);
+                ops.add(op.build());
+            }
+        }
+
+        if (imAddresses != null){
+            // remove existing IM addresses
+            op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(
+                            ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?",
+                            new String[]{String.valueOf(CommonDataKinds.Im.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
+                    );
+            ops.add(op.build());
+
+            // add passed IM addresses
+            for (int i = 0; i < numOfIMAddresses; i++) {
+                op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                        .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Im.CONTENT_ITEM_TYPE)
+                        .withValue(CommonDataKinds.Im.DATA, imAccounts[i])
+                        .withValue(CommonDataKinds.Im.TYPE, CommonDataKinds.Im.TYPE_HOME)
+                        .withValue(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.CUSTOM_PROTOCOL)
+                        .withValue(CommonDataKinds.Im.CUSTOM_PROTOCOL, imProtocols[i]);
                 ops.add(op.build());
             }
         }

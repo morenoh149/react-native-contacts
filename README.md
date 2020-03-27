@@ -6,7 +6,7 @@ Ask questions on [stackoverflow](https://stackoverflow.com/questions/tagged/reac
 
 ## Usage
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
-```es
+```js
 import Contacts from 'react-native-contacts';
 
 Contacts.getAll((err, contacts) => {
@@ -20,7 +20,7 @@ See the full [API](#api) for more methods.
 
 ### Android permissions
 On android you must request permissions beforehand
-```es
+```js
 import { PermissionsAndroid } from 'react-native';
 import Contacts from 'react-native-contacts';
 
@@ -165,6 +165,9 @@ Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to 
 
 <img width="338" alt="screen shot 2016-09-21 at 13 13 21" src="https://cloud.githubusercontent.com/assets/5707542/18704973/3cde3b44-7ffd-11e6-918b-63888e33f983.png">
 
+##### Accessing note filed on iOS 13 (optional)
+If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(true)` method before accessing the contact infos. Also, a `com.apple.developer.contacts.notes` entitlement must be added to the project. Before submitting your app to the AppStore, the permission for using the entitlement has to be granted as well. You can find a more detailed explanation [here](https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_contacts_notes?language=objc).
+
 ## API
  * `getAll` (callback) - returns *all* contacts as an array of objects
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
@@ -191,7 +194,7 @@ callback <Function>
 ```
 
 ## Example Contact Record
-```es
+```js
 {
   recordID: '6b2237ee0df85980',
   backTitle: '',
@@ -234,7 +237,7 @@ callback <Function>
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing
-```es
+```js
 var newPerson = {
   emailAddresses: [{
     label: "work",
@@ -252,7 +255,7 @@ Contacts.addContact(newPerson, (err) => {
 
 ## Open Contact Form
 Currently all fields from the contact record except for thumbnailPath are supported for writing
-```es
+```js
 var newPerson = {
   emailAddresses: [{
     label: "work",
@@ -270,7 +273,7 @@ You may want to edit the contact before saving it into your phone book. So using
 
 ## Updating Contacts
 Example
-```es
+```js
 Contacts.getAll((err, contacts) => {
   if (err) {
     throw err;
@@ -298,7 +301,7 @@ See https://github.com/rt2zz/react-native-contacts/issues/332#issuecomment-45567
 
 ## Delete Contacts
 You can delete a record using only it's recordID
-```es
+```js
 Contacts.deleteContact({recordID: 1}, (err, recordId) => {
   if (err) {
     throw err;
@@ -307,7 +310,7 @@ Contacts.deleteContact({recordID: 1}, (err, recordId) => {
 })
 ```
 Or by passing the full contact object with a `recordID` field.
-```es
+```js
 Contacts.deleteContact(contact, (err, recordId) => {
   if (err) {
     throw err;
@@ -320,7 +323,7 @@ Contacts.deleteContact(contact, (err, recordId) => {
 
 The thumbnailPath is the direct URI for the temp location of the contact's cropped thumbnail image.
 
-```es
+```js
 <Image source={{uri: contact.thumbnailPath}} />
 ```
 
@@ -329,7 +332,7 @@ The thumbnailPath is the direct URI for the temp location of the contact's cropp
 `requestPermission` (callback) - request permission to access Contacts.  
 
 Usage as follows:
-```es
+```js
 Contacts.checkPermission((err, permission) => {
   if (err) throw err;
 

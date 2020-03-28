@@ -728,6 +728,115 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
     }
 }
 
+RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
+{
+    CNContactStore* contactStore = [self contactsStore:callback];
+    if(!contactStore)
+        return;
+
+    NSError* contactError;
+    NSString* recordID = [contactData valueForKey:@"recordID"];
+    NSString* backTitle = [contactData valueForKey:@"backTitle"];
+    NSArray * keysToFetch =@[
+                             CNContactEmailAddressesKey,
+                             CNContactPhoneNumbersKey,
+                             CNContactFamilyNameKey,
+                             CNContactGivenNameKey,
+                             CNContactMiddleNameKey,
+                             CNContactPostalAddressesKey,
+                             CNContactOrganizationNameKey,
+                             CNContactJobTitleKey,
+                             CNContactImageDataAvailableKey,
+                             CNContactThumbnailImageDataKey,
+                             CNContactImageDataKey,
+                             CNContactUrlAddressesKey,
+                             CNContactBirthdayKey,
+                             CNContactIdentifierKey,
+                             [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName],
+                             [CNContactViewController descriptorForRequiredKeys]];
+
+    @try {
+        CNMutableContact* record = [[contactStore unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError] mutableCopy];
+
+        NSMutableArray *phoneNumbers = [[NSMutableArray alloc]init];
+        phoneNumbers = [NSMutableArray arrayWithArray:record.phoneNumbers];
+
+        for (id phoneData in [contactData valueForKey:@"phoneNumbers"]) {
+            NSString *number = [phoneData valueForKey:@"number"];
+
+            CNLabeledValue *contactPhoneNumber = [CNLabeledValue labeledValueWithLabel:CNLabelOther value:[CNPhoneNumber phoneNumberWithStringValue:number]];
+            //record.phoneNumbers = @[contactPhoneNumber];
+            [phoneNumbers addObject:contactPhoneNumber];
+        }
+
+        NSArray *phoneNumbersNew = [[NSArray alloc]init];
+        phoneNumbersNew = [NSArray arrayWithArray:phoneNumbers];
+
+
+        record.phoneNumbers = phoneNumbersNew;
+
+        CNSaveRequest *request = [[CNSaveRequest alloc] init];
+        [request updateContact:record];
+
+        [contactStore executeSaveRequest:request error:nil];
+
+        CNContactViewController *controller = [CNContactViewController viewControllerForContact:record];
+        //controller.title = @"Saved!";
+        //UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Wait" message:@"Number saved!" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Cancel", nil];
+        
+        UIAlertController *alert=   [UIAlertController
+            alertControllerWithTitle:@"Saved!"
+            message:@"number added to contact"
+            preferredStyle:UIAlertControllerStyleAlert];
+        //[controller presentViewController:alert animated:YES completion:nil];
+        
+        // Add a cancel button which will close the view
+        controller.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:backTitle == nil ? @"Cancel" : backTitle style:UIBarButtonSystemItemCancel target:self action:@selector(cancelContactForm)];
+
+        controller.delegate = self;
+        controller.allowsEditing = true;
+        controller.allowsActions = true;
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
+            UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+            
+            //navigation.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor redColor]};
+            
+            while (viewController.presentedViewController)
+                {
+                    viewController = viewController.presentedViewController;
+                }
+            [viewController presentViewController:navigation animated:YES completion:nil];
+            [controller presentViewController:alert animated:YES completion:nil];
+
+            if (@available(iOS 13, *)) {
+                viewController.view.window.backgroundColor=[UIColor blackColor];
+                navigation.navigationBar.topItem.title = @"";
+                UIView *statusBar = [[UIView alloc]initWithFrame:[UIApplication sharedApplication].keyWindow.windowScene.statusBarManager.statusBarFrame];
+                statusBar.backgroundColor = [UIColor blackColor];
+                statusBar.tag=1;
+                controller.navigationController.navigationBar.tintColor = [UIColor blackColor];
+                [[UIApplication sharedApplication].keyWindow addSubview:statusBar];
+            }
+
+            updateContactCallback = callback;
+        });
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+
+                [alert dismissViewControllerAnimated:YES completion:^{
+
+                    //Dismissed
+                }];
+
+        });
+    }
+    @catch (NSException *exception) {
+        callback(@[[exception description], [NSNull null]]);
+    }
+}
+
 - (void)cancelContactForm
 {
     if (updateContactCallback != nil) {

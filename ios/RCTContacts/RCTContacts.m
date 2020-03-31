@@ -8,6 +8,7 @@
     CNContactStore * contactStore;
 
     RCTResponseSenderBlock updateContactCallback;
+    CNMutableContact* selectedContact;
     
     BOOL notesUsageEnabled;
 }
@@ -735,8 +736,8 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData callback:(RCTR
         return;
 
     NSError* contactError;
+    selectedContact = nil;
     NSString* recordID = [contactData valueForKey:@"recordID"];
-    NSString* backTitle = [contactData valueForKey:@"backTitle"];
     NSArray * keysToFetch =@[
                              CNContactEmailAddressesKey,
                              CNContactPhoneNumbersKey,
@@ -777,22 +778,22 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData callback:(RCTR
 
         CNSaveRequest *request = [[CNSaveRequest alloc] init];
         [request updateContact:record];
+        
+        selectedContact = record;
 
         [contactStore executeSaveRequest:request error:nil];
 
         CNContactViewController *controller = [CNContactViewController viewControllerForContact:record];
         //controller.title = @"Saved!";
-        //UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Wait" message:@"Number saved!" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Cancel", nil];
-        
         UIAlertController *alert=   [UIAlertController
             alertControllerWithTitle:@"Saved!"
-            message:@"number added to contact"
+            message:@"Number added to contact"
             preferredStyle:UIAlertControllerStyleAlert];
         //[controller presentViewController:alert animated:YES completion:nil];
         
         // Add a cancel button which will close the view
-        controller.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:backTitle == nil ? @"Cancel" : backTitle style:UIBarButtonSystemItemCancel target:self action:@selector(cancelContactForm)];
-
+        controller.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Done"  style:UIBarButtonSystemItemCancel target:self action:@selector(doneContactForm)];
+        
         controller.delegate = self;
         controller.allowsEditing = true;
         controller.allowsActions = true;
@@ -834,6 +835,17 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData callback:(RCTR
     }
     @catch (NSException *exception) {
         callback(@[[exception description], [NSNull null]]);
+    }
+}
+
+- (void)doneContactForm
+{
+    if (updateContactCallback != nil) {
+        UIViewController *rootViewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        [rootViewController dismissViewControllerAnimated:YES completion:nil];
+
+        NSDictionary *contactDict = [self contactToDictionary:selectedContact withThumbnails:true];
+        updateContactCallback(@[[NSNull null], contactDict]);
     }
 }
 

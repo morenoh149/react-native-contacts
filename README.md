@@ -175,8 +175,9 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
  * `getCount(callback)` - returns the number of contacts
  * `getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
  * `addContact` (contact, callback) - adds a contact to the AddressBook.  
- * `openContactForm` (contact, callback) - create a new contact and display in contactsUI.  
+ * `openContactForm` (contact, callback) - create a new contact and display in contactsUI. 
  * `openExistingContact` (contact, callback) - where contact is an object with a valid recordID
+ * `editExistingContact` (contact, callback) - where contact is an object with a valid recordID and phoneNumbers array.
  * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
  * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
  * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to

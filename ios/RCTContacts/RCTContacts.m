@@ -82,23 +82,23 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResp
 {
     NSMutableArray *contacts = [[NSMutableArray alloc] init];
     NSError *contactError = nil;
-    NSMutableArray *keys = @[
-                      CNContactEmailAddressesKey,
-                      CNContactPhoneNumbersKey,
-                      CNContactFamilyNameKey,
-                      CNContactGivenNameKey,
-                      CNContactMiddleNameKey,
-                      CNContactPostalAddressesKey,
-                      CNContactOrganizationNameKey,
-                      CNContactJobTitleKey,
-                      CNContactImageDataAvailableKey,
-                      CNContactThumbnailImageDataKey,
-                      CNContactUrlAddressesKey,
-                      CNContactBirthdayKey,
-                      CNContactInstantMessageAddressesKey
-                      ];
-    if(notesUsageEnabled){
-        [keys addObject: @[CNContactNoteKey]];
+    NSMutableArray *keys = [NSMutableArray arrayWithArray: @[
+        CNContactEmailAddressesKey,
+        CNContactPhoneNumbersKey,
+        CNContactFamilyNameKey,
+        CNContactGivenNameKey,
+        CNContactMiddleNameKey,
+        CNContactPostalAddressesKey,
+        CNContactOrganizationNameKey,
+        CNContactJobTitleKey,
+        CNContactImageDataAvailableKey,
+        CNContactThumbnailImageDataKey,
+        CNContactUrlAddressesKey,
+        CNContactBirthdayKey,
+        CNContactInstantMessageAddressesKey
+    ]];
+    if(notesUsageEnabled) {
+        [keys addObject: CNContactNoteKey];
     }
     
     NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingName:searchString]
@@ -266,22 +266,21 @@ RCT_EXPORT_METHOD(getCount:(RCTResponseSenderBlock) callback)
     [contactStore containersMatchingPredicate:[CNContainer predicateForContainersWithIdentifiers: @[contactStore.defaultContainerIdentifier]] error:&contactError];
 
 
-    NSMutableArray *keysToFetch = [[NSMutableArray alloc]init];
-    [keysToFetch addObjectsFromArray:@[
-                                       CNContactEmailAddressesKey,
-                                       CNContactPhoneNumbersKey,
-                                       CNContactFamilyNameKey,
-                                       CNContactGivenNameKey,
-                                       CNContactMiddleNameKey,
-                                       CNContactPostalAddressesKey,
-                                       CNContactOrganizationNameKey,
-                                       CNContactJobTitleKey,
-                                       CNContactImageDataAvailableKey,
-                                       CNContactUrlAddressesKey,
-                                       CNContactBirthdayKey,
-                                       CNContactInstantMessageAddressesKey
-                                       ]];
-    if(notesUsageEnabled){
+    NSMutableArray *keysToFetch = [NSMutableArray arrayWithArray: @[
+        CNContactEmailAddressesKey,
+        CNContactPhoneNumbersKey,
+        CNContactFamilyNameKey,
+        CNContactGivenNameKey,
+        CNContactMiddleNameKey,
+        CNContactPostalAddressesKey,
+        CNContactOrganizationNameKey,
+        CNContactJobTitleKey,
+        CNContactImageDataAvailableKey,
+        CNContactUrlAddressesKey,
+        CNContactBirthdayKey,
+        CNContactInstantMessageAddressesKey
+    ]];
+    if(notesUsageEnabled) {
         [keysToFetch addObject: CNContactNoteKey];
     }
 
@@ -597,21 +596,21 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID callback:(RCTRespo
                                withThumbnails:(BOOL) withThumbnails
 {
     NSError* contactError;
-    NSMutableArray *keysToFetch = @[
-                      CNContactEmailAddressesKey,
-                      CNContactPhoneNumbersKey,
-                      CNContactFamilyNameKey,
-                      CNContactGivenNameKey,
-                      CNContactMiddleNameKey,
-                      CNContactPostalAddressesKey,
-                      CNContactOrganizationNameKey,
-                      CNContactJobTitleKey,
-                      CNContactImageDataAvailableKey,
-                      CNContactUrlAddressesKey,
-                      CNContactBirthdayKey,
-                      CNContactInstantMessageAddressesKey
-                      ];
-    if(notesUsageEnabled){
+    NSMutableArray *keysToFetch = [NSMutableArray arrayWithArray: @[
+        CNContactEmailAddressesKey,
+        CNContactPhoneNumbersKey,
+        CNContactFamilyNameKey,
+        CNContactGivenNameKey,
+        CNContactMiddleNameKey,
+        CNContactPostalAddressesKey,
+        CNContactOrganizationNameKey,
+        CNContactJobTitleKey,
+        CNContactImageDataAvailableKey,
+        CNContactUrlAddressesKey,
+        CNContactBirthdayKey,
+        CNContactInstantMessageAddressesKey
+    ]];
+    if(notesUsageEnabled) {
         [keysToFetch addObject: CNContactNoteKey];
     }
 
@@ -800,23 +799,25 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 
     NSError* contactError;
     NSString* recordID = [contactData valueForKey:@"recordID"];
-    NSMutableArray * keysToFetch =@[
-                             CNContactEmailAddressesKey,
-                             CNContactPhoneNumbersKey,
-                             CNContactFamilyNameKey,
-                             CNContactGivenNameKey,
-                             CNContactMiddleNameKey,
-                             CNContactPostalAddressesKey,
-                             CNContactOrganizationNameKey,
-                             CNContactJobTitleKey,
-                             CNContactImageDataAvailableKey,
-                             CNContactThumbnailImageDataKey,
-                             CNContactImageDataKey,
-                             CNContactUrlAddressesKey,
-                             CNContactBirthdayKey,
-                             CNContactInstantMessageAddressesKey
-                             ];
-    [keysToFetch addObject: CNContactNoteKey];
+    NSMutableArray * keysToFetch = [NSMutableArray arrayWithArray: @[
+        CNContactEmailAddressesKey,
+        CNContactPhoneNumbersKey,
+        CNContactFamilyNameKey,
+        CNContactGivenNameKey,
+        CNContactMiddleNameKey,
+        CNContactPostalAddressesKey,
+        CNContactOrganizationNameKey,
+        CNContactJobTitleKey,
+        CNContactImageDataAvailableKey,
+        CNContactThumbnailImageDataKey,
+        CNContactImageDataKey,
+        CNContactUrlAddressesKey,
+        CNContactBirthdayKey,
+        CNContactInstantMessageAddressesKey
+    ]];
+    if(notesUsageEnabled) {
+        [keysToFetch addObject: CNContactNoteKey];
+    }
 
     @try {
         CNMutableContact* record = [[contactStore unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError] mutableCopy];

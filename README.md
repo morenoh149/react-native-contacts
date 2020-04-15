@@ -228,12 +228,15 @@ callback <Function>
   prefix: 'MR',
   suffix: '',
   department: '',
-  birthday: {'year': 1988, 'month': 0, 'day': 1 }
+  birthday: {'year': 1988, 'month': 0, 'day': 1 },
+  imAddresses: [
+    { username: '0123456789', service: 'ICQ'},
+    { username: 'johndoe123', service: 'Facebook'}
+  ]
 }
 ```
 **NOTE**
 * on Android versions below 8 the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
-* on iOS the note field is not available.
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing

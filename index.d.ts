@@ -38,6 +38,11 @@ export interface PostalAddress {
     country: string;
 }
 
+export interface InstantMessageAddress {
+    username: string;
+    service: string;
+}
+
 export interface Birthday {
     day: number;
     month: number;
@@ -61,5 +66,6 @@ export interface Contact {
     suffix: string;
     department: string;
     birthday: Birthday;
+    imAddresses: InstantMessageAddress[]
     note: string;
 }

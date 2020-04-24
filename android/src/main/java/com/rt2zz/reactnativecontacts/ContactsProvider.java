@@ -495,6 +495,9 @@ public class ContactsProvider {
                         }
                     }
                     break;
+                case Note.CONTENT_ITEM_TYPE:
+                    contact.note = cursor.getString(cursor.getColumnIndex(Note.NOTE));
+                    break;
             }
         }
 

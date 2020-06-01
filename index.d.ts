@@ -6,6 +6,7 @@ export function getPhotoForId(contactId: string, callback: (error: any, photoUri
 export function addContact(contact: Contact, callback: (error?: any) => void): void;
 export function openContactForm(contact: Contact, callback: (error: any, contact: Contact) => void): void;
 export function openExistingContact(contact: Contact, callback: (error: any, contact: Contact) => void): void;
+export function editExistingContact(contact: Contact, callback: (error: any, contact: Contact) => void): void;
 export function updateContact(contact: Contact, callback: (error?: any) => void): void;
 export function deleteContact(contact: Contact, callback: (error?: any) => void): void;
 export function getContactsMatchingString(str: string, callback: (error: any, contacts: Contact[]) => void): void;

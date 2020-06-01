@@ -15,7 +15,9 @@ import {
   StyleSheet,
   Text,
   View,
-  Image
+  Image,
+  TextInput,
+  ActivityIndicator
 } from "react-native";
 import Contacts from "react-native-contacts";
 
@@ -32,7 +34,9 @@ export default class App extends Component<Props> {
 
     this.state = {
       contacts: [],
-      searchPlaceholder: "Search"
+      searchPlaceholder: "Search",
+      typeText:null,
+      loading:true
     };
 
     // if you want to read/write the contact note field on iOS, this method has to be called
@@ -60,7 +64,7 @@ export default class App extends Component<Props> {
       if (err === "denied") {
         console.warn("Permission to access contacts was denied");
       } else {
-        this.setState({ contacts });
+        this.setState({ contacts, loading:false });
       }
     });
 
@@ -89,6 +93,23 @@ export default class App extends Component<Props> {
     }
   }
 
+  onPressContact(contact){
+    var text = this.state.typeText;
+    this.setState({typeText:null});
+    if(text === null || text === '')
+      Contacts.openExistingContact(contact, () => { })
+    else{
+      var newPerson = { 
+        recordID: contact.recordID,
+        phoneNumbers: [{ label: 'mobile', number: text}]
+      }
+      Contacts.editExistingContact(newPerson, (err, contact) => {       
+        if (err) throw err;
+        //contact updated        
+      });
+    }
+  }
+
   render() {
     return (
       <SafeAreaView style={styles.container}>
@@ -112,37 +133,58 @@ export default class App extends Component<Props> {
           searchPlaceholder={this.state.searchPlaceholder}
           onChangeText={this.search}
         />
-        <ScrollView style={{ flex: 1 }}>
-          {this.state.contacts.map(contact => {
-            return (
-              <ListItem
-                leftElement={
-                  <Avatar
-                    img={
-                      contact.hasThumbnail
-                        ? { uri: contact.thumbnailPath }
-                        : undefined
+
+        <View style={{paddingLeft:10,paddingRight:10}}>
+          <TextInput
+            keyboardType='number-pad'
+            style={styles.inputStyle}
+            placeholder='Enter number to add to contact'
+            onChangeText={text => this.setState({typeText:text})}
+            value={this.state.typeText}
+          />
+        </View>
+        
+        {
+          this.state.loading === true ?
+          (
+            <View style={styles.spinner}>
+              <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+          ):(
+            <ScrollView style={{ flex: 1 }}>
+              {this.state.contacts.map(contact => {
+                return (
+                  <ListItem
+                    leftElement={
+                      <Avatar
+                        img={
+                          contact.hasThumbnail
+                            ? { uri: contact.thumbnailPath }
+                            : undefined
+                        }
+                        placeholder={getAvatarInitials(
+                          `${contact.givenName} ${contact.familyName}`
+                        )}
+                        width={40}
+                        height={40}
+                      />
                     }
-                    placeholder={getAvatarInitials(
-                      `${contact.givenName} ${contact.familyName}`
-                    )}
-                    width={40}
-                    height={40}
+                    key={contact.recordID}
+                    title={`${contact.givenName} ${contact.familyName}`}
+                    description={`${contact.company}`}
+                    onPress={() => this.onPressContact(contact)}
+                    onDelete={() =>
+                      Contacts.deleteContact(contact, () => {
+                        this.loadContacts();
+                      })
+                    }
                   />
-                }
-                key={contact.recordID}
-                title={`${contact.givenName} ${contact.familyName}`}
-                description={`${contact.company}`}
-                onPress={() => Contacts.openExistingContact(contact, () => { })}
-                onDelete={() =>
-                  Contacts.deleteContact(contact, () => {
-                    this.loadContacts();
-                  })
-                }
-              />
-            );
-          })}
-        </ScrollView>
+                );
+              })}
+            </ScrollView>
+          )
+        }
+        
       </SafeAreaView>
     );
   }
@@ -151,6 +193,18 @@ export default class App extends Component<Props> {
 const styles = StyleSheet.create({
   container: {
     flex: 1
+  },
+  spinner:{
+    flex:1,
+    flexDirection:'column',
+    alignContent:"center",
+    justifyContent:"center"
+  },
+  inputStyle:{ 
+    height: 40, 
+    borderColor: 'gray', 
+    borderWidth: 1, 
+    textAlign:"center" 
   }
 });
 

@@ -175,8 +175,9 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
  * `getCount(callback)` - returns the number of contacts
  * `getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
  * `addContact` (contact, callback) - adds a contact to the AddressBook.  
- * `openContactForm` (contact, callback) - create a new contact and display in contactsUI.  
+ * `openContactForm` (contact, callback) - create a new contact and display in contactsUI. 
  * `openExistingContact` (contact, callback) - where contact is an object with a valid recordID
+ * `editExistingContact` (contact, callback) - add numbers to the contact, where the contact is an object with a valid recordID and an array of phoneNumbers
  * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
  * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
  * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
@@ -295,6 +296,27 @@ Contacts.getAll((err, contacts) => {
 })
 ```
 Update reference contacts by their recordID (as returned by the OS in getContacts). Apple does not guarantee the recordID will not change, e.g. it may be reassigned during a phone migration. Consequently you should always grab a fresh contact list with `getContacts` before performing update operations.
+
+## Add numbers to an existing contact
+Example
+```js
+var newPerson = { 
+  recordID: '6b2237ee0df85980',
+  phoneNumbers: [{
+    label: 'mobile',
+    number: '(555) 555-5555',
+  }, ...
+  ]
+}
+
+Contacts.editExistingContact(newPerson, (err, contact) => {       
+    if (err) throw err;
+    //contact updated
+});
+```
+Add one or more phone numbers to an existing contact. 
+On Android the edited page will be opened. 
+On iOS the already edited contact will be opened with the possibility of further modification.
 
 ### Bugs
 There are issues with updating contacts on Android:

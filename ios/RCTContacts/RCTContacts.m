@@ -721,11 +721,21 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
                 currentViewController = currentViewController.presentedViewController;
             }
 
+            UIActivityIndicatorViewStyle *activityIndicatorStyle;
+            UIColor *activityIndicatorBackgroundColor;
+            if (@available(iOS 13, *)) {
+                activityIndicatorStyle = UIActivityIndicatorViewStyleMedium;
+                activityIndicatorBackgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
+            } else {
+                activityIndicatorStyle = UIActivityIndicatorViewStyleGray;
+                activityIndicatorBackgroundColor = [UIColor whiteColor];;
+            }
+
             // Cover the contact view with an activity indicator so we can put it in edit mode without user seeing the transition
-            UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+            UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:activityIndicatorStyle];
             activityIndicatorView.frame = UIApplication.sharedApplication.keyWindow.frame;
             [activityIndicatorView startAnimating];
-            activityIndicatorView.backgroundColor = [UIColor whiteColor];
+            activityIndicatorView.backgroundColor = activityIndicatorBackgroundColor;
             [navigation.view addSubview:activityIndicatorView];
 
             [currentViewController presentViewController:navigation animated:YES completion:nil];

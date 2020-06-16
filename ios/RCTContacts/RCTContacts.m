@@ -618,7 +618,7 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID callback:(RCTRespo
     CNContact* contact = [addressBook unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError];
 
     if(!contact)
-            return nil;
+            return [NSNull null];
 
     return [self contactToDictionary: contact withThumbnails:withThumbnails];
 }

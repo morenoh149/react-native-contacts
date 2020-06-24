@@ -262,11 +262,6 @@ RCT_EXPORT_METHOD(getCount:(RCTResponseSenderBlock) callback)
                            withCallback:(RCTResponseSenderBlock) callback
 {
     NSMutableArray *contacts = [[NSMutableArray alloc] init];
-
-    NSError* contactError;
-    [contactStore containersMatchingPredicate:[CNContainer predicateForContainersWithIdentifiers: @[contactStore.defaultContainerIdentifier]] error:&contactError];
-
-
     NSMutableArray *keysToFetch = [NSMutableArray arrayWithArray: @[
         CNContactEmailAddressesKey,
         CNContactPhoneNumbersKey,

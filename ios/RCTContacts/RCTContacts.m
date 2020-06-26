@@ -285,6 +285,7 @@ RCT_EXPORT_METHOD(getCount:(RCTResponseSenderBlock) callback)
     }
 
     CNContactFetchRequest * request = [[CNContactFetchRequest alloc]initWithKeysToFetch:keysToFetch];
+    NSError* contactError;
     BOOL success = [contactStore enumerateContactsWithFetchRequest:request error:&contactError usingBlock:^(CNContact * __nonnull contact, BOOL * __nonnull stop){
         NSDictionary *contactDict = [self contactToDictionary: contact withThumbnails:withThumbnails];
         [contacts addObject:contactDict];

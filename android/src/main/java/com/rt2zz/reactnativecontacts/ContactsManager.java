@@ -460,7 +460,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             imAddress.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.Im.CONTENT_ITEM_TYPE);
             imAddress.put(CommonDataKinds.Im.DATA, imAccounts[i]);
             imAddress.put(CommonDataKinds.Im.TYPE, CommonDataKinds.Im.TYPE_HOME);
-            imAddress.put(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.CUSTOM_PROTOCOL);
+            imAddress.put(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.PROTOCOL_CUSTOM);
             imAddress.put(CommonDataKinds.Im.CUSTOM_PROTOCOL, imProtocols[i]);
             contactData.add(imAddress);
         }
@@ -736,7 +736,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Im.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Im.DATA, imAccounts[i])
                     .withValue(CommonDataKinds.Im.TYPE, CommonDataKinds.Im.TYPE_HOME)
-                    .withValue(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.CUSTOM_PROTOCOL)
+                    .withValue(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.PROTOCOL_CUSTOM)
                     .withValue(CommonDataKinds.Im.CUSTOM_PROTOCOL, imProtocols[i]);
             ops.add(op.build());
         }
@@ -1036,7 +1036,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                         .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Im.CONTENT_ITEM_TYPE)
                         .withValue(CommonDataKinds.Im.DATA, imAccounts[i])
                         .withValue(CommonDataKinds.Im.TYPE, CommonDataKinds.Im.TYPE_HOME)
-                        .withValue(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.CUSTOM_PROTOCOL)
+                        .withValue(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.PROTOCOL_CUSTOM)
                         .withValue(CommonDataKinds.Im.CUSTOM_PROTOCOL, imProtocols[i]);
                 ops.add(op.build());
             }

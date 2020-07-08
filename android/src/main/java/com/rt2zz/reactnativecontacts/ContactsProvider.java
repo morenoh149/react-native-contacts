@@ -26,6 +26,7 @@ import static android.provider.ContactsContract.CommonDataKinds.Phone;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import static android.provider.ContactsContract.CommonDataKinds.Note;
 import static android.provider.ContactsContract.CommonDataKinds.Website;
+import static android.provider.ContactsContract.CommonDataKinds.Im;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
 public class ContactsProvider {
@@ -68,6 +69,7 @@ public class ContactsProvider {
         add(StructuredPostal.COUNTRY);
         add(Note.NOTE);
         add(Website.URL);
+        add(Im.DATA);
         add(Event.START_DATE);
         add(Event.TYPE);
     }};
@@ -265,6 +267,7 @@ public class ContactsProvider {
                     + ContactsContract.Data.MIMETYPE + "=? OR "
                     + ContactsContract.Data.MIMETYPE + "=? OR "
                     + ContactsContract.Data.MIMETYPE + "=? OR "
+                    + ContactsContract.Data.MIMETYPE + "=? OR "
                     + ContactsContract.Data.MIMETYPE + "=?",
                     new String[]{
                         Email.CONTENT_ITEM_TYPE,
@@ -274,6 +277,7 @@ public class ContactsProvider {
                         StructuredPostal.CONTENT_ITEM_TYPE,
                         Note.CONTENT_ITEM_TYPE,
                         Website.CONTENT_ITEM_TYPE,
+                        Im.CONTENT_ITEM_TYPE,
                         Event.CONTENT_ITEM_TYPE,
                     },
                     null
@@ -456,6 +460,52 @@ public class ContactsProvider {
                         contact.urls.add(new Contact.Item(label, url, id));
                     }
                     break;
+                case Im.CONTENT_ITEM_TYPE:
+                    String username = cursor.getString(cursor.getColumnIndex(Im.DATA));
+                    int imType = cursor.getInt(cursor.getColumnIndex(Im.PROTOCOL));
+                    if (!TextUtils.isEmpty(username)) {
+                        String label;
+                        switch (imType) {
+                            case Im.PROTOCOL_AIM:
+                                label = "AIM";
+                                break;
+                            case Im.PROTOCOL_MSN:
+                                label = "MSN";
+                                break;
+                            case Im.PROTOCOL_YAHOO:
+                                label = "Yahoo";
+                                break;
+                            case Im.PROTOCOL_SKYPE:
+                                label = "Skype";
+                                break;
+                            case Im.PROTOCOL_QQ:
+                                label = "QQ";
+                                break;
+                            case Im.PROTOCOL_GOOGLE_TALK:
+                                label = "Google Talk";
+                                break;
+                            case Im.PROTOCOL_ICQ:
+                                label = "ICQ";
+                                break;
+                            case Im.PROTOCOL_JABBER:
+                                label = "Jabber";
+                                break;
+                            case Im.PROTOCOL_NETMEETING:
+                                label = "NetMeeting";
+                                break;
+                            case Im.PROTOCOL_CUSTOM:
+                                if (cursor.getString(cursor.getColumnIndex(Im.CUSTOM_PROTOCOL)) != null) {
+                                    label = cursor.getString(cursor.getColumnIndex(Im.CUSTOM_PROTOCOL));
+                                } else {
+                                    label = "";
+                                }
+                                break;
+                            default:
+                                label = "other";
+                        }
+                        contact.instantMessengers.add(new Contact.Item(label, username, id));
+                    }
+                    break;
                 case Organization.CONTENT_ITEM_TYPE:
                     contact.company = cursor.getString(cursor.getColumnIndex(Organization.COMPANY));
                     contact.jobTitle = cursor.getString(cursor.getColumnIndex(Organization.TITLE));
@@ -538,6 +588,7 @@ public class ContactsProvider {
         private String department = "";
         private String note ="";
         private List<Item> urls = new ArrayList<>();
+        private List<Item> instantMessengers = new ArrayList<>();
         private boolean hasPhoto = false;
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
@@ -585,6 +636,15 @@ public class ContactsProvider {
                 urlAddresses.pushMap(map);
             }
             contact.putArray("urlAddresses", urlAddresses);
+
+            WritableArray imAddresses = Arguments.createArray();
+            for (Item item : instantMessengers) {
+                WritableMap map = Arguments.createMap();
+                map.putString("username", item.value);
+                map.putString("service", item.label);
+                imAddresses.pushMap(map);
+            }
+            contact.putArray("imAddresses", imAddresses);
 
             WritableArray emailAddresses = Arguments.createArray();
             for (Item item : emails) {

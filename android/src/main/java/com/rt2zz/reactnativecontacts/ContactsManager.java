@@ -310,6 +310,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
+        String note = contact.hasKey("note") ? contact.getString("note") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
@@ -463,6 +464,13 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             imAddress.put(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.PROTOCOL_CUSTOM);
             imAddress.put(CommonDataKinds.Im.CUSTOM_PROTOCOL, imProtocols[i]);
             contactData.add(imAddress);
+        }
+
+        if(note != null) {
+            ContentValues structuredNote = new ContentValues();
+            structuredNote.put(ContactsContract.Data.MIMETYPE, Note.CONTENT_ITEM_TYPE);
+            structuredNote.put(ContactsContract.CommonDataKinds.Note.NOTE, note);
+            contactData.add(structuredNote);
         }
 
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
@@ -982,6 +990,22 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                         .withValue(CommonDataKinds.Email.LABEL, emailsLabels[i]);
                 ops.add(op.build());
             }
+        }
+
+        // remove existing note first
+        op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                .withSelection(
+                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?",
+                        new String[]{String.valueOf(Note.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
+                );
+        ops.add(op.build());
+
+        if(note != null) {
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                    .withValue(ContactsContract.Data.MIMETYPE, Note.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.Note.NOTE, note);
+            ops.add(op.build());
         }
 
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {

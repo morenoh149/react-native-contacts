@@ -992,6 +992,22 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             }
         }
 
+        // remove existing note first
+        op = ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                .withSelection(
+                        ContactsContract.Data.MIMETYPE  + "=? AND "+ ContactsContract.Data.RAW_CONTACT_ID + " = ?",
+                        new String[]{String.valueOf(Note.CONTENT_ITEM_TYPE), String.valueOf(rawContactId)}
+                );
+        ops.add(op.build());
+
+        if(note != null) {
+            op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, String.valueOf(rawContactId))
+                    .withValue(ContactsContract.Data.MIMETYPE, Note.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.Note.NOTE, note);
+            ops.add(op.build());
+        }
+
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
             Bitmap photo = getThumbnailBitmap(thumbnailPath);
 

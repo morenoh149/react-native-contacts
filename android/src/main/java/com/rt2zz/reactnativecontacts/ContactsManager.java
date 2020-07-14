@@ -310,6 +310,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
+        String note = contact.hasKey("note") ? contact.getString("note") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
@@ -463,6 +464,13 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             imAddress.put(CommonDataKinds.Im.PROTOCOL, CommonDataKinds.Im.PROTOCOL_CUSTOM);
             imAddress.put(CommonDataKinds.Im.CUSTOM_PROTOCOL, imProtocols[i]);
             contactData.add(imAddress);
+        }
+
+        if(note != null) {
+            ContentValues structuredNote = new ContentValues();
+            structuredNote.put(ContactsContract.Data.MIMETYPE, Note.CONTENT_ITEM_TYPE);
+            structuredNote.put(ContactsContract.CommonDataKinds.Note.NOTE, note);
+            contactData.add(structuredNote);
         }
 
         if(thumbnailPath != null && !thumbnailPath.isEmpty()) {

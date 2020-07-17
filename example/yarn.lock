@@ -4278,9 +4278,9 @@ lodash.unescape@4.0.1:
   integrity sha1-vyJJiGzlFM2hEvrpIYzcBlIR/Jw=
 
 lodash@^4.17.10, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.5, lodash@^4.3.0:
-  version "4.17.15"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
-  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
+  version "4.17.19"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.19.tgz#e48ddedbe30b3321783c5b4301fbd353bc1e4a4b"
+  integrity sha512-JNvd8XER9GQX0v2qJgsaN/mzFCNA5BRe/j8JN9d+tWyGLSodKQHKFicdwNYzWwI3wjRnaKPsGj1XkBjx/F96DQ==
 
 log-symbols@^2.2.0:
   version "2.2.0"
@@ -5443,10 +5443,10 @@ react-is@^16.12.0, react-is@^16.8.1, react-is@^16.8.4, react-is@^16.9.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.12.0.tgz#2cc0fe0fba742d97fd527c42a13bec4eeb06241c"
   integrity sha512-rPCkf/mWBtKc97aLL9/txD8DZdemK0vkA3JMLShjlJB3Pj3s+lpf1KaBzMfQrAmhMQB0n1cU/SUGgKKBCe837Q==
 
-"react-native-contacts@https://github.com/rt2zz/react-native-contacts.git":
-  version "5.1.0"
-  uid "1b6eb4173dde9d4ed7bfffce119118823f5566d0"
-  resolved "https://github.com/rt2zz/react-native-contacts.git#1b6eb4173dde9d4ed7bfffce119118823f5566d0"
+"react-native-contacts@https://github.com/morenoh149/react-native-contacts.git":
+  version "5.2.5"
+  uid "87f8c517b9aff7965fdd903b03dafd54877a0dfe"
+  resolved "https://github.com/morenoh149/react-native-contacts.git#87f8c517b9aff7965fdd903b03dafd54877a0dfe"
 
 react-native-gesture-handler@^1.6.0:
   version "1.6.0"

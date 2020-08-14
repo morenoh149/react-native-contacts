@@ -263,10 +263,6 @@ RCT_EXPORT_METHOD(getCount:(RCTResponseSenderBlock) callback)
 {
     NSMutableArray *contacts = [[NSMutableArray alloc] init];
 
-    NSError* contactError;
-    [contactStore containersMatchingPredicate:[CNContainer predicateForContainersWithIdentifiers: @[contactStore.defaultContainerIdentifier]] error:&contactError];
-
-
     NSMutableArray *keysToFetch = [NSMutableArray arrayWithArray: @[
         CNContactEmailAddressesKey,
         CNContactPhoneNumbersKey,
@@ -290,6 +286,7 @@ RCT_EXPORT_METHOD(getCount:(RCTResponseSenderBlock) callback)
     }
 
     CNContactFetchRequest * request = [[CNContactFetchRequest alloc]initWithKeysToFetch:keysToFetch];
+    NSError* contactError;
     BOOL success = [contactStore enumerateContactsWithFetchRequest:request error:&contactError usingBlock:^(CNContact * __nonnull contact, BOOL * __nonnull stop){
         NSDictionary *contactDict = [self contactToDictionary: contact withThumbnails:withThumbnails];
         [contacts addObject:contactDict];

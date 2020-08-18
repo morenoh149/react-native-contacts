@@ -4,7 +4,7 @@ export function getContactById(contactId: string, callback: (error: any, contact
 export function getCount(callback: (count: number) => void): void;
 export function getPhotoForId(contactId: string, callback: (error: any, photoUri: string) => void): void;
 export function addContact(contact: Contact, callback: (error?: any) => void): void;
-export function openContactForm(contact: Contact, callback: (error: any, contact: Contact) => void): void;
+export function openContactForm(contact: Partial<Contact>, callback: (error: any, contact: Contact) => void): void;
 export function openExistingContact(contact: Contact, callback: (error: any, contact: Contact) => void): void;
 export function editExistingContact(contact: Contact, callback: (error: any, contact: Contact) => void): void;
 export function updateContact(contact: Contact, callback: (error?: any) => void): void;

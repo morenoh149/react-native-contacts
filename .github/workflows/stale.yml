@@ -19,3 +19,5 @@ jobs:
         stale-pr-label: 'no-pr-activity'
         days-before-stale: 60
         days-before-close: 30
+        exempt-issue-labels: 'enhancement,good first issue,work-in-progress'
+        exempt-pr-labels: 'needs-review,work-in-progress'

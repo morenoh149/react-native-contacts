@@ -94,8 +94,8 @@ public class ContactsProvider {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ? OR " +
-                            Organization.COMPANY + " LIKE ?",
+                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ? COLLATE NOCASE OR " +
+                            Organization.COMPANY + " LIKE ? COLLATE NOCASE",
                     new String[]{"%" + searchString + "%", "%" + searchString + "%"},
                     null
             );
@@ -151,7 +151,7 @@ public class ContactsProvider {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.CommonDataKinds.Email.ADDRESS + " LIKE ?",
+                    ContactsContract.CommonDataKinds.Email.ADDRESS + " LIKE ? COLLATE NOCASE",
                     new String[]{"%" + emailAddress + "%"},
                     null
             );

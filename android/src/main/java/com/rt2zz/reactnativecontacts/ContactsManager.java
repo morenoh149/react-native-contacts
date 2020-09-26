@@ -570,6 +570,10 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      */
     @ReactMethod
     public void addContact(ReadableMap contact, Callback callback) {
+        if (contact == null) {
+            callback.invoke("New contact cannot be null.");
+            return;
+        }
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
         String familyName = contact.hasKey("familyName") ? contact.getString("familyName") : null;

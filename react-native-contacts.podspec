@@ -13,6 +13,6 @@ Pod::Spec.new do |s|
   s.source         = { :git => "https://github.com/rt2zz/react-native-contacts.git" } 
   s.source_files   = 'ios/RCTContacts/*.{h,m}'
 
-  s.dependency 'React'
+  s.dependency 'React-Core'
 
 end

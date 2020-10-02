@@ -27,6 +27,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -67,18 +68,18 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * queries CommonDataKinds.Contactables to get phones and emails
      */
     @ReactMethod
-    public void getAll(final Callback callback) {
-        getAllContacts(callback);
+    public void getAll(final Promise promise) {
+        getAllContacts(promise);
     }
 
     /**
      * Introduced for iOS compatibility.  Same as getAll
      *
-     * @param callback callback
+     * @param promise promise
      */
     @ReactMethod
-    public void getAllWithoutPhotos(final Callback callback) {
-        getAllContacts(callback);
+    public void getAllWithoutPhotos(final Promise promise) {
+        getAllContacts(promise);
     }
 
     /**
@@ -87,7 +88,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      *
      * @param callback user provided callback to run at completion
      */
-    private void getAllContacts(final Callback callback) {
+    private void getAllContacts(final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {
@@ -97,7 +98,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContacts();
 
-                callback.invoke(null, contacts);
+                promise.resolve(contacts);
                 return null;
             }
         };

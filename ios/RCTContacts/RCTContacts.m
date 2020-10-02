@@ -191,14 +191,15 @@ RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string callback:(RCTResp
     callback(@[[NSNull null], contacts]);
 }
 
--(void) getAllContacts:(RCTResponseSenderBlock) callback
+-(void) getAllContacts:(RCTPromiseResolveBlock) resolve
+        reject:(RCTPromiseRejectBlock) reject
         withThumbnails:(BOOL) withThumbnails
 {
-    CNContactStore* contactStore = [self contactsStore:callback];
+    CNContactStore* contactStore = [self contactsStore:reject];
     if(!contactStore)
         return;
 
-    [self retrieveContactsFromAddressBook:contactStore withThumbnails:withThumbnails withCallback:callback];
+    [self retrieveContactsFromAddressBook:contactStore withThumbnails:withThumbnails withCallback:resolve];
 }
 
 -(void) getAllContactsCount:(RCTResponseSenderBlock) callback
@@ -242,14 +243,14 @@ RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string callback:(RCTResp
     callback(@[count]);
 }
 
-RCT_EXPORT_METHOD(getAll:(RCTResponseSenderBlock) callback)
+RCT_EXPORT_METHOD(getAll:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    [self getAllContacts:callback withThumbnails:true];
+    [self getAllContacts:resolve reject:reject withThumbnails:true];
 }
 
-RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
+RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTPromiseResolveBlock) resolve)
 {
-    [self getAllContacts:callback withThumbnails:false];
+    [self getAllContacts:resolve withThumbnails:false];
 }
 
 RCT_EXPORT_METHOD(getCount:(RCTResponseSenderBlock) callback)
@@ -1183,7 +1184,7 @@ RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) callback)
     callback(@[@"not implemented", [NSNull null]]);
 }
 
--(CNContactStore*) contactsStore: (RCTResponseSenderBlock)callback {
+-(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];
 
@@ -1194,9 +1195,9 @@ RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) callback)
 
         CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
         if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
-            callback(@[@"denied", [NSNull null]]);
+            reject(@"Error", @"denied", nil);
         } else {
-            callback(@[@"undefined", [NSNull null]]);
+            reject(@"Error", @"undefined", nil);
         }
 
         return nil;

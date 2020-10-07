@@ -7,7 +7,7 @@
 @implementation RCTContacts {
     CNContactStore * contactStore;
 
-    RCTResponseSenderBlock updateContactCallback;
+    RCTPromiseResolveBlock updateContactPromise;
     CNMutableContact* selectedContact;
     
     BOOL notesUsageEnabled;
@@ -43,24 +43,24 @@ RCT_EXPORT_MODULE();
              };
 }
 
-RCT_EXPORT_METHOD(checkPermission:(RCTResponseSenderBlock) callback)
+RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve)
 {
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
     if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
-        callback(@[[NSNull null], @"denied"]);
+        resolve(@"denied");
     } else if (authStatus == CNAuthorizationStatusAuthorized){
-        callback(@[[NSNull null], @"authorized"]);
+        resolve(@"authorized");
     } else {
-        callback(@[[NSNull null], @"undefined"]);
+        resolve(@"undefined");
     }
 }
 
-RCT_EXPORT_METHOD(requestPermission:(RCTResponseSenderBlock) callback)
+RCT_EXPORT_METHOD(requestPermission:(RCTPromiseResolveBlock) resolve)
 {
     CNContactStore* contactStore = [[CNContactStore alloc] init];
 
     [contactStore requestAccessForEntityType:CNEntityTypeContacts completionHandler:^(BOOL granted, NSError * _Nullable error) {
-        [self checkPermission:callback];
+        [self checkPermission:resolve];
     }];
 }
 
@@ -203,8 +203,9 @@ RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string callback:(RCTResp
 }
 
 -(void) getAllContactsCount:(RCTResponseSenderBlock) callback
+    reject:(RCTPromiseRejectBlock) reject
 {
-    CNContactStore* contactStore = [self contactsStore:callback];
+    CNContactStore* contactStore = [self contactsStore:reject];
     if(!contactStore)
         return;
 
@@ -253,9 +254,9 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTPromiseResolveBlock) resolve)
     [self getAllContacts:resolve withThumbnails:false];
 }
 
-RCT_EXPORT_METHOD(getCount:(RCTResponseSenderBlock) callback)
+RCT_EXPORT_METHOD(getCount:(RCTPromiseResolveBlock) resolve)
 {
-    [self getAllContactsCount:callback];
+    [self getAllContactsCount:resolve];
 }
 
 -(void) retrieveContactsFromAddressBook:(CNContactStore*)contactStore

@@ -9,10 +9,7 @@ Ask questions on [stackoverflow](https://stackoverflow.com/questions/tagged/reac
 ```js
 import Contacts from 'react-native-contacts';
 
-Contacts.getAll((err, contacts) => {
-  if (err) {
-    throw err;
-  }
+Contacts.getAll().then(contacts => {
   // contacts returned
 })
 ```
@@ -31,14 +28,10 @@ PermissionsAndroid.request(
     'message': 'This app would like to view your contacts.',
     'buttonPositive': 'Please accept bare mortal'
   }
-).then(() => {
-  Contacts.getAll((err, contacts) => {
-    if (err === 'denied'){
-      // error
-    } else {
-      // contacts returned in Array
-    }
-  })
+)
+.then(Contacts.getAll)
+.then(contacts => {
+  ...
 })
 ```
 
@@ -169,30 +162,23 @@ Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to 
 If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(true)` method before accessing the contact infos. Also, a `com.apple.developer.contacts.notes` entitlement must be added to the project. Before submitting your app to the AppStore, the permission for using the entitlement has to be granted as well. You can find a more detailed explanation [here](https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_contacts_notes?language=objc).
 
 ## API
- * `getAll` (callback) - returns *all* contacts as an array of objects
+ * `getAll`: Promise<Contact[]> - returns *all* contacts as an array of objects
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
- * `getContactById(contactId, callback)` - returns contact with defined contactId (or null if it doesn't exist)
- * `getCount(callback)` - returns the number of contacts
- * `getPhotoForId(contactId, callback)` - returns a URI (or null) for a contacts photo
- * `addContact` (contact, callback) - adds a contact to the AddressBook.  
- * `openContactForm` (contact, callback) - create a new contact and display in contactsUI. 
- * `openExistingContact` (contact, callback) - where contact is an object with a valid recordID
- * `editExistingContact` (contact, callback) - add numbers to the contact, where the contact is an object with a valid recordID and an array of phoneNumbers
- * `updateContact` (contact, callback) - where contact is an object with a valid recordID  
- * `deleteContact` (contact, callback) - where contact is an object with a valid recordID  
- * `getContactsMatchingString` (string, callback) - where string is any string to match a name (first, middle, family) to
- * `getContactsByPhoneNumber` (string, callback) - where string is a phone number to match to.
- * `getContactsByEmailAddress` (string, callback) - where string is an email address to match to.
- * `checkPermission` (callback) - checks permission to access Contacts _ios only_
- * `requestPermission` (callback) - request permission to access Contacts _ios only_
- * `writePhotoToPath` (callback) - writes the contact photo to a given path _android only_
-
-Callbacks follow node-style:
-```sh
-callback <Function>
-  err <Error>
-  response <Object>
-```
+ * `getContactById(contactId)`: Promise<Contact> - returns contact with defined contactId (or null if it doesn't exist)
+ * `getCount()`: Promise<number> - returns the number of contacts
+ * `getPhotoForId(contactId)`: Promise<string> - returns a URI (or null) for a contacts photo
+ * `addContact(contact)`: Promise<Contact> - adds a contact to the AddressBook.  
+ * `openContactForm(contact)` - create a new contact and display in contactsUI. 
+ * `openExistingContact(contact)` - where contact is an object with a valid recordID
+ * `editExistingContact(contact)`: Promise<Contact> - add numbers to the contact, where the contact is an object with a valid recordID and an array of phoneNumbers
+ * `updateContact(contact)`: Promise<Contact> - where contact is an object with a valid recordID  
+ * `deleteContact(contact)` - where contact is an object with a valid recordID  
+ * `getContactsMatchingString(string)`: Promise<Contact[]> - where string is any string to match a name (first, middle, family) to
+ * `getContactsByPhoneNumberstring)`: Promise<Contact[]> - where string is a phone number to match to.
+ * `getContactsByEmailAddress(string)`: Promise<Contact[]> - where string is an email address to match to.
+ * `checkPermission()`: Promise<string> - checks permission to access Contacts _ios only_
+ * `requestPermission()`: Promise<string> - request permission to access Contacts _ios only_
+ * `writePhotoToPath()` - writes the contact photo to a given path _android only_
 
 ## Example Contact Record
 ```js
@@ -251,10 +237,7 @@ var newPerson = {
   givenName: "Friedrich",
 }
 
-Contacts.addContact(newPerson, (err) => {
-  if (err) throw err;
-  // save successful
-})
+Contacts.addContact(newPerson)
 ```
 
 ## Open Contact Form
@@ -268,8 +251,7 @@ var newPerson = {
   displayName: "Friedrich Nietzsche"
 }
 
-Contacts.openContactForm(newPerson, (err, contact) => {
-  if (err) throw err;
+Contacts.openContactForm(newPerson).then(contact => {
   // contact has been saved
 })
 ```
@@ -278,19 +260,14 @@ You may want to edit the contact before saving it into your phone book. So using
 ## Updating Contacts
 Example
 ```js
-Contacts.getAll((err, contacts) => {
-  if (err) {
-    throw err;
-  }
-
+Contacts.getAll().then(contacts => {
   // update the first record
   let someRecord = contacts[0]
   someRecord.emailAddresses.push({
     label: "junk",
     email: "mrniet+junkmail@test.com",
   })
-  Contacts.updateContact(someRecord, (err) => {
-    if (err) throw err;
+  Contacts.updateContact(someRecord).then(() => {
     // record updated
   })
 })
@@ -309,8 +286,7 @@ var newPerson = {
   ]
 }
 
-Contacts.editExistingContact(newPerson, (err, contact) => {       
-    if (err) throw err;
+Contacts.editExistingContact(newPerson).then(contact => {
     //contact updated
 });
 ```
@@ -327,19 +303,13 @@ See https://github.com/rt2zz/react-native-contacts/issues/332#issuecomment-45567
 ## Delete Contacts
 You can delete a record using only it's recordID
 ```js
-Contacts.deleteContact({recordID: 1}, (err, recordId) => {
-  if (err) {
-    throw err;
-  }
+Contacts.deleteContact({recordID: 1}).then(recordId => {
   // contact deleted
 })
 ```
 Or by passing the full contact object with a `recordID` field.
 ```js
-Contacts.deleteContact(contact, (err, recordId) => {
-  if (err) {
-    throw err;
-  }
+Contacts.deleteContact(contact).then((recordId) => {
   // contact deleted
 })
 ```
@@ -353,17 +323,15 @@ The thumbnailPath is the direct URI for the temp location of the contact's cropp
 ```
 
 ## Permissions Methods (optional)
-`checkPermission` (callback) - checks permission to access Contacts.  
-`requestPermission` (callback) - request permission to access Contacts.  
+`checkPermission` - checks permission to access Contacts.  
+`requestPermission` - request permission to access Contacts.  
 
 Usage as follows:
 ```js
-Contacts.checkPermission((err, permission) => {
-  if (err) throw err;
-
+Contacts.checkPermission().then(permission => {
   // Contacts.PERMISSION_AUTHORIZED || Contacts.PERMISSION_UNDEFINED || Contacts.PERMISSION_DENIED
   if (permission === 'undefined') {
-    Contacts.requestPermission((err, permission) => {
+    Contacts.requestPermission().then(permission => {
       // ...
     })
   }

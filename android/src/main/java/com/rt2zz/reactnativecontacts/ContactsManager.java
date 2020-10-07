@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
 import com.facebook.react.bridge.ActivityEventListener;
-import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -54,8 +54,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
     private static final int REQUEST_OPEN_CONTACT_FORM = 52941;
     private static final int REQUEST_OPEN_EXISTING_CONTACT = 52942;
 
-    private static Callback updateContactCallback;
-    private static Callback requestCallback;
+    private static Promise updateContactPromise;
+    private static Promise requestPromise;
 
     public ContactsManager(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -67,27 +67,25 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * queries CommonDataKinds.Contactables to get phones and emails
      */
     @ReactMethod
-    public void getAll(final Callback callback) {
-        getAllContacts(callback);
+    public void getAll(Promise promise) {
+        getAllContacts(promise);
     }
 
     /**
      * Introduced for iOS compatibility.  Same as getAll
      *
-     * @param callback callback
+     * @param promise promise
      */
     @ReactMethod
-    public void getAllWithoutPhotos(final Callback callback) {
-        getAllContacts(callback);
+    public void getAllWithoutPhotos(Promise promise) {
+        getAllContacts(promise);
     }
 
     /**
      * Retrieves contacts.
      * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
-     *
-     * @param callback user provided callback to run at completion
      */
-    private void getAllContacts(final Callback callback) {
+    private void getAllContacts(final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {
@@ -96,8 +94,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
 
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContacts();
-
-                callback.invoke(null, contacts);
+                promise.resolve(contacts);
                 return null;
             }
         };
@@ -105,7 +102,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
     }
 
     @ReactMethod
-    public void getCount(final Callback callback) {
+    public void getCount(final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {
@@ -115,7 +112,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 Integer contacts = contactsProvider.getContactsCount();
 
-                callback.invoke(contacts);
+                promise.resolve(contacts);
                 return null;
             }
         };
@@ -127,10 +124,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
      *
      * @param searchString String to match
-     * @param callback user provided callback to run at completion
      */
     @ReactMethod
-    public void getContactsMatchingString(final String searchString, final Callback callback) {
+    public void getContactsMatchingString(final String searchString, final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {
@@ -139,7 +135,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContactsMatchingString(searchString);
 
-                callback.invoke(null, contacts);
+                promise.resolve(contacts);
                 return null;
             }
         };
@@ -151,10 +147,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
      *
      * @param phoneNumber phone number to match
-     * @param callback user provided callback to run at completion
      */
     @ReactMethod
-    public void getContactsByPhoneNumber(final String phoneNumber, final Callback callback) {
+    public void getContactsByPhoneNumber(final String phoneNumber, final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {
@@ -163,7 +158,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContactsByPhoneNumber(phoneNumber);
 
-                callback.invoke(null, contacts);
+                promise.resolve(contacts);
                 return null;
             }
         };
@@ -175,10 +170,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
      *
      * @param emailAddress email address to match
-     * @param callback user provided callback to run at completion
      */
     @ReactMethod
-    public void getContactsByEmailAddress(final String emailAddress, final Callback callback) {
+    public void getContactsByEmailAddress(final String emailAddress, final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {
@@ -187,7 +181,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContactsByEmailAddress(emailAddress);
 
-                callback.invoke(null, contacts);
+                promise.resolve(contacts);
                 return null;
             }
         };
@@ -198,10 +192,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Retrieves <code>thumbnailPath</code> for contact, or <code>null</code> if not available.
      *
      * @param contactId contact identifier, <code>recordID</code>
-     * @param callback callback
      */
     @ReactMethod
-    public void getPhotoForId(final String contactId, final Callback callback) {
+    public void getPhotoForId(final String contactId, final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {
@@ -210,7 +203,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
 
-                callback.invoke(null, photoUri);
+                promise.resolve(photoUri);
                 return null;
             }
         };
@@ -221,10 +214,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Retrieves <code>contact</code> for contact, or <code>null</code> if not available.
      *
      * @param contactId contact identifier, <code>recordID</code>
-     * @param callback callback
      */
     @ReactMethod
-    public void getContactById(final String contactId, final Callback callback) {
+    public void getContactById(final String contactId, final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {
@@ -233,7 +225,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableMap contact = contactsProvider.getContactById(contactId);
 
-                callback.invoke(null, contact);
+                promise.resolve(contact);
                 return null;
             }
         };
@@ -241,7 +233,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
     }
 
     @ReactMethod
-    public void writePhotoToPath(final String contactId, final String file, final Callback callback) {
+    public void writePhotoToPath(final String contactId, final String file, final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {
@@ -254,9 +246,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 try {
                     outputStream = new FileOutputStream(file);
                     BitmapFactory.decodeStream(inputStream).compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                    callback.invoke(null, true);
+                    promise.resolve(true);
                 } catch (FileNotFoundException e) {
-                    callback.invoke(e.toString());
+                    promise.reject(e.toString());
                 } finally {
                     try {
                         outputStream.close();
@@ -299,7 +291,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Start open contact form
      */
     @ReactMethod
-    public void openContactForm(ReadableMap contact, Callback callback) {
+    public void openContactForm(ReadableMap contact, Promise promise) {
 
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
@@ -491,7 +483,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         intent.putExtra("finishActivityOnSaveCompleted", true);
         intent.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, contactData);
 
-        updateContactCallback = callback;
+        updateContactPromise = promise;
         getReactApplicationContext().startActivityForResult(intent, REQUEST_OPEN_CONTACT_FORM, Bundle.EMPTY);
     }
 
@@ -499,7 +491,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Open contact in native app
      */
     @ReactMethod
-    public void openExistingContact(ReadableMap contact, Callback callback) {
+    public void openExistingContact(ReadableMap contact, Promise promise) {
 
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
 
@@ -509,11 +501,11 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             intent.setDataAndType(uri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
             intent.putExtra("finishActivityOnSaveCompleted", true);
 
-            updateContactCallback = callback;
+            updateContactPromise = promise;
             getReactApplicationContext().startActivityForResult(intent, REQUEST_OPEN_EXISTING_CONTACT, Bundle.EMPTY);
 
         } catch (Exception e) {
-            callback.invoke(e.toString());
+            promise.reject(e.toString());
         }
     }
     
@@ -521,7 +513,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Edit contact in native app
      */
     @ReactMethod
-    public void editExistingContact(ReadableMap contact, Callback callback) {
+    public void editExistingContact(ReadableMap contact, Promise promise) {
 
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
 
@@ -557,11 +549,11 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             intent.putExtra("finishActivityOnSaveCompleted", true);
             intent.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, contactData);
 
-            updateContactCallback = callback;
+            updateContactPromise = promise;
             getReactApplicationContext().startActivityForResult(intent, REQUEST_OPEN_EXISTING_CONTACT, Bundle.EMPTY);
 
         } catch (Exception e) {
-            callback.invoke(e.toString());
+            promise.reject(e.toString());
         }
     }
 
@@ -569,9 +561,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Adds contact to phone's addressbook
      */
     @ReactMethod
-    public void addContact(ReadableMap contact, Callback callback) {
+    public void addContact(ReadableMap contact, Promise promise) {
         if (contact == null) {
-            callback.invoke("New contact cannot be null.");
+            promise.reject("New contact cannot be null.");
             return;
         }
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
@@ -765,10 +757,10 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableMap newlyAddedContact = contactsProvider.getContactByRawId(rawId);
 
-                callback.invoke(null, newlyAddedContact); // success
+                promise.resolve(newlyAddedContact); // success
             }
         } catch (Exception e) {
-            callback.invoke(e.toString());
+            promise.reject(e.toString());
         }
     }
 
@@ -782,13 +774,13 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Update contact to phone's addressbook
      */
     @ReactMethod
-    public void updateContact(ReadableMap contact, Callback callback) {
+    public void updateContact(ReadableMap contact, Promise promise) {
 
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
         String rawContactId = contact.hasKey("rawContactId") ? contact.getString("rawContactId") : null;
 
         if (rawContactId == null || recordID == null) {
-            callback.invoke("Invalid recordId or rawContactId");
+            promise.reject("Invalid recordId or rawContactId");
             return;
         }
 
@@ -1080,10 +1072,10 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableMap updatedContact = contactsProvider.getContactById(recordID);
 
-                callback.invoke(null, updatedContact); // success
+                promise.resolve(updatedContact); // success
             }
         } catch (Exception e) {
-            callback.invoke(e.toString());
+            promise.reject(e.toString());
         }
     }
 
@@ -1091,7 +1083,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * Update contact to phone's addressbook
      */
     @ReactMethod
-    public void deleteContact(ReadableMap contact, Callback callback) {
+    public void deleteContact(ReadableMap contact, Promise promise) {
 
         String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
 
@@ -1103,28 +1095,28 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                int deleted = cr.delete(uri,null,null);
 
                if(deleted > 0)
-                 callback.invoke(null, recordID); // success
+                 promise.resolve(recordID); // success
                else
-                 callback.invoke(null, null); // something was wrong
+                 promise.resolve(null); // something was wrong
 
         } catch (Exception e) {
-            callback.invoke(e.toString(), null);
+            promise.reject(e.toString());
         }
     }
     /*
      * Check permission
      */
     @ReactMethod
-    public void checkPermission(Callback callback) {
-        callback.invoke(null, isPermissionGranted());
+    public void checkPermission(Promise promise) {
+        promise.resolve(isPermissionGranted());
     }
 
     /*
      * Request permission
      */
     @ReactMethod
-    public void requestPermission(Callback callback) {
-        requestReadContactsPermission(callback);
+    public void requestPermission(Promise promise) {
+        requestReadContactsPermission(promise);
     }
 
     /*
@@ -1135,30 +1127,30 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         // this method is only needed for iOS
     }
 
-    private void requestReadContactsPermission(Callback callback) {
+    private void requestReadContactsPermission(Promise promise) {
         Activity currentActivity = getCurrentActivity();
         if (currentActivity == null) {
-            callback.invoke(null, PERMISSION_DENIED);
+            promise.reject(PERMISSION_DENIED);
             return;
         }
 
         if (isPermissionGranted().equals(PERMISSION_AUTHORIZED)) {
-            callback.invoke(null, PERMISSION_AUTHORIZED);
+            promise.resolve(PERMISSION_AUTHORIZED);
             return;
         }
 
-        requestCallback = callback;
+        requestPromise = promise;
         ActivityCompat.requestPermissions(currentActivity, new String[]{PERMISSION_READ_CONTACTS}, PERMISSION_REQUEST_CODE);
     }
 
     protected static void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                                      @NonNull int[] grantResults) {
-        if (requestCallback == null) {
+        if (requestPromise == null) {
             return;
         }
 
         if (requestCode != PERMISSION_REQUEST_CODE) {
-            requestCallback.invoke(null, PERMISSION_DENIED);
+            requestPromise.resolve(PERMISSION_DENIED);
             return;
         }
 
@@ -1168,12 +1160,12 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         }
 
         if (results.containsKey(PERMISSION_READ_CONTACTS) && results.get(PERMISSION_READ_CONTACTS)) {
-            requestCallback.invoke(null, PERMISSION_AUTHORIZED);
+            requestPromise.resolve(PERMISSION_AUTHORIZED);
         } else {
-            requestCallback.invoke(null, PERMISSION_DENIED);
+            requestPromise.resolve(PERMISSION_DENIED);
         }
 
-        requestCallback = null;
+        requestPromise = null;
     }
 
     /*
@@ -1286,19 +1278,19 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             return;
         }
 
-        if (updateContactCallback == null) {
+        if (updateContactPromise == null) {
             return;
         }
 
         if (resultCode != Activity.RESULT_OK) {
-            updateContactCallback.invoke(null, null); // user probably pressed cancel
-            updateContactCallback = null;
+            updateContactPromise.resolve(null); // user probably pressed cancel
+            updateContactPromise = null;
             return;
         }
 
         if (data == null) {
-            updateContactCallback.invoke("Error received activity result with no data!", null);
-            updateContactCallback = null;
+            updateContactPromise.reject("Error received activity result with no data!");
+            updateContactPromise = null;
             return;
         }
 
@@ -1306,8 +1298,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             Uri contactUri = data.getData();
 
             if (contactUri == null) {
-                updateContactCallback.invoke("Error wrong data. No content uri found!", null); // something was wrong
-                updateContactCallback = null;
+                updateContactPromise.reject("Error wrong data. No content uri found!"); // something was wrong
+                updateContactPromise = null;
                 return;
             }
 
@@ -1316,11 +1308,11 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             ContactsProvider contactsProvider = new ContactsProvider(cr);
             WritableMap newlyModifiedContact = contactsProvider.getContactById(contactUri.getLastPathSegment());
 
-            updateContactCallback.invoke(null, newlyModifiedContact); // success
+            updateContactPromise.resolve(newlyModifiedContact); // success
         } catch (Exception e) {
-            updateContactCallback.invoke(e.getMessage(), null);
+            updateContactPromise.reject(e.getMessage());
         }
-        updateContactCallback = null;
+        updateContactPromise = null;
     }
 
     /*

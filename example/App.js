@@ -35,8 +35,8 @@ export default class App extends Component<Props> {
     this.state = {
       contacts: [],
       searchPlaceholder: "Search",
-      typeText:null,
-      loading:true
+      typeText: null,
+      loading: true
     };
 
     // if you want to read/write the contact note field on iOS, this method has to be called
@@ -60,15 +60,12 @@ export default class App extends Component<Props> {
   }
 
   loadContacts() {
-    Contacts.getAll((err, contacts) => {
-      if (err === "denied") {
-        console.warn("Permission to access contacts was denied");
-      } else {
-        this.setState({ contacts, loading:false });
-      }
-    });
+    Contacts.getAll().then((contacts) => {
+      console.log('c', contacts);
+      this.setState({ contacts, loading: false });
+    })
 
-    Contacts.getCount(count => {
+    Contacts.getCount().then(count => {
       this.setState({ searchPlaceholder: `Search ${count} contacts` });
     });
   }
@@ -79,32 +76,31 @@ export default class App extends Component<Props> {
     if (text === "" || text === null) {
       this.loadContacts();
     } else if (phoneNumberRegex.test(text)) {
-      Contacts.getContactsByPhoneNumber(text, (err, contacts) => {
+      Contacts.getContactsByPhoneNumber(text).then(contacts => {
         this.setState({ contacts });
       });
     } else if (emailAddressRegex.test(text)) {
-      Contacts.getContactsByEmailAddress(text, (err, contacts) => {
+      Contacts.getContactsByEmailAddress(text).then(contacts => {
         this.setState({ contacts });
       });
     } else {
-      Contacts.getContactsMatchingString(text, (err, contacts) => {
+      Contacts.getContactsMatchingString(text).then(contacts => {
         this.setState({ contacts });
       });
     }
   }
 
-  onPressContact(contact){
+  onPressContact(contact) {
     var text = this.state.typeText;
-    this.setState({typeText:null});
-    if(text === null || text === '')
-      Contacts.openExistingContact(contact, () => { })
-    else{
-      var newPerson = { 
+    this.setState({ typeText: null });
+    if (text === null || text === '')
+      Contacts.openExistingContact(contact)
+    else {
+      var newPerson = {
         recordID: contact.recordID,
-        phoneNumbers: [{ label: 'mobile', number: text}]
+        phoneNumbers: [{ label: 'mobile', number: text }]
       }
-      Contacts.editExistingContact(newPerson, (err, contact) => {       
-        if (err) throw err;
+      Contacts.editExistingContact(newPerson).then(contact => {
         //contact updated        
       });
     }
@@ -134,57 +130,57 @@ export default class App extends Component<Props> {
           onChangeText={this.search}
         />
 
-        <View style={{paddingLeft:10,paddingRight:10}}>
+        <View style={{ paddingLeft: 10, paddingRight: 10 }}>
           <TextInput
             keyboardType='number-pad'
             style={styles.inputStyle}
             placeholder='Enter number to add to contact'
-            onChangeText={text => this.setState({typeText:text})}
+            onChangeText={text => this.setState({ typeText: text })}
             value={this.state.typeText}
           />
         </View>
-        
+
         {
           this.state.loading === true ?
-          (
-            <View style={styles.spinner}>
-              <ActivityIndicator size="large" color="#0000ff" />
-            </View>
-          ):(
-            <ScrollView style={{ flex: 1 }}>
-              {this.state.contacts.map(contact => {
-                return (
-                  <ListItem
-                    leftElement={
-                      <Avatar
-                        img={
-                          contact.hasThumbnail
-                            ? { uri: contact.thumbnailPath }
-                            : undefined
-                        }
-                        placeholder={getAvatarInitials(
-                          `${contact.givenName} ${contact.familyName}`
-                        )}
-                        width={40}
-                        height={40}
-                      />
-                    }
-                    key={contact.recordID}
-                    title={`${contact.givenName} ${contact.familyName}`}
-                    description={`${contact.company}`}
-                    onPress={() => this.onPressContact(contact)}
-                    onDelete={() =>
-                      Contacts.deleteContact(contact, () => {
-                        this.loadContacts();
-                      })
-                    }
-                  />
-                );
-              })}
-            </ScrollView>
-          )
+            (
+              <View style={styles.spinner}>
+                <ActivityIndicator size="large" color="#0000ff" />
+              </View>
+            ) : (
+              <ScrollView style={{ flex: 1 }}>
+                {this.state.contacts.map(contact => {
+                  return (
+                    <ListItem
+                      leftElement={
+                        <Avatar
+                          img={
+                            contact.hasThumbnail
+                              ? { uri: contact.thumbnailPath }
+                              : undefined
+                          }
+                          placeholder={getAvatarInitials(
+                            `${contact.givenName} ${contact.familyName}`
+                          )}
+                          width={40}
+                          height={40}
+                        />
+                      }
+                      key={contact.recordID}
+                      title={`${contact.givenName} ${contact.familyName}`}
+                      description={`${contact.company}`}
+                      onPress={() => this.onPressContact(contact)}
+                      onDelete={() =>
+                        Contacts.deleteContact(contact).then(() => {
+                          this.loadContacts();
+                        })
+                      }
+                    />
+                  );
+                })}
+              </ScrollView>
+            )
         }
-        
+
       </SafeAreaView>
     );
   }
@@ -194,17 +190,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1
   },
-  spinner:{
-    flex:1,
-    flexDirection:'column',
-    alignContent:"center",
-    justifyContent:"center"
+  spinner: {
+    flex: 1,
+    flexDirection: 'column',
+    alignContent: "center",
+    justifyContent: "center"
   },
-  inputStyle:{ 
-    height: 40, 
-    borderColor: 'gray', 
-    borderWidth: 1, 
-    textAlign:"center" 
+  inputStyle: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    textAlign: "center"
   }
 });
 

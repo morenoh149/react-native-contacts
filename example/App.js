@@ -43,7 +43,7 @@ export default class App extends Component<Props> {
     // WARNING: by enabling notes on iOS, a valid entitlement file containing the note entitlement as well as a separate
     //          permission has to be granted in order to release your app to the AppStore. Please check the README.md
     //          for further information.
-    Contacts.iosEnableNotesUsage(true);
+    Contacts.iosEnableNotesUsage(false);
   }
 
   async componentDidMount() {
@@ -60,10 +60,13 @@ export default class App extends Component<Props> {
   }
 
   loadContacts() {
-    Contacts.getAll().then((contacts) => {
-      console.log('c', contacts);
-      this.setState({ contacts, loading: false });
-    })
+    Contacts.getAll()
+      .then(contacts => {
+        this.setState({ contacts, loading: false });
+      })
+      .catch(e => {
+        this.setState({ loading: false });
+      });
 
     Contacts.getCount().then(count => {
       this.setState({ searchPlaceholder: `Search ${count} contacts` });
@@ -101,7 +104,7 @@ export default class App extends Component<Props> {
         phoneNumbers: [{ label: 'mobile', number: text }]
       }
       Contacts.editExistingContact(newPerson).then(contact => {
-        //contact updated        
+        //contact updated
       });
     }
   }

@@ -69,17 +69,18 @@ RCT_EXPORT_METHOD(iosEnableNotesUsage:(BOOL) enabled)
     notesUsageEnabled = enabled;
 }
 
-RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResponseSenderBlock) callback)
+RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
 {
     CNContactStore *contactStore = [[CNContactStore alloc] init];
     if (!contactStore)
         return;
-    [self getContactsFromAddressBook:contactStore matchingString:string callback:callback];
+    [self getContactsFromAddressBook:contactStore matchingString:string resolve:resolve];
 }
 
 -(void) getContactsFromAddressBook:(CNContactStore *)store
                     matchingString:(NSString *)searchString
-                          callback:(RCTResponseSenderBlock)callback
+                          resolve:(RCTPromiseResolveBlock) resolve
 {
     NSMutableArray *contacts = [[NSMutableArray alloc] init];
     NSError *contactError = nil;
@@ -109,20 +110,20 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResp
         NSDictionary *contactDictionary = [self contactToDictionary:obj withThumbnails:true];
         [contacts addObject:contactDictionary];
     }];
-    callback(@[[NSNull null], contacts]);
+    resolve(contacts);
 }
 
-RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string callback:(RCTResponseSenderBlock) callback)
+RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string resolver:(RCTPromiseResolveBlock) resolve)
 {
     CNContactStore *contactStore = [[CNContactStore alloc] init];
     if (!contactStore)
         return;
-    [self getContactsFromAddressBook:contactStore byPhoneNumber:string callback:callback];
+    [self getContactsFromAddressBook:contactStore byPhoneNumber:string resolve:resolve];
 }
 
 -(void) getContactsFromAddressBook:(CNContactStore *)store
                     byPhoneNumber:(NSString *)phoneNumber
-                          callback:(RCTResponseSenderBlock)callback
+                          resolve:(RCTPromiseResolveBlock) resolve
 {
     NSMutableArray *contacts = [[NSMutableArray alloc] init];
     NSError *contactError = nil;
@@ -149,20 +150,20 @@ RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string callback:(RCTRespo
         NSDictionary *contactDictionary = [self contactToDictionary:obj withThumbnails:true];
         [contacts addObject:contactDictionary];
     }];
-    callback(@[[NSNull null], contacts]);
+    resolve(contacts);
 }
 
-RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string callback:(RCTResponseSenderBlock) callback)
+RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string resolver:(RCTPromiseResolveBlock) resolve)
 {
     CNContactStore *contactStore = [[CNContactStore alloc] init];
     if (!contactStore)
         return;
-    [self getContactsFromAddressBook:contactStore byEmailAddress:string callback:callback];
+    [self getContactsFromAddressBook:contactStore byEmailAddress:string resolve:resolve];
 }
 
 -(void) getContactsFromAddressBook:(CNContactStore *)store
                     byEmailAddress:(NSString *)emailAddress
-                          callback:(RCTResponseSenderBlock)callback
+                          resolve:(RCTPromiseResolveBlock) resolve
 {
     NSMutableArray *contacts = [[NSMutableArray alloc] init];
     NSError *contactError = nil;
@@ -188,7 +189,7 @@ RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string callback:(RCTResp
         NSDictionary *contactDictionary = [self contactToDictionary:obj withThumbnails:true];
         [contacts addObject:contactDictionary];
     }];
-    callback(@[[NSNull null], contacts]);
+    resolve(contacts);
 }
 
 -(void) getAllContacts:(RCTPromiseResolveBlock) resolve
@@ -199,10 +200,10 @@ RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string callback:(RCTResp
     if(!contactStore)
         return;
 
-    [self retrieveContactsFromAddressBook:contactStore withThumbnails:withThumbnails withCallback:resolve];
+    resolve([self retrieveContactsFromAddressBook:contactStore withThumbnails:withThumbnails]);
 }
 
--(void) getAllContactsCount:(RCTResponseSenderBlock) callback
+-(void) getAllContactsCount:(RCTPromiseResolveBlock) resolve
     reject:(RCTPromiseRejectBlock) reject
 {
     CNContactStore* contactStore = [self contactsStore:reject];
@@ -237,11 +238,11 @@ RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string callback:(RCTResp
         [contacts addObject:contactDict];
     }];
 
-    int contactsCount = [contacts count];
+    NSUInteger contactsCount = [contacts count];
 
     NSNumber *count = [NSNumber numberWithInt:contactsCount];
 
-    callback(@[count]);
+    resolve(count);
 }
 
 RCT_EXPORT_METHOD(getAll:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock)reject)
@@ -249,19 +250,18 @@ RCT_EXPORT_METHOD(getAll:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRe
     [self getAllContacts:resolve reject:reject withThumbnails:true];
 }
 
-RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTPromiseResolveBlock) resolve)
+RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    [self getAllContacts:resolve withThumbnails:false];
+    [self getAllContacts:resolve reject:reject withThumbnails:false];
 }
 
-RCT_EXPORT_METHOD(getCount:(RCTPromiseResolveBlock) resolve)
+RCT_EXPORT_METHOD(getCount:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    [self getAllContactsCount:resolve];
+    [self getAllContactsCount:resolve reject:reject];
 }
 
--(void) retrieveContactsFromAddressBook:(CNContactStore*)contactStore
+-(NSMutableArray*) retrieveContactsFromAddressBook:(CNContactStore*)contactStore
                          withThumbnails:(BOOL) withThumbnails
-                           withCallback:(RCTResponseSenderBlock) callback
 {
     NSMutableArray *contacts = [[NSMutableArray alloc] init];
 
@@ -287,14 +287,14 @@ RCT_EXPORT_METHOD(getCount:(RCTPromiseResolveBlock) resolve)
         [keysToFetch addObject:CNContactThumbnailImageDataKey];
     }
 
-    CNContactFetchRequest * request = [[CNContactFetchRequest alloc]initWithKeysToFetch:keysToFetch];
+    CNContactFetchRequest * request = [[CNContactFetchRequest alloc] initWithKeysToFetch:keysToFetch];
     NSError* contactError;
     BOOL success = [contactStore enumerateContactsWithFetchRequest:request error:&contactError usingBlock:^(CNContact * __nonnull contact, BOOL * __nonnull stop){
         NSDictionary *contactDict = [self contactToDictionary: contact withThumbnails:withThumbnails];
         [contacts addObject:contactDict];
     }];
 
-    callback(@[[NSNull null], contacts]);
+    return contacts;
 }
 
 -(NSDictionary*) contactToDictionary:(CNContact *) person
@@ -533,9 +533,10 @@ RCT_EXPORT_METHOD(getCount:(RCTPromiseResolveBlock) resolve)
     return [paths firstObject];
 }
 
-RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
 {
-    CNContactStore* contactStore = [self contactsStore:callback];
+    CNContactStore* contactStore = [self contactsStore:reject];
     if(!contactStore)
         return;
 
@@ -544,13 +545,13 @@ RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID callback:(RCTRespon
     {
         [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
             if(granted){
-                callback(@[[NSNull null], [self getFilePathForThumbnailImage:recordID addressBook:contactStore]]);
+                resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
             }
         }];
     }
     else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
     {
-        callback(@[[NSNull null], [self getFilePathForThumbnailImage:recordID addressBook:contactStore]]);
+        resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
     }
 }
 
@@ -570,9 +571,10 @@ RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID callback:(RCTRespon
     return [self getFilePathForThumbnailImage:contact recordID:recordID];
 }
 
-RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
 {
-    CNContactStore* contactStore = [self contactsStore:callback];
+    CNContactStore* contactStore = [self contactsStore:reject];
     if(!contactStore)
         return;
 
@@ -581,13 +583,13 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID callback:(RCTRespo
     {
         [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
             if(granted){
-                callback(@[[NSNull null], [self getContact:recordID addressBook:contactStore withThumbnails:false]]);
+                resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
             }
         }];
     }
     else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
     {
-        callback(@[[NSNull null], [self getContact:recordID addressBook:contactStore withThumbnails:false]]);
+        resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
     }
 }
 
@@ -623,9 +625,10 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID callback:(RCTRespo
 }
 
 
-RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
 {
-    CNContactStore* contactStore = [self contactsStore:callback];
+    CNContactStore* contactStore = [self contactsStore:reject];
     if(!contactStore)
         return;
 
@@ -641,14 +644,14 @@ RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData callback:(RCTResponseSe
 
         NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:false];
 
-        callback(@[[NSNull null], contactDict]);
+        resolve(contactDict);
     }
     @catch (NSException *exception) {
-        callback(@[[exception description], [NSNull null]]);
+        reject(@"Error", [exception reason], nil);
     }
 }
 
-RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve)
 {
     CNMutableContact * contact = [[CNMutableContact alloc] init];
 
@@ -678,11 +681,12 @@ RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData callback:(RCTRespo
             [[UIApplication sharedApplication].keyWindow addSubview:statusBar];
         }
 
-        updateContactCallback = callback;
+        updateContactPromise = resolve;
     });
 }
 
-RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
 {
     if(!contactStore) {
         contactStore = [[CNContactStore alloc] init];
@@ -758,18 +762,19 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData callback:(RCTR
                 [activityIndicatorView removeFromSuperview];
             });
 
-            updateContactCallback = callback;
+            updateContactPromise = resolve;
         });
 
     }
     @catch (NSException *exception) {
-        callback(@[[exception description], [NSNull null]]);
+        reject(@"Error", [exception reason], nil);
     }
 }
 
-RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
 {
-    CNContactStore* contactStore = [self contactsStore:callback];
+    CNContactStore* contactStore = [self contactsStore:reject];
     if(!contactStore)
         return;
 
@@ -859,7 +864,7 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData callback:(RCTR
                 [[UIApplication sharedApplication].keyWindow addSubview:statusBar];
             }
 
-            updateContactCallback = callback;
+            updateContactPromise = resolve;
         });
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -872,29 +877,30 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData callback:(RCTR
         });
     }
     @catch (NSException *exception) {
-        callback(@[[exception description], [NSNull null]]);
+        reject(@"Error", [exception reason], nil);
     }
 }
 
 - (void)doneContactForm
 {
-    if (updateContactCallback != nil) {
+    if (updateContactPromise != nil) {
         UIViewController *rootViewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
         [rootViewController dismissViewControllerAnimated:YES completion:nil];
 
         NSDictionary *contactDict = [self contactToDictionary:selectedContact withThumbnails:true];
-        updateContactCallback(@[[NSNull null], contactDict]);
+        updateContactPromise(contactDict);
+        updateContactPromise = nil;
     }
 }
 
 - (void)cancelContactForm
 {
-    if (updateContactCallback != nil) {
+    if (updateContactPromise != nil) {
         UIViewController *rootViewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
         [rootViewController dismissViewControllerAnimated:YES completion:nil];
 
-        updateContactCallback(@[[NSNull null]]);
-        updateContactCallback = nil;
+        updateContactPromise(nil);
+        updateContactPromise = nil;
     }
 }
 
@@ -902,16 +908,16 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData callback:(RCTR
 - (void)contactViewController:(CNContactViewController *)viewController didCompleteWithContact:(CNContact *)contact {
     [viewController dismissViewControllerAnimated:YES completion:nil];
 
-    if(updateContactCallback) {
+    if(updateContactPromise) {
 
         if (contact) {
             NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:true];
-            updateContactCallback(@[[NSNull null], contactDict]);
+            updateContactPromise(contactDict);
         } else {
-            updateContactCallback(@[[NSNull null]]);
+            updateContactPromise(nil);
         }
 
-        updateContactCallback = nil;
+        updateContactPromise = nil;
     }
     
     UIView *statusBar = [[UIApplication sharedApplication].keyWindow viewWithTag:1];
@@ -921,9 +927,10 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData callback:(RCTR
     }
 }
 
-RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
 {
-    CNContactStore* contactStore = [self contactsStore:callback];
+    CNContactStore* contactStore = [self contactsStore:reject];
     if(!contactStore)
         return;
 
@@ -959,10 +966,10 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
 
         NSDictionary *contactDict = [self contactToDictionary:record withThumbnails:false];
 
-        callback(@[[NSNull null], contactDict]);
+        resolve(contactDict);
     }
     @catch (NSException *exception) {
-        callback(@[[exception description], [NSNull null]]);
+        reject(@"Error", [exception reason], nil);
     }
 }
 
@@ -1154,7 +1161,8 @@ enum { WDASSETURL_PENDINGREADS = 1, WDASSETURL_ALLFINISHED = 0};
     return data;
 }
 
-RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
 {
     if(!contactStore) {
         contactStore = [[CNContactStore alloc] init];
@@ -1173,16 +1181,17 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData callback:(RCTRespons
         [saveRequest deleteContact:contact];
         [contactStore executeSaveRequest:saveRequest error:&error];
 
-        callback(@[[NSNull null], recordID]);
+        resolve(recordID);
     }
     @catch (NSException *exception) {
-        callback(@[[exception description], [NSNull null]]);
+        reject(@"Error", [exception reason], nil);
     }
 }
 
-RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) callback)
+RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) rejecter:(RCTPromiseRejectBlock) reject)
 {
-    callback(@[@"not implemented", [NSNull null]]);
+    
+    reject(@"Error", @"not implemented", nil);
 }
 
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {

@@ -1,19 +1,19 @@
-export function getAll(callback: (error: any, contacts: Contact[]) => void): void;
-export function getAllWithoutPhotos(callback: (error: any, contacts: Contact[]) => void): void;
-export function getContactById(contactId: string, callback: (error: any, contact: Contact) => void): void;
-export function getCount(callback: (count: number) => void): void;
-export function getPhotoForId(contactId: string, callback: (error: any, photoUri: string) => void): void;
-export function addContact(contact: Contact, callback: (error?: any) => void): void;
-export function openContactForm(contact: Partial<Contact>, callback: (error: any, contact: Contact) => void): void;
-export function openExistingContact(contact: Contact, callback: (error: any, contact: Contact) => void): void;
-export function editExistingContact(contact: Contact, callback: (error: any, contact: Contact) => void): void;
-export function updateContact(contact: Contact, callback: (error?: any) => void): void;
-export function deleteContact(contact: Contact, callback: (error?: any) => void): void;
-export function getContactsMatchingString(str: string, callback: (error: any, contacts: Contact[]) => void): void;
-export function getContactsByPhoneNumber(phoneNumber: string, callback: (error: any, contacts: Contact[]) => void): void;
-export function checkPermission(callback: (error: any, result: 'authorized' | 'denied' | 'undefined') => void): void;
-export function requestPermission(callback: (error: any, result: 'authorized' | 'denied' | 'undefined') => void): void;
-export function writePhotoToPath(contactId: string, file: string, callback: (error: any, result: boolean) => void): void;
+export function getAll(): Promise<Contact[]>;
+export function getAllWithoutPhotos(): Promise<Contact[]>;
+export function getContactById(contactId: string): Promise<Contact>;
+export function getCount(): Promise<number>;
+export function getPhotoForId(contactId: string): Promise<string>;
+export function addContact(contact: Contact): Promise<void>;
+export function openContactForm(contact: Partial<Contact>): Promise<Contact>;
+export function openExistingContact(contact: Contact): Promise<Contact>;
+export function editExistingContact(contact: Contact): Promise<Contact>;
+export function updateContact(contact: Contact): Promise<void>;
+export function deleteContact(contact: Contact): Promise<void>;
+export function getContactsMatchingString(str: string): Promise<Contact[]>;
+export function getContactsByPhoneNumber(phoneNumber: string): Promise<Contact[]>;
+export function checkPermission(): Promise<'authorized' | 'denied' | 'undefined'>;
+export function requestPermission(): Promise<'authorized' | 'denied' | 'undefined'>;
+export function writePhotoToPath(contactId: string, file: string): Promise<boolean>;
 export function iosEnableNotesUsage(enabled: boolean): void;
 
 export interface EmailAddress {

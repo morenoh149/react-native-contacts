@@ -651,7 +651,8 @@ RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData resolver:(RCTPromiseRes
     }
 }
 
-RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve)
+RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
 {
     CNMutableContact * contact = [[CNMutableContact alloc] init];
 

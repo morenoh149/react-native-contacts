@@ -17,7 +17,8 @@ import {
   View,
   Image,
   TextInput,
-  ActivityIndicator
+  ActivityIndicator,
+  Button
 } from "react-native";
 import Contacts from "react-native-contacts";
 
@@ -109,6 +110,16 @@ export default class App extends Component<Props> {
     }
   }
 
+  addNew() {
+    Contacts.openContactForm({}).then(contact => {
+      // Added new contact
+      this.setState(({ contacts }) => ({
+        contacts: [contact, ...contacts],
+        loading: false 
+      }));
+    })
+  }
+
   render() {
     return (
       <SafeAreaView style={styles.container}>
@@ -128,6 +139,7 @@ export default class App extends Component<Props> {
             }}
           />
         </View>
+        <Button title="Add new" onPress={() => this.addNew()} />
         <SearchBar
           searchPlaceholder={this.state.searchPlaceholder}
           onChangeText={this.search}

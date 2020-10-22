@@ -1194,7 +1194,7 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData resolver:(RCTPromise
     }
 }
 
-RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) __unused resolve rejecter:(RCTPromiseRejectBlock) reject)
+RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) rejecter:(RCTPromiseRejectBlock) reject)
 { 
     reject(@"Error", @"not implemented", nil);
 }

@@ -72,6 +72,8 @@ export default class App extends Component<Props> {
     Contacts.getCount().then(count => {
       this.setState({ searchPlaceholder: `Search ${count} contacts` });
     });
+
+    Contacts.checkPermission();
   }
 
   search(text) {

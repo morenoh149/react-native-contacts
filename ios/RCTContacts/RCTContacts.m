@@ -43,7 +43,8 @@ RCT_EXPORT_MODULE();
              };
 }
 
-RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve)
+RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve 
+    rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
     if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
@@ -55,12 +56,12 @@ RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve)
     }
 }
 
-RCT_EXPORT_METHOD(requestPermission:(RCTPromiseResolveBlock) resolve)
+RCT_EXPORT_METHOD(requestPermission:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
     CNContactStore* contactStore = [[CNContactStore alloc] init];
 
     [contactStore requestAccessForEntityType:CNEntityTypeContacts completionHandler:^(BOOL granted, NSError * _Nullable error) {
-        [self checkPermission:resolve];
+        [self checkPermission:resolve rejecter:reject];
     }];
 }
 
@@ -113,7 +114,8 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string resolver:(RCTProm
     resolve(contacts);
 }
 
-RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string resolver:(RCTPromiseResolveBlock) resolve)
+RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
     CNContactStore *contactStore = [[CNContactStore alloc] init];
     if (!contactStore)
@@ -153,7 +155,9 @@ RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string resolver:(RCTPromi
     resolve(contacts);
 }
 
-RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string resolver:(RCTPromiseResolveBlock) resolve)
+RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string
+    resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
     CNContactStore *contactStore = [[CNContactStore alloc] init];
     if (!contactStore)
@@ -651,8 +655,9 @@ RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData resolver:(RCTPromiseRes
     }
 }
 
-RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve
-    rejecter:(RCTPromiseRejectBlock) reject)
+RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData 
+    resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
     CNMutableContact * contact = [[CNMutableContact alloc] init];
 
@@ -1190,8 +1195,7 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData resolver:(RCTPromise
 }
 
 RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) rejecter:(RCTPromiseRejectBlock) reject)
-{
-    
+{ 
     reject(@"Error", @"not implemented", nil);
 }
 

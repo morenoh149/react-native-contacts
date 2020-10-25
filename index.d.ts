@@ -55,6 +55,7 @@ export interface Contact {
     backTitle: string;
     company: string;
     emailAddresses: EmailAddress[];
+    displayName: string;
     familyName: string;
     givenName: string;
     middleName: string;

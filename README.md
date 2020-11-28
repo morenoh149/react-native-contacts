@@ -174,7 +174,7 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
  * `updateContact(contact)`: Promise<Contact> - where contact is an object with a valid recordID  
  * `deleteContact(contact)` - where contact is an object with a valid recordID  
  * `getContactsMatchingString(string)`: Promise<Contact[]> - where string is any string to match a name (first, middle, family) to
- * `getContactsByPhoneNumberstring)`: Promise<Contact[]> - where string is a phone number to match to.
+ * `getContactsByPhoneNumber(string)`: Promise<Contact[]> - where string is a phone number to match to.
  * `getContactsByEmailAddress(string)`: Promise<Contact[]> - where string is an email address to match to.
  * `checkPermission()`: Promise<string> - checks permission to access Contacts _ios only_
  * `requestPermission()`: Promise<string> - request permission to access Contacts _ios only_

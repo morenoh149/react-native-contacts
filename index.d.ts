@@ -11,6 +11,7 @@ export function updateContact(contact: Contact): Promise<void>;
 export function deleteContact(contact: Contact): Promise<void>;
 export function getContactsMatchingString(str: string): Promise<Contact[]>;
 export function getContactsByPhoneNumber(phoneNumber: string): Promise<Contact[]>;
+export function getContactsByEmailAddress(emailAddress: string): Promise<Contact[]>;
 export function checkPermission(): Promise<'authorized' | 'denied' | 'undefined'>;
 export function requestPermission(): Promise<'authorized' | 'denied' | 'undefined'>;
 export function writePhotoToPath(contactId: string, file: string): Promise<boolean>;

@@ -508,7 +508,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             promise.reject(e.toString());
         }
     }
-    
+
     /*
      * Edit contact in native app
      */
@@ -1112,7 +1112,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * @param phoneNumbers an array of phone numbers to match
      */
     @ReactMethod
-    public void getContactsByPhoneNumbers(final String[] phoneNumbers, final Promise promise) {
+    public void getContactsByPhoneNumbers(final ReadableArray phoneNumbers, final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {

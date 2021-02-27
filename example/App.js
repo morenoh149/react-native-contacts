@@ -125,7 +125,7 @@ export default class App extends Component<Props> {
 
   searchMultiple() {
     const phoneNumbers = ['7019271367', '9353231953'];
-    Contacts.getContactsByPhoneNumbers(phoneNumbers).then(result => console.log);
+    Contacts.getContactsByPhoneNumbers(phoneNumbers).then(result => console.log).catch(error => console.log);
   }
 
   render() {

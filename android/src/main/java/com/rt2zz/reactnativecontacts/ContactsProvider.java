@@ -747,4 +747,59 @@ public class ContactsProvider {
             }
         }
     }
+
+    public WritableArray getContactsByPhoneNumbers(String[] phoneNumbers) {
+        Map<String, Contact> matchingContacts;
+        {
+            Cursor cursor = contentResolver.query(
+                    ContactsContract.Data.CONTENT_URI,
+                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                    buildQueryString(phoneNumbers),
+                    buildSelectionArgs(phoneNumbers),
+                    null
+            );
+
+            try {
+                matchingContacts = loadContactsFrom(cursor);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+
+        WritableArray contacts = Arguments.createArray();
+        for (Contact contact : matchingContacts.values()) {
+            contacts.pushMap(contact.toMap());
+        }
+        return contacts;
+    }
+
+    private String buildQueryString(String[] phoneNumbers) {
+        String query = "";
+        for (int i=0; i<phoneNumbers.length; i++) {
+            String numberQuery = Phone.NUMBER + " LIKE ? OR " + Phone.NORMALIZED_NUMBER + " LIKE ?";
+            if (i < phoneNumbers.length - 1) {
+                numberQuery += " OR ";
+            }
+            query += numberQuery;
+        }
+        Log.d("GOUTAM", query);
+        return query;
+    }
+
+    private String[] buildSelectionArgs(String[] phoneNumbers) {
+        String[] selectionArgs = new String[phoneNumbers.length * 2];
+        for (int i=0; i<phoneNumbers.length; i++) {
+            if (i == 0) {
+                selectionArgs[i] = '%' + phoneNumbers[i] + '%';
+                selectionArgs[i+1] = '%' + phoneNumbers[i] + '%';
+            } else {
+                selectionArgs[i+1] = '%' + phoneNumbers[i] + '%';
+                selectionArgs[i+2] = '%' + phoneNumbers[i] + '%';
+            }
+        }
+        Log.d("GOUTAM", selectionArgs.toString());
+        return selectionArgs;
+    }
 }

@@ -1103,6 +1103,31 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             promise.reject(e.toString());
         }
     }
+
+
+    /**
+     * Retrieves contacts matching a list of phone numbers.
+     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
+     *
+     * @param phoneNumbers an array of phone numbers to match
+     */
+    @ReactMethod
+    public void getContactsByPhoneNumbers(final String[] phoneNumbers, final Promise promise) {
+        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
+            @Override
+            protected Void doInBackground(final Void ... params) {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
+                WritableArray contacts = contactsProvider.getContactsByPhoneNumbers(phoneNumbers);
+
+                promise.resolve(contacts);
+                return null;
+            }
+        };
+        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
+
     /*
      * Check permission
      */

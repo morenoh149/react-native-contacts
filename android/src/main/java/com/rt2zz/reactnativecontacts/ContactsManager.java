@@ -1123,7 +1123,6 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContactsByPhoneNumbers(phoneNumbers);
 
-                Log.d("GOUTAM", contacts.toString());
                 promise.resolve(contacts);
                 return null;
             }

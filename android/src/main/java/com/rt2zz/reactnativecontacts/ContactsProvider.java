@@ -785,7 +785,6 @@ public class ContactsProvider {
             }
             query += numberQuery;
         }
-        Log.d("GOUTAM", query);
         return query;
     }
 
@@ -800,10 +799,6 @@ public class ContactsProvider {
                 selectionArgs[i+2] = '%' + phoneNumbers.getString(i) + '%';
             }
         }
-        Log.d("GOUTAM", selectionArgs[0]);
-        Log.d("GOUTAM", selectionArgs[1]);
-        Log.d("GOUTAM", selectionArgs[2]);
-        Log.d("GOUTAM", selectionArgs[3]);
         return selectionArgs;
     }
 }

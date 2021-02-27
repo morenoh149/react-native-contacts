@@ -22,6 +22,8 @@ import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.RawContacts;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
@@ -1121,6 +1123,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContactsByPhoneNumbers(phoneNumbers);
 
+                Log.d("GOUTAM", contacts.toString());
                 promise.resolve(contacts);
                 return null;
             }

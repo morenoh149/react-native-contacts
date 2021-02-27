@@ -779,7 +779,7 @@ public class ContactsProvider {
     private String buildQueryString(ReadableArray phoneNumbers) {
         String query = "";
         for (int i=0; i<phoneNumbers.size(); i++) {
-            String numberQuery = Phone.NUMBER + " LIKE ? OR " + Phone.NORMALIZED_NUMBER + " LIKE ?";
+            String numberQuery = ContactsContract.CommonDataKinds.Phone.NUMBER  + " LIKE ? OR " + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " LIKE ?";
             if (i < phoneNumbers.size() - 1) {
                 numberQuery += " OR ";
             }
@@ -800,7 +800,10 @@ public class ContactsProvider {
                 selectionArgs[i+2] = '%' + phoneNumbers.getString(i) + '%';
             }
         }
-        Log.d("GOUTAM", selectionArgs.toString());
+        Log.d("GOUTAM", selectionArgs[0]);
+        Log.d("GOUTAM", selectionArgs[1]);
+        Log.d("GOUTAM", selectionArgs[2]);
+        Log.d("GOUTAM", selectionArgs[3]);
         return selectionArgs;
     }
 }

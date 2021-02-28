@@ -63,7 +63,6 @@ export default class App extends Component<Props> {
   loadContacts() {
     Contacts.getAll()
       .then(contacts => {
-        this.searchMultiple();
         this.setState({ contacts, loading: false });
       })
       .catch(e => {
@@ -121,11 +120,6 @@ export default class App extends Component<Props> {
         loading: false
       }));
     })
-  }
-
-  searchMultiple() {
-    const phoneNumbers = ['7019271367', '9353231953'];
-    Contacts.getContactsByPhoneNumbers(phoneNumbers).then(result => console.log).catch(error => console.log);
   }
 
   render() {

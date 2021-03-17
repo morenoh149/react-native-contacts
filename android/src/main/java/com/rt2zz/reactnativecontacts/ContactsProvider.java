@@ -389,6 +389,9 @@ public class ContactsProvider {
                             case Phone.TYPE_MOBILE:
                                 label = "mobile";
                                 break;
+                            case Phone.TYPE_OTHER:
+                                label = "other";
+                                break;
                             default:
                                 label = "other";
                         }
@@ -409,6 +412,9 @@ public class ContactsProvider {
                                 break;
                             case Email.TYPE_MOBILE:
                                 label = "mobile";
+                                break;
+                            case Email.TYPE_OTHER:
+                                label = "other";
                                 break;
                             case Email.TYPE_CUSTOM:
                                 if (cursor.getString(cursor.getColumnIndex(Email.LABEL)) != null) {

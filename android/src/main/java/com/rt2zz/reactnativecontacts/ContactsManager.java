@@ -355,7 +355,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String[] postalAddressesPostCode = null;
         String[] postalAddressesCountry = null;
         String[] postalAddressesFormattedAddress = null;
-        Integer[] postalAddressesLabel = null;
+        String[] postalAddressesLabel = null;
+        Integer[] postalAddressesType = null;
+
         if (postalAddresses != null) {
             numOfPostalAddresses = postalAddresses.size();
             postalAddressesStreet = new String[numOfPostalAddresses];
@@ -365,7 +367,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             postalAddressesPostCode = new String[numOfPostalAddresses];
             postalAddressesCountry = new String[numOfPostalAddresses];
             postalAddressesFormattedAddress = new String[numOfPostalAddresses];
-            postalAddressesLabel = new Integer[numOfPostalAddresses];
+            postalAddressesLabel = new String[numOfPostalAddresses];
+            postalAddressesType = new Integer[numOfPostalAddresses];
             for (int i = 0; i < numOfPostalAddresses; i++) {
                 postalAddressesStreet[i] = postalAddresses.getMap(i).getString("street");
                 postalAddressesCity[i] = postalAddresses.getMap(i).getString("city");
@@ -374,7 +377,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 postalAddressesPostCode[i] = postalAddresses.getMap(i).getString("postCode");
                 postalAddressesCountry[i] = postalAddresses.getMap(i).getString("country");
                 postalAddressesFormattedAddress[i] = postalAddresses.getMap(i).getString("formattedAddress");
-                postalAddressesLabel[i] = mapStringToPostalAddressType(postalAddresses.getMap(i).getString("label"));
+                postalAddressesLabel[i] = postalAddresses.getMap(i).getString("label");
+                postalAddressesType[i] = mapStringToPostalAddressType(postalAddresses.getMap(i).getString("label"));
             }
         }
 
@@ -442,6 +446,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             structuredPostal.put(CommonDataKinds.StructuredPostal.COUNTRY, postalAddressesCountry[i]);
             structuredPostal.put(CommonDataKinds.StructuredPostal.POSTCODE, postalAddressesPostCode[i]);
             structuredPostal.put(CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, postalAddressesFormattedAddress[i]);
+            structuredPostal.put(CommonDataKinds.StructuredPostal.LABEL, postalAddressesLabel[i]);
+            structuredPostal.put(CommonDataKinds.StructuredPostal.TYPE, postalAddressesType[i]);
             //No state column in StructuredPostal
             //structuredPostal.put(CommonDataKinds.StructuredPostal.???, postalAddressesState[i]);
             contactData.add(structuredPostal);
@@ -1218,6 +1224,12 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             case "work_mobile":
                 phoneType = CommonDataKinds.Phone.TYPE_WORK_MOBILE;
                 break;
+            case "other":
+                phoneType = CommonDataKinds.Phone.TYPE_OTHER;
+                break;
+            case "cell":
+                phoneType = CommonDataKinds.Phone.TYPE_MOBILE;
+                break;
             default:
                 phoneType = CommonDataKinds.Phone.TYPE_CUSTOM;
                 break;
@@ -1240,6 +1252,12 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 break;
             case "mobile":
                 emailType = CommonDataKinds.Email.TYPE_MOBILE;
+                break;
+            case "other":
+                emailType = CommonDataKinds.Email.TYPE_OTHER;
+                break;
+            case "personal":
+                emailType = CommonDataKinds.Email.TYPE_HOME;
                 break;
             default:
                 emailType = CommonDataKinds.Email.TYPE_CUSTOM;

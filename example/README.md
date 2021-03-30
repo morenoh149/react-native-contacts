@@ -4,7 +4,7 @@
 
 * `git clone https://github.com/rt2zz/react-native-contacts.git`
 * `cd react-native-contacts/example`
-* `npm install`
+* `yarn install`
 
 ## Running Android
 

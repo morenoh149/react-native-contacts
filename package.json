@@ -44,7 +44,6 @@
     "react-native-cli": "^2.0.1"
   },
   "peerDependencies": {
-    "react": "*",
-    "react-native": "*"
+    "react-native": ">=0.64.0"
   }
 }

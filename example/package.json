@@ -10,19 +10,19 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "react": "16.9.0",
-    "react-native": "0.61.5",
-    "react-native-gesture-handler": "^1.6.0"
+    "react": "17.0.1",
+    "react-native": "0.64.0",
+    "react-native-gesture-handler": "^1.10.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.4",
-    "@babel/runtime": "^7.8.4",
+    "@babel/core": "^7.13.14",
+    "@babel/runtime": "^7.13.10",
     "@react-native-community/eslint-config": "^0.0.7",
     "babel-jest": "^25.1.0",
     "eslint": "^6.8.0",
     "jest": "^25.1.0",
-    "metro-react-native-babel-preset": "^0.58.0",
-    "react-test-renderer": "16.9.0"
+    "metro-react-native-babel-preset": "^0.65.2",
+    "react-test-renderer": "17.0.1"
   },
   "jest": {
     "preset": "react-native"

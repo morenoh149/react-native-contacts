@@ -49,8 +49,14 @@ npm install react-native-contacts --save
 ```
 yarn add react-native-contacts
 ```
-
-### react native version 60 and above
+## You no longer need to include the pod line in the PodFile since V7.0.0+, we now support autolinking!
+If you were previously using manually linking follow these steps to upgrade
+```
+react-native unlink react-native-contacts
+npm install latest version of react-native-contacts
+Your good to go!
+```
+### react native version 60 and above 
 
 If you are using react native version 0.60 or above you do not have to link this library.
 

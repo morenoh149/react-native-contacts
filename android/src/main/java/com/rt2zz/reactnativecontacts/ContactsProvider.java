@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
@@ -755,5 +756,58 @@ public class ContactsProvider {
                 return "other";
             }
         }
+    }
+
+    public WritableArray getContactsByPhoneNumbers(ReadableArray phoneNumbers) {
+        Map<String, Contact> matchingContacts;
+        {
+            Cursor cursor = contentResolver.query(
+                    ContactsContract.Data.CONTENT_URI,
+                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                    buildQueryString(phoneNumbers),
+                    buildSelectionArgs(phoneNumbers),
+                    null
+            );
+
+            try {
+                matchingContacts = loadContactsFrom(cursor);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+
+        WritableArray contacts = Arguments.createArray();
+        for (Contact contact : matchingContacts.values()) {
+            contacts.pushMap(contact.toMap());
+        }
+        return contacts;
+    }
+
+    private String buildQueryString(ReadableArray phoneNumbers) {
+        String query = "";
+        for (int i=0; i<phoneNumbers.size(); i++) {
+            String numberQuery = ContactsContract.CommonDataKinds.Phone.NUMBER  + " LIKE ? OR " + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " LIKE ?";
+            if (i < phoneNumbers.size() - 1) {
+                numberQuery += " OR ";
+            }
+            query += numberQuery;
+        }
+        return query;
+    }
+
+    private String[] buildSelectionArgs(ReadableArray phoneNumbers) {
+        String[] selectionArgs = new String[phoneNumbers.size() * 2];
+        for (int i=0; i<phoneNumbers.size(); i++) {
+            if (i == 0) {
+                selectionArgs[i] = '%' + phoneNumbers.getString(i) + '%';
+                selectionArgs[i+1] = '%' + phoneNumbers.getString(i) + '%';
+            } else {
+                selectionArgs[i+1] = '%' + phoneNumbers.getString(i) + '%';
+                selectionArgs[i+2] = '%' + phoneNumbers.getString(i) + '%';
+            }
+        }
+        return selectionArgs;
     }
 }

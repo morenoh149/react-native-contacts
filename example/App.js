@@ -117,7 +117,7 @@ export default class App extends Component<Props> {
       // Added new contact
       this.setState(({ contacts }) => ({
         contacts: [contact, ...contacts],
-        loading: false 
+        loading: false
       }));
     })
   }

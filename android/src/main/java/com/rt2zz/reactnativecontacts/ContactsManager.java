@@ -308,15 +308,18 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
         String[] phones = null;
-        Integer[] phonesLabels = null;
+        String[] phonesLabels = null;
+        Integer[] phonesLabelsTypes = null;
         if (phoneNumbers != null) {
             numOfPhones = phoneNumbers.size();
             phones = new String[numOfPhones];
-            phonesLabels = new Integer[numOfPhones];
+            phonesLabels = new String[numOfPhones];
+            phonesLabelsTypes = new Integer[numOfPhones];
             for (int i = 0; i < numOfPhones; i++) {
                 phones[i] = phoneNumbers.getMap(i).getString("number");
                 String label = phoneNumbers.getMap(i).getString("label");
-                phonesLabels[i] = mapStringToPhoneType(label);
+                phonesLabels[i] = label;
+                phonesLabelsTypes[i] = mapStringToPhoneType(label);
             }
         }
 
@@ -432,8 +435,10 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         for (int i = 0; i < numOfPhones; i++) {
             ContentValues phone = new ContentValues();
             phone.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
-            phone.put(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+            phone.put(CommonDataKinds.Phone.TYPE, phonesLabelsTypes[i]);
+            phone.put(CommonDataKinds.Phone.LABEL, phonesLabels[i]);
             phone.put(CommonDataKinds.Phone.NUMBER, phones[i]);
+
             contactData.add(phone);
         }
 

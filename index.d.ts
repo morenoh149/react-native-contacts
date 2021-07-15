@@ -54,7 +54,7 @@ export interface Birthday {
 export interface Contact {
     recordID: string;
     backTitle: string;
-    company: string;
+    company: string|null;
     emailAddresses: EmailAddress[];
     displayName: string;
     familyName: string;

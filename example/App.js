@@ -186,6 +186,7 @@ export default class App extends Component<Props> {
                       title={`${contact.givenName} ${contact.familyName}`}
                       description={`${contact.company}`}
                       onPress={() => this.onPressContact(contact)}
+                      onLongPress={() => Contacts.viewExistingContact(contact)}
                       onDelete={() =>
                         Contacts.deleteContact(contact).then(() => {
                           this.loadContacts();

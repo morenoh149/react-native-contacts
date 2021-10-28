@@ -519,6 +519,28 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
             promise.reject(e.toString());
         }
     }
+
+ /*
+     * View contact in native app
+     */
+    @ReactMethod
+    public void viewExistingContact(ReadableMap contact, Promise promise) {
+
+        String recordID = contact.hasKey("recordID") ? contact.getString("recordID") : null;
+
+        try {
+            Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, recordID);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, ContactsContract.Contacts.CONTENT_ITEM_TYPE);
+            intent.putExtra("finishActivityOnSaveCompleted", true);
+
+            updateContactPromise = promise;
+            getReactApplicationContext().startActivityForResult(intent, REQUEST_OPEN_EXISTING_CONTACT, Bundle.EMPTY);
+
+        } catch (Exception e) {
+            promise.reject(e.toString());
+        }
+    }
     
     /*
      * Edit contact in native app

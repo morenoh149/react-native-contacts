@@ -777,6 +777,56 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData resolver:(RCTP
     }
 }
 
+RCT_EXPORT_METHOD(viewExistingContact:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
+{
+    if(!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
+    NSString* recordID = [contactData valueForKey:@"recordID"];
+    NSString* backTitle = [contactData valueForKey:@"backTitle"];
+
+    NSArray *keys = @[CNContactIdentifierKey,
+                      CNContactEmailAddressesKey,
+                      CNContactBirthdayKey,
+                      CNContactImageDataKey,
+                      CNContactPhoneNumbersKey,
+                      [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName],
+                      [CNContactViewController descriptorForRequiredKeys]];
+
+    @try {
+
+        CNContact *contact = [contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil];
+
+        CNContactViewController *contactViewController = [CNContactViewController viewControllerForContact:contact];
+
+        // Add a cancel button which will close the view
+        contactViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:backTitle == nil ? @"Cancel" : backTitle style:UIBarButtonSystemItemCancel target:self action:@selector(cancelContactForm)];
+        contactViewController.delegate = self;
+
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:contactViewController];
+
+            UIViewController *currentViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
+
+            while (currentViewController.presentedViewController)
+            {
+                currentViewController = currentViewController.presentedViewController;
+            }
+
+            [currentViewController presentViewController:navigation animated:YES completion:nil];
+
+            updateContactPromise = resolve;
+        });
+
+    }
+    @catch (NSException *exception) {
+        reject(@"Error", [exception reason], nil);
+    }
+}
+
 RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve
     rejecter:(RCTPromiseRejectBlock) reject)
 {

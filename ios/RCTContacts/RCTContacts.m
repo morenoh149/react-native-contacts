@@ -676,18 +676,8 @@ RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData
                 viewController = viewController.presentedViewController;
             }
         [viewController presentViewController:navigation animated:YES completion:nil];
-        
-        if (@available(iOS 13, *)) {
-            viewController.view.window.backgroundColor=[UIColor blackColor];
-            navigation.navigationBar.topItem.title = @"";
-            UIView *statusBar = [[UIView alloc]initWithFrame:[UIApplication sharedApplication].keyWindow.windowScene.statusBarManager.statusBarFrame];
-            statusBar.backgroundColor = [UIColor blackColor];
-            statusBar.tag=1;
-            controller.navigationController.navigationBar.tintColor = [UIColor blackColor];
-            [[UIApplication sharedApplication].keyWindow addSubview:statusBar];
-        }
 
-        updateContactPromise = resolve;
+        self->updateContactPromise = resolve;
     });
 }
 
@@ -860,17 +850,7 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData resolver:(RCTP
             [viewController presentViewController:navigation animated:YES completion:nil];
             [controller presentViewController:alert animated:YES completion:nil];
 
-            if (@available(iOS 13, *)) {
-                viewController.view.window.backgroundColor=[UIColor blackColor];
-                navigation.navigationBar.topItem.title = @"";
-                UIView *statusBar = [[UIView alloc]initWithFrame:[UIApplication sharedApplication].keyWindow.windowScene.statusBarManager.statusBarFrame];
-                statusBar.backgroundColor = [UIColor blackColor];
-                statusBar.tag=1;
-                controller.navigationController.navigationBar.tintColor = [UIColor blackColor];
-                [[UIApplication sharedApplication].keyWindow addSubview:statusBar];
-            }
-
-            updateContactPromise = resolve;
+            self->updateContactPromise = resolve;
         });
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -924,12 +904,6 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData resolver:(RCTP
         }
 
         updateContactPromise = nil;
-    }
-    
-    UIView *statusBar = [[UIApplication sharedApplication].keyWindow viewWithTag:1];
-    
-    if(statusBar) {
-        [statusBar removeFromSuperview];
     }
 }
 

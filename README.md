@@ -175,7 +175,8 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
  * `getPhotoForId(contactId)`: Promise<string> - returns a URI (or null) for a contacts photo
  * `addContact(contact)`: Promise<Contact> - adds a contact to the AddressBook.  
  * `openContactForm(contact)` - create a new contact and display in contactsUI. 
- * `openExistingContact(contact)` - where contact is an object with a valid recordID
+ * `openExistingContact(contact)` - open existing contact (edit mode), where contact is an object with a valid recordID
+ * `viewExistingContact(contact)` - open existing contact (view mode), where contact is an object with a valid recordID
  * `editExistingContact(contact)`: Promise<Contact> - add numbers to the contact, where the contact is an object with a valid recordID and an array of phoneNumbers
  * `updateContact(contact)`: Promise<Contact> - where contact is an object with a valid recordID  
  * `deleteContact(contact)` - where contact is an object with a valid recordID  

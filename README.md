@@ -29,10 +29,14 @@ PermissionsAndroid.request(
     'buttonPositive': 'Please accept bare mortal'
   }
 )
-.then(Contacts.getAll)
-.then(contacts => {
-  ...
-})
+  .then(Contacts.getAll()
+    .then((contacts) => {
+        // work with contacts
+          console.log(contacts)
+        })
+          .catch((e) => {
+              console.log(e)
+          }))
 ```
 
 ## Installation

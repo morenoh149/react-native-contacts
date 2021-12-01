@@ -226,7 +226,7 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
   prefix: 'MR',
   suffix: '',
   department: '',
-  birthday: {'year': 1988, 'month': 0, 'day': 1 },
+  birthday: {'year': 1988, 'month': 1, 'day': 1 },
   imAddresses: [
     { username: '0123456789', service: 'ICQ'},
     { username: 'johndoe123', service: 'Facebook'}

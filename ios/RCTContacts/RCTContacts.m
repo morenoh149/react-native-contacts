@@ -933,6 +933,10 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData resolver:(RCTP
 {
     if (updateContactPromise != nil) {
         UIViewController *rootViewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        while (rootViewController.presentedViewController)
+            {
+                rootViewController = rootViewController.presentedViewController;
+            }
         [rootViewController dismissViewControllerAnimated:YES completion:nil];
 
         updateContactPromise(nil);

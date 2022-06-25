@@ -110,10 +110,15 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContentResolver cr = context.getContentResolver();
 
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
-                Integer contacts = contactsProvider.getContactsCount();
+                try {
+                    Integer contacts = contactsProvider.getContactsCount();
+                    promise.resolve(contacts);
+                } catch (Exception e) {
+                    promise.reject(e);
+                }
 
-                promise.resolve(contacts);
                 return null;
+
             }
         };
         myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);

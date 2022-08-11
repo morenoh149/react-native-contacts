@@ -65,6 +65,7 @@ export interface Contact {
     phoneNumbers: PhoneNumber[];
     hasThumbnail: boolean;
     thumbnailPath: string;
+    isStarred: boolean;
     postalAddresses: PostalAddress[];
     prefix: string;
     suffix: string;

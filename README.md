@@ -60,7 +60,7 @@ react-native unlink react-native-contacts
 npm install latest version of react-native-contacts
 Your good to go!
 ```
-### react native version 60 and above 
+### react native version 60 and above
 
 If you are using react native version 0.60 or above you do not have to link this library.
 
@@ -230,11 +230,21 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
   imAddresses: [
     { username: '0123456789', service: 'ICQ'},
     { username: 'johndoe123', service: 'Facebook'}
-  ]
+  ],
+  isStarred: false,
 }
 ```
-**NOTE**
+
+### Android only
+
 * on Android versions below 8 the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
+* isStarred field
+* writePhotoToPath() - writes the contact photo to a given path
+
+## iOS only
+
+checkPermission(): Promise - checks permission to access Contacts
+requestPermission(): Promise - request permission to access Contacts
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing

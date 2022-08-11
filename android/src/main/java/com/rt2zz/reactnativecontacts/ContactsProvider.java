@@ -37,6 +37,7 @@ public class ContactsProvider {
         add(ContactsContract.Data.CONTACT_ID);
         add(ContactsContract.Data.RAW_CONTACT_ID);
         add(ContactsContract.Data.LOOKUP_KEY);
+        add(ContactsContract.Data.STARRED);
         add(ContactsContract.Contacts.Data.MIMETYPE);
         add(ContactsContract.Profile.DISPLAY_NAME);
         add(Contactables.PHOTO_URI);
@@ -344,10 +345,13 @@ public class ContactsProvider {
             Contact contact = map.get(contactId);
             String mimeType = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.MIMETYPE));
             String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+            int starred = cursor.getInt(cursor.getColumnIndex(ContactsContract.Data.STARRED));
+            Boolean isStarred = starred == 1;
             contact.rawContactId = rawContactId;
             if (!TextUtils.isEmpty(name) && TextUtils.isEmpty(contact.displayName)) {
                 contact.displayName = name;
             }
+            contact.isStarred = isStarred;
 
             if (TextUtils.isEmpty(contact.photoUri)) {
                 String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
@@ -599,6 +603,7 @@ public class ContactsProvider {
         private List<Item> urls = new ArrayList<>();
         private List<Item> instantMessengers = new ArrayList<>();
         private boolean hasPhoto = false;
+        private boolean isStarred = false;
         private String photoUri;
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
@@ -626,6 +631,7 @@ public class ContactsProvider {
             contact.putString("note", note);
             contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
+            contact.putBoolean("isStarred", this.isStarred);
 
             WritableArray phoneNumbers = Arguments.createArray();
             for (Item item : phones) {

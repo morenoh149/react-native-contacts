@@ -238,11 +238,13 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
 ### Android only
 
 * on Android versions below 8 the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
-* isStarred is only available on Android
+* isStarred field
+* writePhotoToPath() - writes the contact photo to a given path
 
 ## iOS only
 
-* Nothing yet
+checkPermission(): Promise - checks permission to access Contacts
+requestPermission(): Promise - request permission to access Contacts
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing

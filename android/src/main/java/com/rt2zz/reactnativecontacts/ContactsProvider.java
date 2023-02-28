@@ -185,7 +185,7 @@ public class ContactsProvider {
             /*contact id not found */
         }
 
-        if (rawCursor.moveToNext()) {
+        if (cursorMoveToNext(rawCursor)) {
             int columnIndex;
             columnIndex = rawCursor.getColumnIndex(ContactsContract.RawContacts.CONTACT_ID);
             if (columnIndex == -1) {
@@ -304,12 +304,20 @@ public class ContactsProvider {
         return contacts;
     }
 
+    private Boolean cursorMoveToNext(Cursor cursor) {
+        try {
+            return cursor.moveToNext();
+        } catch(RuntimeException error) {
+            return false;
+        }
+    }
+
     @NonNull
     private Map<String, Contact> loadContactsFrom(Cursor cursor) {
 
         Map<String, Contact> map = new LinkedHashMap<>();
 
-        while (cursor != null && cursor.moveToNext()) {
+        while (cursor != null && cursorMoveToNext(cursor)) {
 
             int columnIndexContactId = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
             int columnIndexId = cursor.getColumnIndex(ContactsContract.Data._ID);
@@ -573,7 +581,7 @@ public class ContactsProvider {
                 null
         );
         try {
-            if (cursor != null && cursor.moveToNext()) {
+            if (cursor != null && cursorMoveToNext(cursor)) {
                 String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
                 if (!TextUtils.isEmpty(rawPhotoURI)) {
                     return rawPhotoURI;

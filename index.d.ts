@@ -3,12 +3,12 @@ export function getAllWithoutPhotos(): Promise<Contact[]>;
 export function getContactById(contactId: string): Promise<Contact>;
 export function getCount(): Promise<number>;
 export function getPhotoForId(contactId: string): Promise<string>;
-export function addContact(contact: Contact): Promise<void>;
+export function addContact(contact: Partial<Contact>): Promise<Contact>;
 export function openContactForm(contact: Partial<Contact>): Promise<Contact>;
 export function openExistingContact(contact: Contact): Promise<Contact>;
 export function viewExistingContact(contact: { recordID: string }): Promise<Contact | void>
 export function editExistingContact(contact: Contact): Promise<Contact>;
-export function updateContact(contact: Contact): Promise<void>;
+export function updateContact(contact: Partial<Contact> & {recordID: string}): Promise<void>;
 export function deleteContact(contact: Contact): Promise<void>;
 export function getContactsMatchingString(str: string): Promise<Contact[]>;
 export function getContactsByPhoneNumber(phoneNumber: string): Promise<Contact[]>;
@@ -52,6 +52,11 @@ export interface Birthday {
     year: number;
 }
 
+export interface UrlAddress {
+    url: string;
+    label: string;
+}
+
 export interface Contact {
     recordID: string;
     backTitle: string;
@@ -71,6 +76,7 @@ export interface Contact {
     suffix: string;
     department: string;
     birthday: Birthday;
-    imAddresses: InstantMessageAddress[]
+    imAddresses: InstantMessageAddress[];
+    urlAddresses: UrlAddress[];
     note: string;
 }

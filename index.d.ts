@@ -1,6 +1,6 @@
 export function getAll(): Promise<Contact[]>;
 export function getAllWithoutPhotos(): Promise<Contact[]>;
-export function getContactById(contactId: string): Promise<Contact>;
+export function getContactById(contactId: string): Promise<Contact | null>;
 export function getCount(): Promise<number>;
 export function getPhotoForId(contactId: string): Promise<string>;
 export function addContact(contact: Partial<Contact>): Promise<Contact>;

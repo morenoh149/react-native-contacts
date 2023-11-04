@@ -43,7 +43,7 @@ RCT_EXPORT_MODULE();
              };
 }
 
-RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve 
+RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve
     rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
@@ -98,7 +98,8 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string resolver:(RCTProm
         CNContactThumbnailImageDataKey,
         CNContactUrlAddressesKey,
         CNContactBirthdayKey,
-        CNContactInstantMessageAddressesKey
+        CNContactInstantMessageAddressesKey,
+        CNContactNamePrefixKey
     ]];
     if(notesUsageEnabled) {
         [keys addObject: CNContactNoteKey];
@@ -142,7 +143,8 @@ RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string resolver:(RCTPromi
                       CNContactThumbnailImageDataKey,
                       CNContactUrlAddressesKey,
                       CNContactBirthdayKey,
-                      CNContactInstantMessageAddressesKey
+                      CNContactInstantMessageAddressesKey,
+                      CNContactNamePrefixKey
                       ];
     CNPhoneNumber *cnPhoneNumber = [[CNPhoneNumber alloc] initWithStringValue:phoneNumber];
     NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingPhoneNumber:cnPhoneNumber]
@@ -184,7 +186,8 @@ RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string
                       CNContactThumbnailImageDataKey,
                       CNContactUrlAddressesKey,
                       CNContactBirthdayKey,
-                      CNContactInstantMessageAddressesKey
+                      CNContactInstantMessageAddressesKey,
+                      CNContactNamePrefixKey
                       ];
     NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingEmailAddress:emailAddress]
                                                            keysToFetch:keys
@@ -233,7 +236,8 @@ RCT_EXPORT_METHOD(getContactsByEmailAddress:(NSString *)string
                                        CNContactImageDataAvailableKey,
                                        CNContactUrlAddressesKey,
                                        CNContactBirthdayKey,
-                                       CNContactInstantMessageAddressesKey
+                                       CNContactInstantMessageAddressesKey,
+                                       CNContactNamePrefixKey
                                        ]];
 
     CNContactFetchRequest * request = [[CNContactFetchRequest alloc]initWithKeysToFetch:keysToFetch];
@@ -281,7 +285,8 @@ RCT_EXPORT_METHOD(getCount:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromise
         CNContactImageDataAvailableKey,
         CNContactUrlAddressesKey,
         CNContactBirthdayKey,
-        CNContactInstantMessageAddressesKey
+        CNContactInstantMessageAddressesKey,
+        CNContactNamePrefixKey
     ]];
     if(notesUsageEnabled) {
         [keysToFetch addObject: CNContactNoteKey];
@@ -313,6 +318,7 @@ RCT_EXPORT_METHOD(getCount:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromise
     NSString *company = person.organizationName;
     NSString *jobTitle = person.jobTitle;
     NSDateComponents *birthday = person.birthday;
+    NSString *namePrefix = person.namePrefix;
 
     [output setObject:recordID forKey: @"recordID"];
 
@@ -493,7 +499,9 @@ RCT_EXPORT_METHOD(getCount:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromise
     if (withThumbnails) {
         [output setObject:[self getFilePathForThumbnailImage:person recordID:recordID] forKey:@"thumbnailPath"];
     }
-
+    if(namePrefix){
+      [output setObject:namePrefix forKey: @"namePrefix"];
+    }
     return output;
 }
 
@@ -614,7 +622,8 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID resolver:(RCTPromi
         CNContactImageDataAvailableKey,
         CNContactUrlAddressesKey,
         CNContactBirthdayKey,
-        CNContactInstantMessageAddressesKey
+        CNContactInstantMessageAddressesKey,
+        CNContactNamePrefixKey
     ]];
     if(notesUsageEnabled) {
         [keysToFetch addObject: CNContactNoteKey];
@@ -655,7 +664,7 @@ RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData resolver:(RCTPromiseRes
     }
 }
 
-RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData 
+RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData
     resolver:(RCTPromiseResolveBlock) resolve
     rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
@@ -842,6 +851,7 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData resolver:(RCTP
                              CNContactUrlAddressesKey,
                              CNContactBirthdayKey,
                              CNContactIdentifierKey,
+                             CNContactNamePrefixKey,
                              [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName],
                              [CNContactViewController descriptorForRequiredKeys]];
 
@@ -984,7 +994,8 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData resolver:(RCTPromise
         CNContactImageDataKey,
         CNContactUrlAddressesKey,
         CNContactBirthdayKey,
-        CNContactInstantMessageAddressesKey
+        CNContactInstantMessageAddressesKey,
+        CNContactNamePrefixKey
     ]];
     if(notesUsageEnabled) {
         [keysToFetch addObject: CNContactNoteKey];
@@ -1014,6 +1025,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData resolver:(RCTPromise
     NSString *middleName = [contactData valueForKey:@"middleName"];
     NSString *company = [contactData valueForKey:@"company"];
     NSString *jobTitle = [contactData valueForKey:@"jobTitle"];
+    NSString *namePrefix = [contactData valueForKey:@"namePrefix"];
 
     NSDictionary *birthday = [contactData valueForKey:@"birthday"];
 
@@ -1022,6 +1034,7 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData resolver:(RCTPromise
     contact.middleName = middleName;
     contact.organizationName = company;
     contact.jobTitle = jobTitle;
+    contact.namePrefix = namePrefix;
     
     if(notesUsageEnabled){
         NSString *note = [contactData valueForKey:@"note"];
@@ -1222,7 +1235,7 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData resolver:(RCTPromise
 }
 
 RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) rejecter:(RCTPromiseRejectBlock) reject)
-{ 
+{
     reject(@"Error", @"not implemented", nil);
 }
 
@@ -1254,3 +1267,4 @@ RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) rejecter:(RCTPromise
 }
 
 @end
+

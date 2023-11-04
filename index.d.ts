@@ -79,4 +79,5 @@ export interface Contact {
     imAddresses: InstantMessageAddress[];
     urlAddresses: UrlAddress[];
     note: string;
+    namePrefix: string;
 }

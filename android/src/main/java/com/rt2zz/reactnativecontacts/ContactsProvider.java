@@ -27,7 +27,6 @@ import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import static android.provider.ContactsContract.CommonDataKinds.Note;
 import static android.provider.ContactsContract.CommonDataKinds.Website;
 import static android.provider.ContactsContract.CommonDataKinds.Im;
-import static android.provider.ContactsContract.CommonDataKinds.Im.getTypeLabel;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
 public class ContactsProvider {
@@ -395,7 +394,7 @@ public class ContactsProvider {
                         int labelIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL);
                         if (labelIndex >= 0) {
                             String typeLabel = cursor.getString(labelIndex);
-                            label = getTypeLabel(Resources.getSystem(), phoneType, typeLabel).toString();
+                            label = ContactsContract.CommonDataKinds.Phone..getTypeLabel(Resources.getSystem(), phoneType, typeLabel).toString();
                         } else {
                             label = "other";
                         }

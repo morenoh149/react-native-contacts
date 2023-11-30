@@ -27,6 +27,7 @@ import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import static android.provider.ContactsContract.CommonDataKinds.Note;
 import static android.provider.ContactsContract.CommonDataKinds.Website;
 import static android.provider.ContactsContract.CommonDataKinds.Im;
+import static android.provider.ContactsContract.CommonDataKinds.Im.getTypeLabel;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
 public class ContactsProvider {
@@ -390,22 +391,13 @@ public class ContactsProvider {
                     int phoneType = cursor.getInt(cursor.getColumnIndex(Phone.TYPE));
 
                     if (!TextUtils.isEmpty(phoneNumber)) {
-                        String label;
-                        switch (phoneType) {
-                            case Phone.TYPE_HOME:
-                                label = "home";
-                                break;
-                            case Phone.TYPE_WORK:
-                                label = "work";
-                                break;
-                            case Phone.TYPE_MOBILE:
-                                label = "mobile";
-                                break;
-                            case Phone.TYPE_OTHER:
-                                label = "other";
-                                break;
-                            default:
-                                label = "other";
+                        final String label;
+                        int labelIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL);
+                        if (labelIndex >= 0) {
+                            String typeLabel = cursor.getString(labelIndex);
+                            label = getTypeLabel(Resources.getSystem(), phoneType, typeLabel).toString();
+                        } else {
+                            label = "other";
                         }
                         contact.phones.add(new Contact.Item(label, phoneNumber, id));
                     }

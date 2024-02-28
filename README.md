@@ -73,7 +73,7 @@ If you were previously using manually linking follow these steps to upgrade
 ```
 react-native unlink react-native-contacts
 npm install latest version of react-native-contacts
-Your good to go!
+You're good to go!
 ```
 ### react native version 60 and above
 

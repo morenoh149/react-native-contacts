@@ -114,9 +114,14 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContentResolver cr = context.getContentResolver();
 
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
-                WritableArray contacts = contactsProvider.queryContacts(searchTerm, pageOffset, pageSize);
-                promise.resolve(contacts);
 
+                try {
+                    WritableArray contacts = contactsProvider.queryContacts(searchTerm, pageOffset, pageSize);
+                    promise.resolve(contacts);
+                } catch (Exception e) {
+                    promise.reject(e);
+                }
+                
                 return null;
 
             }

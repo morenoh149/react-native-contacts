@@ -6,3 +6,6 @@ ios/RCTContacts.xcodeproj/project.xcworkspace
 .idea
 
 .npm-debug.log
+
+android/.gradle
+.DS_Store

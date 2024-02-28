@@ -5,6 +5,21 @@ To contribute read [CONTRIBUTING.md](CONTRIBUTING.md).
 Ask questions on [stackoverflow](https://stackoverflow.com/questions/tagged/react-native-contacts) not the issue tracker.
 
 ## Usage
+`queryContacts` is a most efficient way compared to `getAll` to query the contacts, you can query them in paginated approach and leveraging the native methods to search some contact by name.
+
+In the example below it's querying the first 100 matches containing "paulo" in the name.
+```js
+import Contacts from 'react-native-contacts';
+
+Contacts.queryContacts({
+  offset: 0,
+  limit: 100,
+  searchTerm: "paulo"
+}).then(contacts => {
+  // contacts returned
+})
+```
+
 `getAll` is a database intensive process, and can take a long time to complete depending on the size of the contacts list. Because of this, it is recommended you access the `getAll` method before it is needed, and cache the results for future use.
 ```js
 import Contacts from 'react-native-contacts';
@@ -21,25 +36,22 @@ On android you must request permissions beforehand
 import { PermissionsAndroid } from 'react-native';
 import Contacts from 'react-native-contacts';
 
-PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_CONTACTS, {
-        title: 'Contacts',
-        message: 'This app would like to view your contacts.',
-        buttonPositive: 'Please accept bare mortal',
-    })
-        .then((res) => {
-            console.log('Permission: ', res);
-            Contacts.getAll()
-                .then((contacts) => {
-                    // work with contacts
-                    console.log(contacts);
-                })
-                .catch((e) => {
-                    console.log(e);
-                });
+PermissionsAndroid.request(
+  PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+  {
+    'title': 'Contacts',
+    'message': 'This app would like to view your contacts.',
+    'buttonPositive': 'Please accept bare mortal'
+  }
+)
+  .then(Contacts.getAll()
+    .then((contacts) => {
+        // work with contacts
+          console.log(contacts)
         })
-        .catch((error) => {
-            console.error('Permission error: ', error);
-        });
+          .catch((e) => {
+              console.log(e)
+          }))
 ```
 
 ## Installation
@@ -61,7 +73,7 @@ If you were previously using manually linking follow these steps to upgrade
 ```
 react-native unlink react-native-contacts
 npm install latest version of react-native-contacts
-You're good to go!
+Your good to go!
 ```
 ### react native version 60 and above
 
@@ -175,6 +187,7 @@ Add kit specific "permission" keys to your Xcode `Info.plist` file, in order to 
 If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(true)` method before accessing the contact infos. Also, a `com.apple.developer.contacts.notes` entitlement must be added to the project. Before submitting your app to the AppStore, the permission for using the entitlement has to be granted as well. You can find a more detailed explanation [here](https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_contacts_notes?language=objc).
 
 ## API
+ * `getqueryContactsAll({ limit, offset, searchTerm })`: Promise<Contact[]> - returns *all* contacts as an array of objects matching the given criteria
  * `getAll`: Promise<Contact[]> - returns *all* contacts as an array of objects
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
  * `getContactById(contactId)`: Promise<Contact> - returns contact with defined contactId (or null if it doesn't exist)

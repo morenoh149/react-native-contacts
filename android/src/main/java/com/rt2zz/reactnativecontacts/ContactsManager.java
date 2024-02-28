@@ -102,6 +102,29 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
     }
 
     @ReactMethod
+    public void queryContacts(final ReadableMap contact, final Promise promise) {
+        int pageSize = contact.hasKey("limit") ? contact.getInt("limit") : 10000;
+        int pageOffset = contact.hasKey("offset") ? contact.getInt("offset") : 0;
+        String searchTerm = contact.hasKey("searchTerm") ? contact.getString("searchTerm") : null;
+
+        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
+            @Override
+            protected Void doInBackground(final Void ... params) {
+                Context context = getReactApplicationContext();
+                ContentResolver cr = context.getContentResolver();
+
+                ContactsProvider contactsProvider = new ContactsProvider(cr);
+                WritableArray contacts = contactsProvider.queryContacts(searchTerm, pageOffset, pageSize);
+                promise.resolve(contacts);
+
+                return null;
+
+            }
+        };
+        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
+
+    @ReactMethod
     public void getCount(final Promise promise) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
@@ -1218,7 +1241,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      */
     private String isPermissionGranted() {
         // return -1 for denied and 1
-        int res = getReactApplicationContext().checkSelfPermission(PERMISSION_READ_CONTACTS);
+        int res = getReactApplicationContext().checkCallingOrSelfPermission(PERMISSION_READ_CONTACTS);
         return (res == PackageManager.PERMISSION_GRANTED) ? PERMISSION_AUTHORIZED : PERMISSION_DENIED;
     }
 

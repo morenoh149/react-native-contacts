@@ -117,6 +117,41 @@ public class ContactsProvider {
         return contacts;
     }
 
+    public WritableArray queryContacts(String searchTerm, int page, int limit) {
+        Map<String, Contact> matchingContacts;
+        String criteria = null;
+        String[] arguments = null;
+
+        if (searchTerm != null && searchTerm.length() > 0) {
+            criteria = ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ? OR " + Organization.COMPANY + " LIKE ? ";
+            arguments = new String[]{"%" + searchTerm + "%", "%" + searchTerm + "%"};
+        }
+        
+        int offset = (page * limit) * 2;
+        String pagination = ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " ASC LIMIT " + limit + " OFFSET " + offset;
+
+        Cursor cursor = contentResolver.query(
+            ContactsContract.Data.CONTENT_URI,
+            FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+            criteria, 
+            arguments,
+            pagination
+        );
+
+        try {
+            matchingContacts = loadContactsFrom(cursor);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        WritableArray contacts = Arguments.createArray();
+        for (Contact contact : matchingContacts.values()) {
+            contacts.pushMap(contact.toMap());
+        }
+        return contacts;
+    }
 
     public WritableArray getContactsByPhoneNumber(String phoneNumber) {
         Map<String, Contact> matchingContacts;
@@ -185,7 +220,7 @@ public class ContactsProvider {
             /*contact id not found */
         }
 
-        if (cursorMoveToNext(rawCursor)) {
+        if (rawCursor.moveToNext()) {
             int columnIndex;
             columnIndex = rawCursor.getColumnIndex(ContactsContract.RawContacts.CONTACT_ID);
             if (columnIndex == -1) {
@@ -304,20 +339,12 @@ public class ContactsProvider {
         return contacts;
     }
 
-    private Boolean cursorMoveToNext(Cursor cursor) {
-        try {
-            return cursor.moveToNext();
-        } catch(RuntimeException error) {
-            return false;
-        }
-    }
-
     @NonNull
     private Map<String, Contact> loadContactsFrom(Cursor cursor) {
 
         Map<String, Contact> map = new LinkedHashMap<>();
 
-        while (cursor != null && cursorMoveToNext(cursor)) {
+        while (cursor != null && cursor.moveToNext()) {
 
             int columnIndexContactId = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
             int columnIndexId = cursor.getColumnIndex(ContactsContract.Data._ID);
@@ -390,13 +417,22 @@ public class ContactsProvider {
                     int phoneType = cursor.getInt(cursor.getColumnIndex(Phone.TYPE));
 
                     if (!TextUtils.isEmpty(phoneNumber)) {
-                        final String label;
-                        int labelIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL);
-                        if (labelIndex >= 0) {
-                            String typeLabel = cursor.getString(labelIndex);
-                            label = ContactsContract.CommonDataKinds.Phone..getTypeLabel(Resources.getSystem(), phoneType, typeLabel).toString();
-                        } else {
-                            label = "other";
+                        String label;
+                        switch (phoneType) {
+                            case Phone.TYPE_HOME:
+                                label = "home";
+                                break;
+                            case Phone.TYPE_WORK:
+                                label = "work";
+                                break;
+                            case Phone.TYPE_MOBILE:
+                                label = "mobile";
+                                break;
+                            case Phone.TYPE_OTHER:
+                                label = "other";
+                                break;
+                            default:
+                                label = "other";
                         }
                         contact.phones.add(new Contact.Item(label, phoneNumber, id));
                     }
@@ -572,7 +608,7 @@ public class ContactsProvider {
                 null
         );
         try {
-            if (cursor != null && cursorMoveToNext(cursor)) {
+            if (cursor != null && cursor.moveToNext()) {
                 String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
                 if (!TextUtils.isEmpty(rawPhotoURI)) {
                     return rawPhotoURI;

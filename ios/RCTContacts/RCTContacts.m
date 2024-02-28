@@ -7,6 +7,8 @@
 @implementation RCTContacts {
     CNContactStore * contactStore;
 
+    NSMutableArray * contactsCache;
+
     RCTPromiseResolveBlock updateContactPromise;
     CNMutableContact* selectedContact;
     
@@ -113,6 +115,86 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string resolver:(RCTProm
     }];
     resolve(contacts);
 }
+
+RCT_EXPORT_METHOD(queryContacts:(NSDictionary *)props resolver:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
+{
+    CNContactStore *contactStore = [[CNContactStore alloc] init];
+
+    if (!contactStore)
+        return;
+
+    NSString *_Nullable pageSize = [props valueForKey:@"limit"];
+    NSString *_Nullable pageOffset = [props valueForKey:@"offset"];
+    NSString *_Nullable searchTerm = [props valueForKey:@"searchTerm"];
+
+    if(pageSize == nil) {
+        pageSize = @"10000";
+    }
+
+    if(pageOffset == nil) {
+        pageOffset = @"0";
+    }
+
+    [self queryContactsFromAddressBook:contactStore pageSize:pageSize pageOffset:pageOffset searchTerm:searchTerm resolve:resolve];
+}
+
+-(void) queryContactsFromAddressBook:(CNContactStore *)store
+                    pageSize:(NSString *)pageSize
+                    pageOffset:(NSString *)pageOffset
+                    searchTerm:(NSString *)searchTerm
+                    resolve:(RCTPromiseResolveBlock) resolve
+{
+    NSMutableArray *contacts = [[NSMutableArray alloc] init];
+
+    NSError *contactError = nil;
+    NSMutableArray *keys = [NSMutableArray arrayWithArray: @[
+        CNContactEmailAddressesKey,
+        CNContactPhoneNumbersKey,
+        CNContactFamilyNameKey,
+        CNContactGivenNameKey,
+        CNContactMiddleNameKey,
+        CNContactPostalAddressesKey,
+        CNContactOrganizationNameKey,
+        CNContactJobTitleKey,
+        CNContactImageDataAvailableKey,
+        CNContactThumbnailImageDataKey,
+        CNContactUrlAddressesKey,
+        CNContactBirthdayKey,
+        CNContactInstantMessageAddressesKey
+    ]];
+    if(notesUsageEnabled) {
+        [keys addObject: CNContactNoteKey];
+    }
+    
+    if (contactsCache == nil) {
+        contactsCache = [self retrieveContactsFromAddressBook:store withThumbnails:true];
+
+        // Remove the cache after 1 minute
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * 60 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            contactsCache = nil;
+        });
+    }
+
+    // paginate from contacts cache 
+    NSUInteger offset = [pageOffset intValue];
+    NSUInteger size = [pageSize intValue];
+    NSUInteger end = offset + size;
+
+    if (end > contactsCache.count) {
+        end = contactsCache.count;
+    }
+    for (NSUInteger i = offset; i < end; i++) {
+        [contacts addObject:contactsCache[i]];
+    }
+
+    if (searchTerm != nil) {
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(givenName contains[cd] %@) OR (familyName contains[cd] %@) OR (middleName contains[cd] %@) OR (organizationName contains[cd] %@)", searchTerm, searchTerm, searchTerm, searchTerm];
+        contacts = [contacts filteredArrayUsingPredicate:predicate];
+    }
+    resolve(contacts);
+}
+
 
 RCT_EXPORT_METHOD(getContactsByPhoneNumber:(NSString *)string resolver:(RCTPromiseResolveBlock) resolve
     rejecter:(RCTPromiseRejectBlock) __unused reject)

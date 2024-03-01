@@ -119,33 +119,38 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string resolver:(RCTProm
 RCT_EXPORT_METHOD(queryContacts:(NSDictionary *)props resolver:(RCTPromiseResolveBlock) resolve
     rejecter:(RCTPromiseRejectBlock) reject)
 {
+    // [self getAllContacts:resolve reject:reject withThumbnails:true];
+
     CNContactStore *contactStore = [[CNContactStore alloc] init];
 
     if (!contactStore)
         return;
 
-    NSString *_Nullable pageSize = [props valueForKey:@"limit"];
-    NSString *_Nullable pageOffset = [props valueForKey:@"offset"];
+    NSString *_Nullable limit = [props valueForKey:@"limit"];
+    NSString *_Nullable currentPage = [props valueForKey:@"page"];
     NSString *_Nullable searchTerm = [props valueForKey:@"searchTerm"];
 
-    if(pageSize == nil) {
-        pageSize = @"10000";
+    if(limit == nil) {
+        limit = @"10000";
     }
 
-    if(pageOffset == nil) {
-        pageOffset = @"0";
+    if(currentPage == nil) {
+        currentPage = @"0";
     }
 
-    [self queryContactsFromAddressBook:contactStore pageSize:pageSize pageOffset:pageOffset searchTerm:searchTerm resolve:resolve];
+    if(searchTerm != nil && [searchTerm isEqualToString:@""]) {
+        searchTerm = nil;
+    }
+    
+    [self queryContactsFromAddressBook:contactStore limit:limit currentPage:currentPage searchTerm:searchTerm resolve:resolve];
 }
 
 -(void) queryContactsFromAddressBook:(CNContactStore *)store
-                    pageSize:(NSString *)pageSize
-                    pageOffset:(NSString *)pageOffset
+                    limit:(NSString *)limit
+                    currentPage:(NSString *)currentPage
                     searchTerm:(NSString *)searchTerm
                     resolve:(RCTPromiseResolveBlock) resolve
 {
-    NSMutableArray *contacts = [[NSMutableArray alloc] init];
 
     NSError *contactError = nil;
     NSMutableArray *keys = [NSMutableArray arrayWithArray: @[
@@ -163,12 +168,13 @@ RCT_EXPORT_METHOD(queryContacts:(NSDictionary *)props resolver:(RCTPromiseResolv
         CNContactBirthdayKey,
         CNContactInstantMessageAddressesKey
     ]];
+
     if(notesUsageEnabled) {
         [keys addObject: CNContactNoteKey];
     }
     
     if (contactsCache == nil) {
-        contactsCache = [self retrieveContactsFromAddressBook:store withThumbnails:true];
+        contactsCache = [[self retrieveContactsFromAddressBook:store withThumbnails:true] mutableCopy]; 
 
         // Remove the cache after 1 minute
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * 60 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
@@ -176,22 +182,27 @@ RCT_EXPORT_METHOD(queryContacts:(NSDictionary *)props resolver:(RCTPromiseResolv
         });
     }
 
-    // paginate from contacts cache 
-    NSUInteger offset = [pageOffset intValue];
-    NSUInteger size = [pageSize intValue];
-    NSUInteger end = offset + size;
+    NSUInteger offset = [currentPage intValue] * [limit intValue];
+    NSUInteger end = offset + [limit intValue];
 
-    if (end > contactsCache.count) {
-        end = contactsCache.count;
+    NSMutableArray *filteredContacts = [[NSMutableArray alloc] init];
+
+    if (searchTerm != nil && ![searchTerm isEqualToString:@""]) {
+        // TODO: Implement search
+        filteredContacts = [contactsCache copy];
+    } else {
+        filteredContacts = [contactsCache copy];
     }
+
+
+    NSMutableArray *contacts = [[NSMutableArray alloc] init];
+
     for (NSUInteger i = offset; i < end; i++) {
-        [contacts addObject:contactsCache[i]];
+        if (i < [filteredContacts count]) {
+            [contacts addObject:contactsCache[i]];
+        }
     }
 
-    if (searchTerm != nil) {
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(givenName contains[cd] %@) OR (familyName contains[cd] %@) OR (middleName contains[cd] %@) OR (organizationName contains[cd] %@)", searchTerm, searchTerm, searchTerm, searchTerm];
-        contacts = [contacts filteredArrayUsingPredicate:predicate];
-    }
     resolve(contacts);
 }
 

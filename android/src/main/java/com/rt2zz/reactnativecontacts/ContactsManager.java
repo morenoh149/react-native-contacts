@@ -104,7 +104,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
     @ReactMethod
     public void queryContacts(final ReadableMap contact, final Promise promise) {
         int pageSize = contact.hasKey("limit") ? contact.getInt("limit") : 10000;
-        int pageOffset = contact.hasKey("offset") ? contact.getInt("offset") : 0;
+        int currentPage = contact.hasKey("page") ? contact.getInt("page") : 0;
         String searchTerm = contact.hasKey("searchTerm") ? contact.getString("searchTerm") : null;
 
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
@@ -114,14 +114,9 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContentResolver cr = context.getContentResolver();
 
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
+                WritableArray contacts = contactsProvider.queryContacts(searchTerm, currentPage, pageSize);
+                promise.resolve(contacts);
 
-                try {
-                    WritableArray contacts = contactsProvider.queryContacts(searchTerm, pageOffset, pageSize);
-                    promise.resolve(contacts);
-                } catch (Exception e) {
-                    promise.reject(e);
-                }
-                
                 return null;
 
             }

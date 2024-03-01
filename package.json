@@ -1,10 +1,10 @@
 {
-  "name": "react-native-contacts",
+  "name": "@loopmein/react-native-contacts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rt2zz/react-native-contacts.git"
+    "url": "git+https://github.com/LooopMeIn/react-native-contacts.git"
   },
-  "version": "7.0.8",
+  "version": "1.0.0",
   "description": "React Native Contacts (android & ios)",
   "nativePackage": true,
   "keywords": [
@@ -17,33 +17,26 @@
     "android"
   ],
   "bugs": {
-    "url": "https://github.com/rt2zz/react-native-contacts/issues"
+    "url": "https://github.com/LooopMeIn/react-native-contacts.git"
   },
-  "homepage": "https://github.com/rt2zz/react-native-contacts",
+  "homepage": "https://github.com/LooopMeIn/react-native-contacts.git",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "contributors": [
-    {
-      "name": "Harry Moreno",
-      "email": "morenoh149@gmail.com",
-      "url": "http://harrymoreno.com/"
-    },
-    {
-      "name": "Nick Pomfret"
-    },
-    {
-      "name": "rt2zz <zack@root-two.com>"
-    }
+    "Paulo Reis <paulork07@gmail.com>"
   ],
   "license": "MIT",
-  "dependencies": {},
   "devDependencies": {
     "react-native-cli": "^2.0.1"
   },
   "peerDependencies": {
     "react-native": ">=0.64.0"
-  }
+  },
+  "directories": {
+    "example": "example"
+  },
+  "author": "preis-lab"
 }

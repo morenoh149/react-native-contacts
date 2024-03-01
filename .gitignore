@@ -8,4 +8,10 @@ ios/RCTContacts.xcodeproj/project.xcworkspace
 .npm-debug.log
 
 android/.gradle
+android/.classpath
+android/.project
+android/.settings/
+android/build/
+
 .DS_Store
+

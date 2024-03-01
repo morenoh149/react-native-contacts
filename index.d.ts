@@ -21,7 +21,7 @@ export function queryContacts(props: QueryContacts): Promise<Contact[]>;
 
 export interface QueryContacts {
     limit?: number;
-    offset?: number;
+    page?: number;
     searchTerm?: string;
 }
 

@@ -4,7 +4,7 @@ export function getContactById(contactId: string): Promise<Contact | null>;
 export function getCount(): Promise<number>;
 export function getPhotoForId(contactId: string): Promise<string>;
 export function addContact(contact: Partial<Contact>): Promise<Contact>;
-export function openContactForm(contact: Partial<Contact>): Promise<Contact>;
+export function openContactForm(contact: Partial<Contact>): Promise<Contact | null>;
 export function openExistingContact(contact: Contact): Promise<Contact>;
 export function viewExistingContact(contact: { recordID: string }): Promise<Contact | void>
 export function editExistingContact(contact: Contact): Promise<Contact>;

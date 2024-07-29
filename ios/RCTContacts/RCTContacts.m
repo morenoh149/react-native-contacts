@@ -1221,9 +1221,13 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData resolver:(RCTPromise
     }
 }
 
-RCT_EXPORT_METHOD(writePhotoToPath:(RCTResponseSenderBlock) rejecter:(RCTPromiseRejectBlock) reject)
+RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject)
 { 
-    reject(@"Error", @"not implemented", nil);
+    @try {
+        //Nothing is implemented here
+    } @catch (NSException *exception) {
+        reject(@"Error", @"not implemented", nil);
+    }
 }
 
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {

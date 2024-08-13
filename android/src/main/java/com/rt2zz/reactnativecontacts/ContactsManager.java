@@ -1218,7 +1218,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      */
     private String isPermissionGranted() {
         // return -1 for denied and 1
-        int res = getReactApplicationContext().checkSelfPermission(PERMISSION_READ_CONTACTS);
+        int res = ActivityCompat.checkSelfPermission(getReactApplicationContext(), PERMISSION_READ_CONTACTS);
         return (res == PackageManager.PERMISSION_GRANTED) ? PERMISSION_AUTHORIZED : PERMISSION_DENIED;
     }
 

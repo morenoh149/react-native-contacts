@@ -49,7 +49,7 @@ export interface InstantMessageAddress {
 export interface Birthday {
     day: number;
     month: number;
-    year: number;
+    year?: number;
 }
 
 export interface UrlAddress {
@@ -62,21 +62,21 @@ export interface Contact {
     backTitle: string;
     company: string|null;
     emailAddresses: EmailAddress[];
-    displayName: string;
+    displayName: string|null;
     familyName: string;
-    givenName: string;
+    givenName: string|null;
     middleName: string;
-    jobTitle: string;
+    jobTitle: string|null;
     phoneNumbers: PhoneNumber[];
     hasThumbnail: boolean;
     thumbnailPath: string;
     isStarred: boolean;
     postalAddresses: PostalAddress[];
-    prefix: string;
-    suffix: string;
-    department: string;
-    birthday: Birthday;
+    prefix: string|null;
+    suffix: string|null;
+    department: string|null;
+    birthday?: Birthday;
     imAddresses: InstantMessageAddress[];
     urlAddresses: UrlAddress[];
-    note: string;
+    note: string|null;
 }

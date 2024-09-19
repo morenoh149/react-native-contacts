@@ -7,6 +7,7 @@ import android.provider.ContactsContract;
 import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
+import android.content.res.Resources;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;

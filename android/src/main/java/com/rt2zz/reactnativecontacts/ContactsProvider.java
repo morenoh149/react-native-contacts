@@ -47,6 +47,8 @@ public class ContactsProvider {
         add(StructuredName.FAMILY_NAME);
         add(StructuredName.PREFIX);
         add(StructuredName.SUFFIX);
+        add(StructuredName.PHONETIC_GIVEN_NAME);
+        add(StructuredName.PHONETIC_FAMILY_NAME);
         add(Phone.NUMBER);
         add(Phone.NORMALIZED_NUMBER);
         add(Phone.TYPE);
@@ -384,6 +386,8 @@ public class ContactsProvider {
                     }
                     contact.prefix = cursor.getString(cursor.getColumnIndex(StructuredName.PREFIX));
                     contact.suffix = cursor.getString(cursor.getColumnIndex(StructuredName.SUFFIX));
+                    contact.phoneticGivenName = cursor.getString(cursor.getColumnIndex(StructuredName.PHONETIC_GIVEN_NAME));
+                    contact.phoneticFamilyName = cursor.getString(cursor.getColumnIndex(StructuredName.PHONETIC_FAMILY_NAME));
                     break;
                 case Phone.CONTENT_ITEM_TYPE:
                     String phoneNumber = cursor.getString(cursor.getColumnIndex(Phone.NUMBER));
@@ -608,6 +612,8 @@ public class ContactsProvider {
         private List<Item> phones = new ArrayList<>();
         private List<PostalAddressItem> postalAddresses = new ArrayList<>();
         private Birthday birthday;
+        private String phoneticGivenName = "";
+        private String phoneticFamilyName = "";
 
 
         public Contact(String contactId) {
@@ -631,6 +637,8 @@ public class ContactsProvider {
             contact.putBoolean("hasThumbnail", this.hasPhoto);
             contact.putString("thumbnailPath", photoUri == null ? "" : photoUri);
             contact.putBoolean("isStarred", this.isStarred);
+            contact.putString("phoneticGivenName", phoneticGivenName);
+            contact.putString("phoneticFamilyName", phoneticFamilyName);
 
             WritableArray phoneNumbers = Arguments.createArray();
             for (Item item : phones) {

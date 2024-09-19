@@ -79,4 +79,6 @@ export interface Contact {
     imAddresses: InstantMessageAddress[];
     urlAddresses: UrlAddress[];
     note: string|null;
+    phoneticGivenName: string|null;
+    phoneticFamilyName: string|null;
 }

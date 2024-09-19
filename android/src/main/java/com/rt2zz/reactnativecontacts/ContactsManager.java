@@ -309,6 +309,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String department = contact.hasKey("department") ? contact.getString("department") : null;
         String note = contact.hasKey("note") ? contact.getString("note") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
+        String phoneticGivenName = contact.hasKey("phoneticGivenName") ? contact.getString("phoneticGivenName") : null;
+        String phoneticFamilyName = contact.hasKey("phoneticFamilyName") ? contact.getString("phoneticFamilyName") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -413,6 +415,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         name.put(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, middleName);
         name.put(ContactsContract.CommonDataKinds.StructuredName.PREFIX, prefix);
         name.put(ContactsContract.CommonDataKinds.StructuredName.SUFFIX, suffix);
+        name.put(ContactsContract.CommonDataKinds.StructuredName.PHONETIC_GIVEN_NAME, phoneticGivenName);
+        name.put(ContactsContract.CommonDataKinds.StructuredName.PHONETIC_FAMILY_NAME, phoneticFamilyName);
         contactData.add(name);
 
         ContentValues organization = new ContentValues();
@@ -614,6 +618,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String department = contact.hasKey("department") ? contact.getString("department") : null;
         String note = contact.hasKey("note") ? contact.getString("note") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
+        String phoneticGivenName = contact.hasKey("phoneticGivenName") ? contact.getString("phoneticGivenName") : null;
+        String phoneticFamilyName = contact.hasKey("phoneticFamilyName") ? contact.getString("phoneticFamilyName") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -690,6 +696,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 .withValue(StructuredName.GIVEN_NAME, givenName)
                 .withValue(StructuredName.MIDDLE_NAME, middleName)
                 .withValue(StructuredName.FAMILY_NAME, familyName)
+                .withValue(StructuredName.PHONETIC_GIVEN_NAME, phoneticGivenName)
+                .withValue(StructuredName.PHONETIC_FAMILY_NAME, phoneticFamilyName)
                 .withValue(StructuredName.PREFIX, prefix)
                 .withValue(StructuredName.SUFFIX, suffix);
         ops.add(op.build());
@@ -832,6 +840,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         String department = contact.hasKey("department") ? contact.getString("department") : null;
         String note = contact.hasKey("note") ? contact.getString("note") : null;
         String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
+        String phoneticGivenName = contact.hasKey("phoneticGivenName") ? contact.getString("phoneticGivenName") : null;
+        String phoneticFamilyName = contact.hasKey("phoneticFamilyName") ? contact.getString("phoneticFamilyName") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -956,6 +966,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 .withValue(StructuredName.GIVEN_NAME, givenName)
                 .withValue(StructuredName.MIDDLE_NAME, middleName)
                 .withValue(StructuredName.FAMILY_NAME, familyName)
+                .withValue(StructuredName.PHONETIC_GIVEN_NAME, phoneticGivenName)
+                .withValue(StructuredName.PHONETIC_FAMILY_NAME, phoneticFamilyName)
                 .withValue(StructuredName.PREFIX, prefix)
                 .withValue(StructuredName.SUFFIX, suffix);
         ops.add(op.build());

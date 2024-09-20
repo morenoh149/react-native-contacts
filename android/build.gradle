@@ -9,8 +9,14 @@ buildscript {
     }
 }
 
-apply plugin: 'com.android.library'
+ def isNewArchitectureEnabled() {
+   return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+}
 
+apply plugin: 'com.android.library'
+if (isNewArchitectureEnabled()) {
+    apply plugin: 'com.facebook.react'
+}
 def DEFAULT_MIN_SDK_VERSION                 = 21
 def DEFAULT_COMPILE_SDK_VERSION             = 29
 def DEFAULT_TARGET_SDK_VERSION              = 29
@@ -30,6 +36,20 @@ android {
         targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : DEFAULT_TARGET_SDK_VERSION
         versionCode 1
         versionName "1.0"
+        buildConfigField("boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString())
+    }
+    sourceSets {
+        main {
+            if (isNewArchitectureEnabled()) {
+                java.srcDirs += [
+                 "src/newarch",
+          // This is needed to build Kotlin project with NewArch enabled
+                "${project.buildDir}/generated/source/codegen/java"
+        ]
+            } else {
+                java.srcDirs += ["src/oldarch"]
+            }
+        }
     }
     lintOptions {
         abortOnError false
@@ -42,4 +62,11 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
+}
+if (isNewArchitectureEnabled()) {
+    react {
+        jsRootDir = file("../src/")
+        libraryName = "react-native-contacts"
+        codegenJavaPackageName = "com.rt2zz.reactnativecontacts"
+    }
 }

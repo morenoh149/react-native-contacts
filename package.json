@@ -19,9 +19,18 @@
   "bugs": {
     "url": "https://github.com/rt2zz/react-native-contacts/issues"
   },
+  "@react-native-community/bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      "commonjs",
+      "module",
+      "typescript"
+    ]
+  },
   "homepage": "https://github.com/rt2zz/react-native-contacts",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "index.ts",
+  "types": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -43,7 +52,13 @@
   "devDependencies": {
     "react-native-cli": "^2.0.1"
   },
+  "codegenConfig": {
+    "name": "RNContactsSpec",
+    "type": "modules",
+    "jsSrcsDir": "src"
+  },
   "peerDependencies": {
-    "react-native": ">=0.64.0"
+    "react-native": "*",
+    "react": "*"
   }
 }

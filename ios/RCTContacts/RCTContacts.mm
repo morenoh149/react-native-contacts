@@ -3,6 +3,11 @@
 #import "RCTContacts.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <React/RCTLog.h>
+#import <Photos/Photos.h>
+
+// #ifdef RCT_NEW_ARCH_ENABLED
+// #import "RNContactsSpec.h"
+// #endif
 
 @implementation RCTContacts {
     CNContactStore * contactStore;
@@ -42,6 +47,13 @@ RCT_EXPORT_MODULE();
              @"PERMISSION_UNDEFINED": @"undefined"
              };
 }
+
+RCT_REMAP_METHOD(getAll, withResolver:(RCTPromiseResolveBlock) resolve
+                 withRejecter:(RCTPromiseRejectBlock) reject)
+{
+  [self getAll:resolve reject:reject];
+}
+
 
 RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve 
     rejecter:(RCTPromiseRejectBlock) __unused reject)
@@ -533,7 +545,7 @@ RCT_EXPORT_METHOD(getCount:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromise
 
 - (NSString *)getPathForDirectory:(int)directory
 {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(directory, NSUserDomainMask, YES);
+    NSArray *paths = NSSearchPathForDirectoriesInDomains((NSSearchPathDirectory)directory, NSUserDomainMask, YES);
     return [paths firstObject];
 }
 
@@ -597,7 +609,7 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID resolver:(RCTPromi
     }
 }
 
--(NSString *) getContact:(NSString *)recordID
+-(NSDictionary *) getContact:(NSString *)recordID
                                addressBook:(CNContactStore*)addressBook
                                withThumbnails:(BOOL) withThumbnails
 {
@@ -623,7 +635,7 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID resolver:(RCTPromi
     CNContact* contact = [addressBook unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError];
 
     if(!contact)
-            return [NSNull null];
+        return nil;
 
     return [self contactToDictionary: contact withThumbnails:withThumbnails];
 }
@@ -720,7 +732,8 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData resolver:(RCTP
                 currentViewController = currentViewController.presentedViewController;
             }
 
-            UIActivityIndicatorViewStyle *activityIndicatorStyle;
+            UIActivityIndicatorViewStyle activityIndicatorStyle;
+            UIActivityIndicatorView *activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
             UIColor *activityIndicatorBackgroundColor;
             if (@available(iOS 13, *)) {
                 activityIndicatorStyle = UIActivityIndicatorViewStyleMedium;
@@ -792,7 +805,7 @@ RCT_EXPORT_METHOD(viewExistingContact:(NSDictionary *)contactData resolver:(RCTP
         CNContactViewController *contactViewController = [CNContactViewController viewControllerForContact:contact];
 
         // Add a cancel button which will close the view
-        contactViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:backTitle == nil ? @"Cancel" : backTitle style:UIBarButtonSystemItemCancel target:self action:@selector(cancelContactForm)];
+        contactViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:backTitle == nil ? @"Cancel" : backTitle style:UIBarButtonItemStylePlain target:self action:@selector(cancelContactForm)];
         contactViewController.delegate = self;
 
 
@@ -881,7 +894,7 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData resolver:(RCTP
         //[controller presentViewController:alert animated:YES completion:nil];
         
         // Add a cancel button which will close the view
-        controller.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Done"  style:UIBarButtonSystemItemCancel target:self action:@selector(doneContactForm)];
+        controller.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Done"  style:UIBarButtonItemStylePlain target:self action:@selector(doneContactForm)];
         
         controller.delegate = self;
         controller.allowsEditing = true;
@@ -1160,38 +1173,33 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData resolver:(RCTPromise
 
 enum { WDASSETURL_PENDINGREADS = 1, WDASSETURL_ALLFINISHED = 0};
 
-+ (NSData*) loadImageAsset:(NSURL*)assetURL {
-    //thanks to http://www.codercowboy.com/code-synchronous-alassetlibrary-asset-existence-check/
-
-    __block NSData *data = nil;
-    __block NSConditionLock * albumReadLock = [[NSConditionLock alloc] initWithCondition:WDASSETURL_PENDINGREADS];
-    //this *MUST* execute on a background thread, ALAssetLibrary tries to use the main thread and will hang if you're on the main thread.
-    dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        ALAssetsLibrary * assetLibrary = [[ALAssetsLibrary alloc] init];
-        [assetLibrary assetForURL:assetURL
-                      resultBlock:^(ALAsset *asset) {
-                          ALAssetRepresentation *rep = [asset defaultRepresentation];
-
-                          Byte *buffer = (Byte*)malloc(rep.size);
-                          NSUInteger buffered = [rep getBytes:buffer fromOffset:0.0 length:rep.size error:nil];
-                          data = [NSData dataWithBytesNoCopy:buffer length:buffered freeWhenDone:YES];
-
-                          [albumReadLock lock];
-                          [albumReadLock unlockWithCondition:WDASSETURL_ALLFINISHED];
-                      } failureBlock:^(NSError *error) {
-                          RCTLog(@"asset error: %@", [error localizedDescription]);
-
-                          [albumReadLock lock];
-                          [albumReadLock unlockWithCondition:WDASSETURL_ALLFINISHED];
-                      }];
++ (NSData *)loadImageAsset:(NSURL *)assetURL {
+    __block NSData *imageData = nil;
+    
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        PHFetchResult<PHAsset *> *result = [PHAsset fetchAssetsWithALAssetURLs:@[assetURL] options:nil];
+        if (result.count > 0) {
+            PHAsset *asset = result.firstObject;
+            PHImageManager *imageManager = [PHImageManager defaultManager];
+            PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
+            options.synchronous = YES; // Load image synchronously
+            
+            [imageManager requestImageDataForAsset:asset
+                                          options:options
+                                    resultHandler:^(NSData * _Nullable data, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+                imageData = data;
+                dispatch_semaphore_signal(semaphore);
+            }];
+        } else {
+            dispatch_semaphore_signal(semaphore);
+        }
     });
-
-    [albumReadLock lockWhenCondition:WDASSETURL_ALLFINISHED];
-    [albumReadLock unlock];
-
-    RCTLog(@"asset lookup finished: %@ %@", [assetURL absoluteString], (data ? @"exists" : @"does not exist"));
-
-    return data;
+    
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    
+    return imageData;
 }
 
 RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData resolver:(RCTPromiseResolveBlock) resolve
@@ -1255,6 +1263,474 @@ RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromise
 + (BOOL)requiresMainQueueSetup
 {
     return YES;
+}
+
+// Thanks to this guard, we won't compile this code when we build for the old architecture.
+#ifdef RCT_NEW_ARCH_ENABLED
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
+{
+    return std::make_shared<facebook::react::NativeContactsSpecJSI>(params);
+}
+
+#endif
+
+- (void)getAll:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+    [self getAllContacts:resolve reject:reject withThumbnails:true];
+}
+
+ - (void)checkPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
+     if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
+         resolve(@"denied");
+     } else if (authStatus == CNAuthorizationStatusAuthorized){
+         resolve(@"authorized");
+     } else {
+         resolve(@"undefined");
+     }
+ }
+
+
+ - (void)deleteContact:(NSDictionary *)contactData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+     if(!contactStore) {
+         contactStore = [[CNContactStore alloc] init];
+     }
+
+     NSString* recordID = [contactData valueForKey:@"recordID"];
+
+     NSArray *keys = @[CNContactIdentifierKey];
+
+
+     @try {
+
+         CNMutableContact *contact = [[contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil] mutableCopy];
+         NSError *error;
+         CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+         [saveRequest deleteContact:contact];
+         [contactStore executeSaveRequest:saveRequest error:&error];
+
+         resolve(recordID);
+     }
+     @catch (NSException *exception) {
+         reject(@"Error", [exception reason], nil);
+     }
+ }
+
+
+ - (void)editExistingContact:(NSDictionary *)contactData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+     CNContactStore* contactStore = [self contactsStore:reject];
+     if(!contactStore)
+         return;
+
+     NSError* contactError;
+     selectedContact = nil;
+     NSString* recordID = [contactData valueForKey:@"recordID"];
+     NSArray * keysToFetch =@[
+                              CNContactEmailAddressesKey,
+                              CNContactPhoneNumbersKey,
+                              CNContactFamilyNameKey,
+                              CNContactGivenNameKey,
+                              CNContactMiddleNameKey,
+                              CNContactPostalAddressesKey,
+                              CNContactOrganizationNameKey,
+                              CNContactJobTitleKey,
+                              CNContactImageDataAvailableKey,
+                              CNContactThumbnailImageDataKey,
+                              CNContactImageDataKey,
+                              CNContactUrlAddressesKey,
+                              CNContactBirthdayKey,
+                              CNContactIdentifierKey,
+                              [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName],
+                              [CNContactViewController descriptorForRequiredKeys]];
+
+     @try {
+         CNMutableContact* record = [[contactStore unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError] mutableCopy];
+
+         NSMutableArray *phoneNumbers = [[NSMutableArray alloc]init];
+         phoneNumbers = [NSMutableArray arrayWithArray:record.phoneNumbers];
+
+         for (id phoneData in [contactData valueForKey:@"phoneNumbers"]) {
+             NSString *number = [phoneData valueForKey:@"number"];
+
+             CNLabeledValue *contactPhoneNumber = [CNLabeledValue labeledValueWithLabel:CNLabelOther value:[CNPhoneNumber phoneNumberWithStringValue:number]];
+             //record.phoneNumbers = @[contactPhoneNumber];
+             [phoneNumbers addObject:contactPhoneNumber];
+         }
+
+         NSArray *phoneNumbersNew = [[NSArray alloc]init];
+         phoneNumbersNew = [NSArray arrayWithArray:phoneNumbers];
+
+
+         record.phoneNumbers = phoneNumbersNew;
+
+         CNSaveRequest *request = [[CNSaveRequest alloc] init];
+         [request updateContact:record];
+         
+         selectedContact = record;
+
+         [contactStore executeSaveRequest:request error:nil];
+
+         CNContactViewController *controller = [CNContactViewController viewControllerForContact:record];
+         //controller.title = @"Saved!";
+         UIAlertController *alert=   [UIAlertController
+             alertControllerWithTitle:@"Saved!"
+             message:@"Number added to contact"
+             preferredStyle:UIAlertControllerStyleAlert];
+         //[controller presentViewController:alert animated:YES completion:nil];
+         
+         // Add a cancel button which will close the view
+         controller.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Done"  style:UIBarButtonItemStylePlain target:self action:@selector(doneContactForm)];
+         
+         controller.delegate = self;
+         controller.allowsEditing = true;
+         controller.allowsActions = true;
+
+         dispatch_async(dispatch_get_main_queue(), ^{
+             UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
+             UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+             
+             //navigation.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor redColor]};
+             
+             while (viewController.presentedViewController)
+                 {
+                     viewController = viewController.presentedViewController;
+                 }
+             [viewController presentViewController:navigation animated:YES completion:nil];
+             [controller presentViewController:alert animated:YES completion:nil];
+
+             self->updateContactPromise = resolve;
+         });
+         
+         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+
+                 [alert dismissViewControllerAnimated:YES completion:^{
+
+                     //Dismissed
+                 }];
+
+         });
+     }
+     @catch (NSException *exception) {
+         reject(@"Error", [exception reason], nil);
+     }
+ }
+
+
+ - (void)getAllWithoutPhotos:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+     [self getAllContacts:resolve reject:reject withThumbnails:false];
+ }
+
+
+ - (void)getContactById:(nonnull NSString *)recordID resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+     CNContactStore* contactStore = [self contactsStore:reject];
+     if(!contactStore)
+         return;
+
+     CNEntityType entityType = CNEntityTypeContacts;
+     if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusNotDetermined)
+     {
+         [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
+             if(granted){
+                 resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
+             }
+         }];
+     }
+     else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
+     {
+         resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
+     }
+ }
+
+
+ - (void)getContactsByEmailAddress:(NSString *)string resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+     CNContactStore *contactStore = [[CNContactStore alloc] init];
+        if (!contactStore)
+            return;
+        [self getContactsFromAddressBook:contactStore byEmailAddress:string resolve:resolve];
+ }
+
+
+ - (void)getContactsByPhoneNumber:(NSString *)string resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+     CNContactStore *contactStore = [[CNContactStore alloc] init];
+         if (!contactStore)
+             return;
+         [self getContactsFromAddressBook:contactStore byPhoneNumber:string resolve:resolve];
+ }
+
+
+ - (void)getContactsMatchingString:(NSString *)string resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+     CNContactStore *contactStore = [[CNContactStore alloc] init];
+         if (!contactStore)
+             return;
+         [self getContactsFromAddressBook:contactStore matchingString:string resolve:resolve];
+ }
+
+
+ - (void)getCount:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+     [self getAllContactsCount:resolve reject:reject];
+ }
+
+
+ - (void)getPhotoForId:(nonnull NSString *)recordID resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+     CNContactStore* contactStore = [self contactsStore:reject];
+        if(!contactStore)
+            return;
+
+        CNEntityType entityType = CNEntityTypeContacts;
+        if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusNotDetermined)
+        {
+            [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                if(granted){
+                    resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
+                }
+            }];
+        }
+        else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
+        {
+            resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
+        }
+ }
+
+
+- (void)openContactForm:(NSDictionary *)contactData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    CNMutableContact * contact = [[CNMutableContact alloc] init];
+    
+    [self updateRecord:contact withData:contactData];
+    
+    CNContactViewController *controller = [CNContactViewController viewControllerForNewContact:contact];
+    
+    
+    controller.delegate = self;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
+        UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        while (viewController.presentedViewController)
+        {
+            viewController = viewController.presentedViewController;
+        }
+        [viewController presentViewController:navigation animated:YES completion:nil];
+        
+        self->updateContactPromise = resolve;
+    });
+}
+
+
+ - (void)openExistingContact:(NSDictionary *)contactData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+     if(!contactStore) {
+         contactStore = [[CNContactStore alloc] init];
+     }
+
+     NSString* recordID = [contactData valueForKey:@"recordID"];
+     NSString* backTitle = [contactData valueForKey:@"backTitle"];
+
+     NSArray *keys = @[CNContactIdentifierKey,
+                       CNContactEmailAddressesKey,
+                       CNContactBirthdayKey,
+                       CNContactImageDataKey,
+                       CNContactPhoneNumbersKey,
+                       [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName],
+                       [CNContactViewController descriptorForRequiredKeys]];
+
+     @try {
+
+         CNContact *contact = [contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil];
+
+         CNContactViewController *contactViewController = [CNContactViewController viewControllerForContact:contact];
+
+         // Add a cancel button which will close the view
+         contactViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:backTitle == nil ? @"Cancel" : backTitle style:UIBarButtonItemStyleDone target:self action:@selector(cancelContactForm)];
+         contactViewController.delegate = self;
+
+
+         dispatch_async(dispatch_get_main_queue(), ^{
+             UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:contactViewController];
+
+             UIViewController *currentViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
+
+             while (currentViewController.presentedViewController)
+             {
+                 currentViewController = currentViewController.presentedViewController;
+             }
+
+             UIActivityIndicatorViewStyle activityIndicatorStyle;
+             UIActivityIndicatorView *activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
+             UIColor *activityIndicatorBackgroundColor;
+             if (@available(iOS 13, *)) {
+                 activityIndicatorStyle = UIActivityIndicatorViewStyleMedium;
+                 activityIndicatorBackgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
+             } else {
+                 activityIndicatorStyle = UIActivityIndicatorViewStyleGray;
+                 activityIndicatorBackgroundColor = [UIColor whiteColor];;
+             }
+
+             // Cover the contact view with an activity indicator so we can put it in edit mode without user seeing the transition
+             UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:activityIndicatorStyle];
+             activityIndicatorView.frame = UIApplication.sharedApplication.keyWindow.frame;
+             [activityIndicatorView startAnimating];
+             activityIndicatorView.backgroundColor = activityIndicatorBackgroundColor;
+             [navigation.view addSubview:activityIndicatorView];
+
+             [currentViewController presentViewController:navigation animated:YES completion:nil];
+
+
+             // TODO should this 'fake click' method be used? For a brief instance
+             // Fake click edit button to enter edit mode
+             //                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+             //                    SEL selector = contactViewController.navigationItem.rightBarButtonItem.action;
+             //                    NSLog(@"!!!!!!!!!!!!!!!!!! FAKE CLICK!!!  %@", NSStringFromSelector(selector));
+             //                    id  target = contactViewController.navigationItem.rightBarButtonItem.target;
+             //                    [target performSelector:selector];
+             //                });
+
+
+             // We need to wait for a short while otherwise contactViewController will not respond to the selector (it has not initialized)
+             [contactViewController performSelector:@selector(toggleEditing:) withObject:nil afterDelay:0.1];
+
+             // remove the activity indicator after a delay so the underlying transition will have time to complete
+             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                 [activityIndicatorView removeFromSuperview];
+             });
+
+             updateContactPromise = resolve;
+         });
+
+     }
+     @catch (NSException *exception) {
+         reject(@"Error", [exception reason], nil);
+     }
+ }
+
+
+ - (void)requestPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+     CNContactStore* contactStore = [[CNContactStore alloc] init];
+
+        [contactStore requestAccessForEntityType:CNEntityTypeContacts completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            [self checkPermission:resolve rejecter:reject];
+        }];
+ }
+
+
+ - (void)updateContact:(NSDictionary *)contactData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+     CNContactStore* contactStore = [self contactsStore:reject];
+     if(!contactStore)
+         return;
+
+     NSError* contactError;
+     NSString* recordID = [contactData valueForKey:@"recordID"];
+     NSMutableArray * keysToFetch = [NSMutableArray arrayWithArray: @[
+         CNContactEmailAddressesKey,
+         CNContactPhoneNumbersKey,
+         CNContactFamilyNameKey,
+         CNContactGivenNameKey,
+         CNContactMiddleNameKey,
+         CNContactPostalAddressesKey,
+         CNContactOrganizationNameKey,
+         CNContactJobTitleKey,
+         CNContactImageDataAvailableKey,
+         CNContactThumbnailImageDataKey,
+         CNContactImageDataKey,
+         CNContactUrlAddressesKey,
+         CNContactBirthdayKey,
+         CNContactInstantMessageAddressesKey
+     ]];
+     if(notesUsageEnabled) {
+         [keysToFetch addObject: CNContactNoteKey];
+     }
+
+     @try {
+         CNMutableContact* record = [[contactStore unifiedContactWithIdentifier:recordID keysToFetch:keysToFetch error:&contactError] mutableCopy];
+         [self updateRecord:record withData:contactData];
+         CNSaveRequest *request = [[CNSaveRequest alloc] init];
+         [request updateContact:record];
+
+         [contactStore executeSaveRequest:request error:nil];
+
+         NSDictionary *contactDict = [self contactToDictionary:record withThumbnails:false];
+
+         resolve(contactDict);
+     }
+     @catch (NSException *exception) {
+         reject(@"Error", [exception reason], nil);
+     }
+ }
+
+
+ - (void)viewExistingContact:(NSDictionary *)contactData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+     if(!contactStore) {
+         contactStore = [[CNContactStore alloc] init];
+     }
+
+     NSString* recordID = [contactData valueForKey:@"recordID"];
+     NSString* backTitle = [contactData valueForKey:@"backTitle"];
+
+     NSArray *keys = @[CNContactIdentifierKey,
+                       CNContactEmailAddressesKey,
+                       CNContactBirthdayKey,
+                       CNContactImageDataKey,
+                       CNContactPhoneNumbersKey,
+                       [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName],
+                       [CNContactViewController descriptorForRequiredKeys]];
+
+     @try {
+
+         CNContact *contact = [contactStore unifiedContactWithIdentifier:recordID keysToFetch:keys error:nil];
+
+         CNContactViewController *contactViewController = [CNContactViewController viewControllerForContact:contact];
+
+         // Add a cancel button which will close the view
+         contactViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:backTitle == nil ? @"Cancel" : backTitle style:UIBarButtonItemStylePlain target:self action:@selector(cancelContactForm)];
+         contactViewController.delegate = self;
+
+
+         dispatch_async(dispatch_get_main_queue(), ^{
+             UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:contactViewController];
+
+             UIViewController *currentViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
+
+             while (currentViewController.presentedViewController)
+             {
+                 currentViewController = currentViewController.presentedViewController;
+             }
+
+             [currentViewController presentViewController:navigation animated:YES completion:nil];
+
+             updateContactPromise = resolve;
+         });
+
+     }
+     @catch (NSException *exception) {
+         reject(@"Error", [exception reason], nil);
+     }
+ }
+
+
+ - (void)writePhotoToPath:(NSString *)contactId file:(NSString *)file resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+     reject(@"Error", @"not implemented", nil);
+ }
+
+- (void)addContact:(NSDictionary *)contactData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    CNContactStore* contactStore = [self contactsStore:reject];
+        if(!contactStore)
+            return;
+
+        CNMutableContact * contact = [[CNMutableContact alloc] init];
+
+        [self updateRecord:contact withData:contactData];
+
+        @try {
+            CNSaveRequest *request = [[CNSaveRequest alloc] init];
+            [request addContact:contact toContainerWithIdentifier:nil];
+
+            [contactStore executeSaveRequest:request error:nil];
+
+            NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:false];
+
+            resolve(contactDict);
+        }
+        @catch (NSException *exception) {
+            reject(@"Error", [exception reason], nil);
+        }
 }
 
 @end

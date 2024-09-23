@@ -11,7 +11,7 @@
 #else
 
 #import <React/RCTBridgeModule.h>
-@interface RCTContacts : NSObject <RCTBridgeModule>
+@interface RCTContacts : NSObject <RCTBridgeModule, CNContactViewControllerDelegate>
 
 #endif
 

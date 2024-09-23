@@ -17,6 +17,7 @@ Pod::Spec.new do |s|
   s.platform       = :ios, "12.0"
   s.source         = { :git => "https://github.com/rt2zz/react-native-contacts.git", :tag => "v#{s.version}" } 
   s.source_files   = "ios/**/*.{h,m,mm,swift}"
+  s.frameworks     = 'Contacts', 'ContactsUI', 'Photos'
 
   s.dependency 'React-Core'
 

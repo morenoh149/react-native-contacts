@@ -1,6 +1,6 @@
 import type { TurboModule } from "react-native/Libraries/TurboModule/RCTExport";
 import { TurboModuleRegistry } from "react-native";
-import { Contact } from "../type";
+import { Contact, PermissionType } from "../type";
 
 export interface Spec extends TurboModule {
   getAll: () => Promise<any>;
@@ -18,8 +18,8 @@ export interface Spec extends TurboModule {
   getContactsMatchingString: (str: string) => Promise<Contact[]>;
   getContactsByPhoneNumber: (phoneNumber: string) => Promise<Contact[]>;
   getContactsByEmailAddress: (emailAddress: string) => Promise<Contact[]>;
-  checkPermission: () => Promise<string>;
-  requestPermission: () => Promise<string>;
+  checkPermission: () => Promise<PermissionType>;
+  requestPermission: () => Promise<PermissionType>;
   writePhotoToPath: (contactId: string, file: string) => Promise<boolean>;
   iosEnableNotesUsage: (enabled: boolean) => void;
 }

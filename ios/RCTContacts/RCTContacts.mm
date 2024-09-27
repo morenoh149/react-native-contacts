@@ -44,6 +44,7 @@ RCT_EXPORT_MODULE();
     return @{
              @"PERMISSION_DENIED": @"denied",
              @"PERMISSION_AUTHORIZED": @"authorized",
+             @"PERMISSION_LIMITED": @"limited",
              @"PERMISSION_UNDEFINED": @"undefined"
              };
 }
@@ -63,6 +64,8 @@ RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve
         resolve(@"denied");
     } else if (authStatus == CNAuthorizationStatusAuthorized){
         resolve(@"authorized");
+    } else if (authStatus == CNAuthorizationStatusLimited) {
+        resolve(@"limited");
     } else {
         resolve(@"undefined");
     }
@@ -565,7 +568,7 @@ RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID resolver:(RCTPromis
             }
         }];
     }
-    else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
+    else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited)
     {
         resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
     }
@@ -603,7 +606,7 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID resolver:(RCTPromi
             }
         }];
     }
-    else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
+    else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited))
     {
         resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
     }
@@ -1285,6 +1288,8 @@ RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromise
          resolve(@"denied");
      } else if (authStatus == CNAuthorizationStatusAuthorized){
          resolve(@"authorized");
+     } else if (authStatus == CNAuthorizationStatusLimited) {
+         resolve(@"limited");
      } else {
          resolve(@"undefined");
      }
@@ -1435,7 +1440,7 @@ RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromise
              }
          }];
      }
-     else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
+     else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited))
      {
          resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
      }
@@ -1485,7 +1490,7 @@ RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromise
                 }
             }];
         }
-        else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
+        else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited))
         {
             resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
         }

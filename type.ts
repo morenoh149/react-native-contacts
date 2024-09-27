@@ -60,3 +60,5 @@ export interface Contact {
   urlAddresses: UrlAddress[];
   note: string;
 }
+
+export type PermissionType = 'authorized' | 'limited' | 'denied' | 'undefined'

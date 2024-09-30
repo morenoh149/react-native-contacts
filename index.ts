@@ -1,6 +1,6 @@
 import { NativeModules } from "react-native";
 import NativeContacts from "./src/NativeContacts";
-import { Contact } from "./type";
+import { Contact, PermissionType } from "./type";
 
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
 const Contacts = isTurboModuleEnabled ? NativeContacts : NativeModules.Contacts;
@@ -73,15 +73,11 @@ async function getContactsByEmailAddress(
   return Contacts.getContactsByEmailAddress(emailAddress);
 }
 
-async function checkPermission(): Promise<
-  "authorized" | "denied" | "undefined"
-> {
+async function checkPermission(): Promise<PermissionType> {
   return Contacts.checkPermission();
 }
 
-async function requestPermission(): Promise<
-  "authorized" | "denied" | "undefined"
-> {
+async function requestPermission(): Promise<PermissionType> {
   return Contacts.requestPermission();
 }
 

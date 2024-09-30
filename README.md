@@ -362,6 +362,9 @@ Contacts.checkPermission().then(permission => {
   if (permission === 'authorized') {
     // yay!
   }
+  if (permission === 'limited') {
+    // ...
+  }
   if (permission === 'denied') {
     // x.x
   }

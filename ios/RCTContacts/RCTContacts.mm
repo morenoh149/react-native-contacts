@@ -60,14 +60,25 @@ RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve
     rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-    if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
-        resolve(@"denied");
-    } else if (authStatus == CNAuthorizationStatusAuthorized){
-        resolve(@"authorized");
-    } else if (authStatus == CNAuthorizationStatusLimited) {
-        resolve(@"limited");
+
+    if (@available(iOS 18, *)) {
+        if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
+            resolve(@"denied");
+        } else if (authStatus == CNAuthorizationStatusAuthorized){
+            resolve(@"authorized");
+        } else if (authStatus == CNAuthorizationStatusLimited) {
+            resolve(@"limited");
+        } else {
+            resolve(@"undefined");
+        }
     } else {
-        resolve(@"undefined");
+        if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
+            resolve(@"denied");
+        } else if (authStatus == CNAuthorizationStatusAuthorized){
+            resolve(@"authorized");
+        } else {
+            resolve(@"undefined");
+        }
     }
 }
 
@@ -568,7 +579,7 @@ RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID resolver:(RCTPromis
             }
         }];
     }
-    else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited)
+    else if([CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited)
     {
         resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
     }
@@ -606,7 +617,7 @@ RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID resolver:(RCTPromi
             }
         }];
     }
-    else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited))
+    else if([CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited)
     {
         resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
     }
@@ -1284,14 +1295,24 @@ RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromise
 
  - (void)checkPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
      CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-     if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
-         resolve(@"denied");
-     } else if (authStatus == CNAuthorizationStatusAuthorized){
-         resolve(@"authorized");
-     } else if (authStatus == CNAuthorizationStatusLimited) {
-         resolve(@"limited");
+     if (@available(iOS 18, *)) {
+         if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
+             resolve(@"denied");
+         } else if (authStatus == CNAuthorizationStatusAuthorized){
+             resolve(@"authorized");
+         } else if (authStatus == CNAuthorizationStatusLimited) {
+             resolve(@"limited");
+         } else {
+             resolve(@"undefined");
+         }
      } else {
-         resolve(@"undefined");
+         if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
+             resolve(@"denied");
+         } else if (authStatus == CNAuthorizationStatusAuthorized){
+             resolve(@"authorized");
+         } else {
+             resolve(@"undefined");
+         }
      }
  }
 
@@ -1440,7 +1461,7 @@ RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromise
              }
          }];
      }
-     else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited))
+     else if([CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited)
      {
          resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
      }
@@ -1490,7 +1511,7 @@ RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromise
                 }
             }];
         }
-        else if( [CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited))
+        else if([CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized || [CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited)
         {
             resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
         }

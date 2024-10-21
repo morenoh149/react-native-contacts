@@ -353,7 +353,7 @@ The thumbnailPath is the direct URI for the temp location of the contact's cropp
 Usage as follows:
 ```js
 Contacts.checkPermission().then(permission => {
-  // Contacts.PERMISSION_AUTHORIZED || Contacts.PERMISSION_UNDEFINED || Contacts.PERMISSION_DENIED
+  // Contacts.PERMISSION_AUTHORIZED || Contacts.PERMISSION_UNDEFINED || Contacts.PERMISSION_LIMITED || Contacts.PERMISSION_DENIED
   if (permission === 'undefined') {
     Contacts.requestPermission().then(permission => {
       // ...

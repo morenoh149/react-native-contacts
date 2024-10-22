@@ -14,7 +14,6 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 
@@ -62,7 +61,6 @@ public class ContactsManagerImpl {
     public ContactsManagerImpl(ReactApplicationContext reactContext, boolean useSerialExecutor) {
         this.reactApplicationContext = reactContext;
         this.executor = initializeExecutor(useSerialExecutor);
-        //reactContext.addActivityEventListener(this);
     }
 
     private Executor initializeExecutor(boolean useSerialExecutor){
@@ -109,41 +107,27 @@ public class ContactsManagerImpl {
      * otherwise.
      */
     private void getAllContacts(final Promise promise) {
-        AsyncTask<Void, Void, Void> myAsyncTask = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(final Void... params) {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
-
-                ContactsProvider contactsProvider = new ContactsProvider(cr);
-                WritableArray contacts = contactsProvider.getContacts();
-                promise.resolve(contacts);
-                return null;
-            }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        getExecutor().execute(() -> {
+            Context context = getReactApplicationContext();
+            ContentResolver cr = context.getContentResolver();
+            ContactsProvider contactsProvider = new ContactsProvider(cr);
+            WritableArray contacts = contactsProvider.getContacts();
+            promise.resolve(contacts);
+        });
     }
 
     public void getCount(final Promise promise) {
-        AsyncTask<Void, Void, Void> myAsyncTask = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(final Void... params) {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
-
-                ContactsProvider contactsProvider = new ContactsProvider(cr);
-                try {
-                    Integer contacts = contactsProvider.getContactsCount();
-                    promise.resolve(contacts);
-                } catch (Exception e) {
-                    promise.reject(e);
-                }
-
-                return null;
-
+        getExecutor().execute(() -> {
+            Context context = getReactApplicationContext();
+            ContentResolver cr = context.getContentResolver();
+            ContactsProvider contactsProvider = new ContactsProvider(cr);
+            try {
+                Integer contacts = contactsProvider.getContactsCount();
+                promise.resolve(contacts);
+            } catch (Exception e) {
+                promise.reject(e);
             }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        });
     }
 
     /**
@@ -154,19 +138,13 @@ public class ContactsManagerImpl {
      * @param searchString String to match
      */
     public void getContactsMatchingString(final String searchString, final Promise promise) {
-        AsyncTask<Void, Void, Void> myAsyncTask = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(final Void... params) {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
-                ContactsProvider contactsProvider = new ContactsProvider(cr);
-                WritableArray contacts = contactsProvider.getContactsMatchingString(searchString);
-
-                promise.resolve(contacts);
-                return null;
-            }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        getExecutor().execute(() -> {
+            Context context = getReactApplicationContext();
+            ContentResolver cr = context.getContentResolver();
+            ContactsProvider contactsProvider = new ContactsProvider(cr);
+            WritableArray contacts = contactsProvider.getContactsMatchingString(searchString);
+            promise.resolve(contacts);
+        });
     }
 
     /**
@@ -177,19 +155,16 @@ public class ContactsManagerImpl {
      * @param phoneNumber phone number to match
      */
     public void getContactsByPhoneNumber(final String phoneNumber, final Promise promise) {
-        AsyncTask<Void, Void, Void> myAsyncTask = new AsyncTask<Void, Void, Void>() {
+        getExecutor().execute(new Runnable() {
             @Override
-            protected Void doInBackground(final Void... params) {
+            public void run() {
                 Context context = getReactApplicationContext();
                 ContentResolver cr = context.getContentResolver();
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContactsByPhoneNumber(phoneNumber);
-
                 promise.resolve(contacts);
-                return null;
             }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        });
     }
 
     /**
@@ -200,19 +175,13 @@ public class ContactsManagerImpl {
      * @param emailAddress email address to match
      */
     public void getContactsByEmailAddress(final String emailAddress, final Promise promise) {
-        AsyncTask<Void, Void, Void> myAsyncTask = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(final Void... params) {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
-                ContactsProvider contactsProvider = new ContactsProvider(cr);
-                WritableArray contacts = contactsProvider.getContactsByEmailAddress(emailAddress);
-
-                promise.resolve(contacts);
-                return null;
-            }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        getExecutor().execute(() -> {
+            Context context = getReactApplicationContext();
+            ContentResolver cr = context.getContentResolver();
+            ContactsProvider contactsProvider = new ContactsProvider(cr);
+            WritableArray contacts = contactsProvider.getContactsByEmailAddress(emailAddress);
+            promise.resolve(contacts);
+        });
     }
 
     /**
@@ -222,19 +191,13 @@ public class ContactsManagerImpl {
      * @param contactId contact identifier, <code>recordID</code>
      */
     public void getPhotoForId(final String contactId, final Promise promise) {
-        AsyncTask<Void, Void, Void> myAsyncTask = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(final Void... params) {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
-                ContactsProvider contactsProvider = new ContactsProvider(cr);
-                String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
-
-                promise.resolve(photoUri);
-                return null;
-            }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        getExecutor().execute(() -> {
+            Context context = getReactApplicationContext();
+            ContentResolver cr = context.getContentResolver();
+            ContactsProvider contactsProvider = new ContactsProvider(cr);
+            String photoUri = contactsProvider.getPhotoUriFromContactId(contactId);
+            promise.resolve(photoUri);
+        });
     }
 
     /**
@@ -244,54 +207,45 @@ public class ContactsManagerImpl {
      * @param contactId contact identifier, <code>recordID</code>
      */
     public void getContactById(final String contactId, final Promise promise) {
-        AsyncTask<Void, Void, Void> myAsyncTask = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(final Void... params) {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
-                ContactsProvider contactsProvider = new ContactsProvider(cr);
-                WritableMap contact = contactsProvider.getContactById(contactId);
-
-                promise.resolve(contact);
-                return null;
-            }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        getExecutor().execute(() -> {
+            Context context = getReactApplicationContext();
+            ContentResolver cr = context.getContentResolver();
+            ContactsProvider contactsProvider = new ContactsProvider(cr);
+            WritableMap contact = contactsProvider.getContactById(contactId);
+            promise.resolve(contact);
+        });
     }
 
 
     public void writePhotoToPath(final String contactId, final String file, final Promise promise) {
-        AsyncTask<Void, Void, Void> myAsyncTask = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(final Void... params) {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
+        getExecutor().execute(() -> {
+            Context context = getReactApplicationContext();
+            ContentResolver cr = context.getContentResolver();
 
-                Uri uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, Long.parseLong(contactId));
-                InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(cr, uri);
-                OutputStream outputStream = null;
+            Uri uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, Long.parseLong(contactId));
+            InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(cr, uri);
+            OutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(file);
+                BitmapFactory.decodeStream(inputStream).compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                promise.resolve(true);
+            } catch (FileNotFoundException e) {
+                promise.reject(e.toString());
+            } finally {
                 try {
-                    outputStream = new FileOutputStream(file);
-                    BitmapFactory.decodeStream(inputStream).compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                    promise.resolve(true);
-                } catch (FileNotFoundException e) {
-                    promise.reject(e.toString());
-                } finally {
-                    try {
+                    if (outputStream != null) {
                         outputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
-                }
-                try {
-                    inputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                return null;
             }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private Bitmap getThumbnailBitmap(String thumbnailPath) {

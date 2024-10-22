@@ -46,7 +46,7 @@ import java.io.InputStream;
 import java.util.Hashtable;
 
 public class ContactsManager extends ReactContextBaseJavaModule implements ActivityEventListener {
-    
+
     private final ContactsManagerImpl contactsManagerImpl;
 
     public ContactsManager(ReactApplicationContext reactContext) {

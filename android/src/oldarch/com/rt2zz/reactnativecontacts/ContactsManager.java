@@ -46,18 +46,7 @@ import java.io.InputStream;
 import java.util.Hashtable;
 
 public class ContactsManager extends ReactContextBaseJavaModule implements ActivityEventListener {
-
-    private static final String PERMISSION_DENIED = "denied";
-    private static final String PERMISSION_AUTHORIZED = "authorized";
-    private static final String PERMISSION_READ_CONTACTS = Manifest.permission.READ_CONTACTS;
-    private static final int PERMISSION_REQUEST_CODE = 888;
-
-    private static final int REQUEST_OPEN_CONTACT_FORM = 52941;
-    private static final int REQUEST_OPEN_EXISTING_CONTACT = 52942;
-
-    private static Promise updateContactPromise;
-    private static Promise requestPromise;
-
+    
     private final ContactsManagerImpl contactsManagerImpl;
 
     public ContactsManager(ReactApplicationContext reactContext) {
@@ -234,6 +223,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         // this method is only needed for iOS
     }
 
+    /*
     protected static void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
             @NonNull int[] grantResults) {
         if (requestPromise == null) {
@@ -259,115 +249,8 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         requestPromise = null;
     }
 
-    /*
-     * Get string value from key
      */
-    private String getValueFromKey(ReadableMap item, String key) {
-        return item.hasKey(key) ? item.getString(key) : "";
-    }
 
-    /*
-     * Check if READ_CONTACTS permission is granted
-     */
-    private String isPermissionGranted() {
-        // return -1 for denied and 1
-        int res = ActivityCompat.checkSelfPermission(getReactApplicationContext(), PERMISSION_READ_CONTACTS);
-        return (res == PackageManager.PERMISSION_GRANTED) ? PERMISSION_AUTHORIZED : PERMISSION_DENIED;
-    }
-
-    /*
-     * TODO support all phone types
-     * http://developer.android.com/reference/android/provider/ContactsContract.
-     * CommonDataKinds.Phone.html
-     */
-    private int mapStringToPhoneType(String label) {
-        int phoneType;
-        switch (label) {
-            case "home":
-                phoneType = CommonDataKinds.Phone.TYPE_HOME;
-                break;
-            case "work":
-                phoneType = CommonDataKinds.Phone.TYPE_WORK;
-                break;
-            case "mobile":
-                phoneType = CommonDataKinds.Phone.TYPE_MOBILE;
-                break;
-            case "main":
-                phoneType = CommonDataKinds.Phone.TYPE_MAIN;
-                break;
-            case "work fax":
-                phoneType = CommonDataKinds.Phone.TYPE_FAX_WORK;
-                break;
-            case "home fax":
-                phoneType = CommonDataKinds.Phone.TYPE_FAX_HOME;
-                break;
-            case "pager":
-                phoneType = CommonDataKinds.Phone.TYPE_PAGER;
-                break;
-            case "work_pager":
-                phoneType = CommonDataKinds.Phone.TYPE_WORK_PAGER;
-                break;
-            case "work_mobile":
-                phoneType = CommonDataKinds.Phone.TYPE_WORK_MOBILE;
-                break;
-            case "other":
-                phoneType = CommonDataKinds.Phone.TYPE_OTHER;
-                break;
-            case "cell":
-                phoneType = CommonDataKinds.Phone.TYPE_MOBILE;
-                break;
-            default:
-                phoneType = CommonDataKinds.Phone.TYPE_CUSTOM;
-                break;
-        }
-        return phoneType;
-    }
-
-    /*
-     * TODO support TYPE_CUSTOM
-     * http://developer.android.com/reference/android/provider/ContactsContract.
-     * CommonDataKinds.Email.html
-     */
-    private int mapStringToEmailType(String label) {
-        int emailType;
-        switch (label) {
-            case "home":
-                emailType = CommonDataKinds.Email.TYPE_HOME;
-                break;
-            case "work":
-                emailType = CommonDataKinds.Email.TYPE_WORK;
-                break;
-            case "mobile":
-                emailType = CommonDataKinds.Email.TYPE_MOBILE;
-                break;
-            case "other":
-                emailType = CommonDataKinds.Email.TYPE_OTHER;
-                break;
-            case "personal":
-                emailType = CommonDataKinds.Email.TYPE_HOME;
-                break;
-            default:
-                emailType = CommonDataKinds.Email.TYPE_CUSTOM;
-                break;
-        }
-        return emailType;
-    }
-
-    private int mapStringToPostalAddressType(String label) {
-        int postalAddressType;
-        switch (label) {
-            case "home":
-                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_HOME;
-                break;
-            case "work":
-                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_WORK;
-                break;
-            default:
-                postalAddressType = CommonDataKinds.StructuredPostal.TYPE_CUSTOM;
-                break;
-        }
-        return postalAddressType;
-    }
 
     @Override
     public String getName() {
@@ -379,45 +262,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      */
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
-        if (requestCode != REQUEST_OPEN_CONTACT_FORM && requestCode != REQUEST_OPEN_EXISTING_CONTACT) {
-            return;
-        }
-
-        if (updateContactPromise == null) {
-            return;
-        }
-
-        if (resultCode != Activity.RESULT_OK) {
-            updateContactPromise.resolve(null); // user probably pressed cancel
-            updateContactPromise = null;
-            return;
-        }
-
-        if (data == null) {
-            updateContactPromise.reject("Error received activity result with no data!");
-            updateContactPromise = null;
-            return;
-        }
-
-        try {
-            Uri contactUri = data.getData();
-
-            if (contactUri == null) {
-                updateContactPromise.reject("Error wrong data. No content uri found!"); // something was wrong
-                updateContactPromise = null;
-                return;
-            }
-
-            Context ctx = getReactApplicationContext();
-            ContentResolver cr = ctx.getContentResolver();
-            ContactsProvider contactsProvider = new ContactsProvider(cr);
-            WritableMap newlyModifiedContact = contactsProvider.getContactById(contactUri.getLastPathSegment());
-
-            updateContactPromise.resolve(newlyModifiedContact); // success
-        } catch (Exception e) {
-            updateContactPromise.reject(e.getMessage());
-        }
-        updateContactPromise = null;
+       contactsManagerImpl.onActivityResult(activity, requestCode, resultCode, data);
     }
 
     /*
@@ -425,6 +270,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      */
     @Override
     public void onNewIntent(Intent intent) {
+        contactsManagerImpl.onNewIntent(intent);
     }
 
 }

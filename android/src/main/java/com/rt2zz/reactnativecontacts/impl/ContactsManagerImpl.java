@@ -67,9 +67,13 @@ public class ContactsManagerImpl {
 
     private Executor initializeExecutor(boolean useSerialExecutor){
         if(useSerialExecutor){
-            return Executors.newSingleThreadExecutor();
+            return Executors.newSingleThreadExecutor(); //AsyncTask.SERIAL_EXECUTOR
         }
         return Executors.newCachedThreadPool();
+    }
+
+    protected Executor getExecutor() {
+        return executor;
     }
 
     @NonNull

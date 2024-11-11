@@ -18,7 +18,7 @@ export function requestPermission(): Promise<'authorized' | 'denied' | 'undefine
 export function writePhotoToPath(contactId: string, file: string): Promise<boolean>;
 export function iosEnableNotesUsage(enabled: boolean): void;
 
-export function getAllGroups(): Promise<Group[]>;
+export function getGroups(): Promise<Group[]>;
 
 export interface Group {
   identifier: string;

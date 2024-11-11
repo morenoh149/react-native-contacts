@@ -1258,7 +1258,7 @@ RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromise
     }
 }
 
-RCT_EXPORT_METHOD(getAllGroups:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(getGroups:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
     if (!contactStore) {
         contactStore = [[CNContactStore alloc] init];

@@ -88,8 +88,8 @@ async function writePhotoToPath(
   return Contacts.writePhotoToPath(contactId, file);
 }
 
-async function getAllGroups(): Promise<Group[]> {
-  return Contacts.getAllGroups();
+async function getGroups(): Promise<Group[]> {
+  return Contacts.getGroups();
 }
 export default {
   getAll,
@@ -110,5 +110,5 @@ export default {
   checkPermission,
   requestPermission,
   writePhotoToPath,
-  getAllGroups
+  getGroups
 };

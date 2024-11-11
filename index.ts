@@ -1,6 +1,6 @@
 import { NativeModules } from "react-native";
 import NativeContacts from "./src/NativeContacts";
-import { Contact, PermissionType } from "./type";
+import { Contact, Group, PermissionType } from "./type";
 
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
 const Contacts = isTurboModuleEnabled ? NativeContacts : NativeModules.Contacts;
@@ -87,6 +87,10 @@ async function writePhotoToPath(
 ): Promise<boolean> {
   return Contacts.writePhotoToPath(contactId, file);
 }
+
+async function getAllGroups(): Promise<Group[]> {
+  return Contacts.getAllGroups();
+}
 export default {
   getAll,
   getAllWithoutPhotos,
@@ -106,4 +110,5 @@ export default {
   checkPermission,
   requestPermission,
   writePhotoToPath,
+  getAllGroups
 };

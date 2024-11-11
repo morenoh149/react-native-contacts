@@ -1,6 +1,6 @@
 import type { TurboModule } from "react-native/Libraries/TurboModule/RCTExport";
 import { TurboModuleRegistry } from "react-native";
-import { Contact, PermissionType } from "../type";
+import { Contact, Group, PermissionType } from "../type";
 
 export interface Spec extends TurboModule {
   getAll: () => Promise<any>;
@@ -22,6 +22,7 @@ export interface Spec extends TurboModule {
   requestPermission: () => Promise<PermissionType>;
   writePhotoToPath: (contactId: string, file: string) => Promise<boolean>;
   iosEnableNotesUsage: (enabled: boolean) => void;
+  getAllGroups(): Promise<Group[]>;
 }
 
 export default TurboModuleRegistry.get<Spec>("RCTContacts");

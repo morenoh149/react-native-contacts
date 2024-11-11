@@ -1258,6 +1258,33 @@ RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromise
     }
 }
 
+RCT_EXPORT_METHOD(getAllGroups:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+{
+    if (!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
+    NSError *error = nil;
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:nil error:&error];
+
+    if (error) {
+        reject(@"get_groups_error", @"Failed to fetch groups", error);
+        return;
+    }
+
+    NSMutableArray *groupArray = [NSMutableArray array];
+    for (CNGroup *group in groups) {
+        NSDictionary *groupDict = @{
+            @"identifier": group.identifier ?: @"",
+            @"name": group.name ?: @""
+        };
+        [groupArray addObject:groupDict];
+    }
+
+    resolve(groupArray);
+}
+
+
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];

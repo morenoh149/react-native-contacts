@@ -23,6 +23,7 @@ export interface Spec extends TurboModule {
   writePhotoToPath: (contactId: string, file: string) => Promise<boolean>;
   iosEnableNotesUsage: (enabled: boolean) => void;
   getGroups(): Promise<Group[]>;
+  getGroup: (identifier: string) => Promise<Group | null>;
 }
 
 export default TurboModuleRegistry.get<Spec>("RCTContacts");

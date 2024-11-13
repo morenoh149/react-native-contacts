@@ -1283,7 +1283,36 @@ RCT_EXPORT_METHOD(getGroups:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRe
 
     resolve(groupArray);
 }
-
+RCT_EXPORT_METHOD(getGroup:(NSString *)identifier resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    CNContactStore *contactStore = [self contactsStore:reject];
+    if (!contactStore) {
+        // contactsStore method handles rejection
+        return;
+    }
+    
+    NSError *error = nil;
+    NSPredicate *predicate = [CNGroup predicateForGroupsWithIdentifiers:@[identifier]];
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:predicate error:&error];
+    
+    if (error) {
+        reject(@"get_group_error", @"Failed to fetch group", error);
+        return;
+    }
+    
+    if (groups.count == 0) {
+        reject(@"get_group_not_found", @"No group found with the given identifier", nil);
+        return;
+    }
+    
+    CNGroup *group = groups.firstObject;
+    NSDictionary *groupDict = @{
+        @"identifier": group.identifier ?: @"",
+        @"name": group.name ?: @""
+    };
+    
+    resolve(groupDict);
+}
 
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {

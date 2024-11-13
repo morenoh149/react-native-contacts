@@ -19,6 +19,7 @@ export function writePhotoToPath(contactId: string, file: string): Promise<boole
 export function iosEnableNotesUsage(enabled: boolean): void;
 
 export function getGroups(): Promise<Group[]>;
+export function getGroup(identifier: string): Promise<Group | null>;
 
 export interface Group {
   identifier: string;

@@ -24,6 +24,7 @@ export interface Spec extends TurboModule {
   iosEnableNotesUsage: (enabled: boolean) => void;
   getGroups(): Promise<Group[]>;
   getGroup: (identifier: string) => Promise<Group | null>;
+  deleteGroup(identifier: string): Promise<boolean>;
 }
 
 export default TurboModuleRegistry.get<Spec>("RCTContacts");

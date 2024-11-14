@@ -1314,6 +1314,40 @@ RCT_EXPORT_METHOD(getGroup:(NSString *)identifier resolver:(RCTPromiseResolveBlo
     resolve(groupDict);
 }
 
+RCT_EXPORT_METHOD(deleteGroup:(NSString *)identifier
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
+    NSError *error = nil;
+    NSPredicate *predicate = [CNGroup predicateForGroupsWithIdentifiers:@[identifier]];
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:predicate error:&error];
+
+    if (error) {
+        reject(@"delete_group_error", @"Failed to fetch group", error);
+        return;
+    }
+
+    if (groups.count == 0) {
+        reject(@"delete_group_not_found", @"No group found with the given identifier", nil);
+        return;
+    }
+
+    CNGroup *groupToDelete = groups.firstObject;
+    CNMutableGroup *mutableGroup = [groupToDelete mutableCopy];
+    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+    [saveRequest deleteGroup:mutableGroup];
+
+    BOOL success = [contactStore executeSaveRequest:saveRequest error:&error];
+
+    if (success) {
+        resolve(@(YES));
+    } else {
+        reject(@"delete_group_failed", @"Failed to delete group", error);
+    }
+}
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];

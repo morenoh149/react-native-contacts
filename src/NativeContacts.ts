@@ -25,6 +25,7 @@ export interface Spec extends TurboModule {
   getGroups(): Promise<Group[]>;
   getGroup: (identifier: string) => Promise<Group | null>;
   deleteGroup(identifier: string): Promise<boolean>;
+  updateGroup(identifier: string,groupData: Partial<Group>): Promise<Group>;
 }
 
 export default TurboModuleRegistry.get<Spec>("RCTContacts");

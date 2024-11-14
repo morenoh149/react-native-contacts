@@ -21,6 +21,8 @@ export function iosEnableNotesUsage(enabled: boolean): void;
 export function getGroups(): Promise<Group[]>;
 export function getGroup(identifier: string): Promise<Group | null>;
 export function deleteGroup(identifier: string): Promise<boolean>;
+export function updateGroup(identifier: string,groupData: Partial<Group>): Promise<Group>;
+  
 export interface Group {
   identifier: string;
   name: string;

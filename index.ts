@@ -97,6 +97,9 @@ async function getGroup(identifier: string): Promise<Group | null> {
 async function deleteGroup(identifier: string): Promise<boolean> {
   return Contacts.deleteGroup(identifier);
 }
+async function updateGroup(identifier: string, groupData: Partial<Group>): Promise<Group> {
+  return Contacts.updateGroup(identifier, groupData);
+}
 export default {
   getAll,
   getAllWithoutPhotos,
@@ -118,5 +121,6 @@ export default {
   writePhotoToPath,
   getGroups,
   getGroup,
-  deleteGroup
+  deleteGroup,
+  updateGroup
 };

@@ -1348,6 +1348,55 @@ RCT_EXPORT_METHOD(deleteGroup:(NSString *)identifier
         reject(@"delete_group_failed", @"Failed to delete group", error);
     }
 }
+
+RCT_EXPORT_METHOD(updateGroup:(NSString *)identifier
+                  groupData:(NSDictionary *)groupData
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    if (!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
+    NSError *error = nil;
+    NSPredicate *predicate = [CNGroup predicateForGroupsWithIdentifiers:@[identifier]];
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:predicate error:&error];
+
+    if (error) {
+        reject(@"update_group_error", @"Failed to fetch group", error);
+        return;
+    }
+
+    if (groups.count == 0) {
+        reject(@"update_group_not_found", @"No group found with the given identifier", nil);
+        return;
+    }
+
+    CNGroup *groupToUpdate = groups.firstObject;
+    CNMutableGroup *mutableGroup = [groupToUpdate mutableCopy];
+
+    // Update group details based on groupData
+    NSString *newName = groupData[@"name"];
+    if (newName && [newName isKindOfClass:[NSString class]] && newName.length > 0) {
+        mutableGroup.name = newName;
+    }
+
+    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+    [saveRequest updateGroup:mutableGroup];
+
+    BOOL success = [contactStore executeSaveRequest:saveRequest error:&error];
+
+    if (success) {
+        NSDictionary *updatedGroupDict = @{
+            @"identifier": mutableGroup.identifier ?: @"",
+            @"name": mutableGroup.name ?: @""
+        };
+        resolve(updatedGroupDict);
+    } else {
+        reject(@"update_group_failed", @"Failed to update group", error);
+    }
+}
+
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];

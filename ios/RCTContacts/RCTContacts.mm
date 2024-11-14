@@ -1397,6 +1397,47 @@ RCT_EXPORT_METHOD(updateGroup:(NSString *)identifier
     }
 }
 
+RCT_EXPORT_METHOD(addGroup:(NSDictionary *)groupData
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    if (!groupData || ![groupData isKindOfClass:[NSDictionary class]]) {
+        reject(@"invalid_data", @"Group data must be a dictionary", nil);
+        return;
+    }
+
+    NSString *groupName = groupData[@"name"];
+    if (!groupName || ![groupName isKindOfClass:[NSString class]] || groupName.length == 0) {
+        reject(@"invalid_name", @"Group name is required and must be a non-empty string", nil);
+        return;
+    }
+
+    CNContactStore *store = [self contactsStore:reject];
+    if (!store) {
+        // contactsStore method handles rejection
+        return;
+    }
+
+    CNMutableGroup *mutableGroup = [[CNMutableGroup alloc] init];
+    mutableGroup.name = groupName;
+
+    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+    [saveRequest addGroup:mutableGroup toContainerWithIdentifier:nil]; // Add to default container
+
+    NSError *error = nil;
+    BOOL success = [store executeSaveRequest:saveRequest error:&error];
+    if (success) {
+        NSDictionary *groupDict = @{
+            @"identifier": mutableGroup.identifier ?: @"",
+            @"name": mutableGroup.name ?: @""
+        };
+        resolve(groupDict);
+    } else {
+        NSString *errorMessage = error.localizedDescription ?: @"Unknown error adding group";
+        reject(@"add_group_error", errorMessage, error);
+    }
+}
+
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];

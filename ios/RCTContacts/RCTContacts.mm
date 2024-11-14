@@ -1438,6 +1438,56 @@ RCT_EXPORT_METHOD(addGroup:(NSDictionary *)groupData
     }
 }
 
+RCT_EXPORT_METHOD(contactsInGroup:(NSString *)identifier
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    CNContactStore *store = [self contactsStore:reject];
+    if (!store) {
+        return;
+    }
+    
+    NSError *error = nil;
+    NSPredicate *predicate = [CNContact predicateForContactsInGroupWithIdentifier:identifier];
+    NSArray *keysToFetch = @[
+        CNContactIdentifierKey,
+        CNContactGivenNameKey,
+        CNContactFamilyNameKey,
+        CNContactMiddleNameKey,
+        CNContactEmailAddressesKey,
+        CNContactPhoneNumbersKey,
+        CNContactPostalAddressesKey,
+        CNContactOrganizationNameKey,
+        CNContactJobTitleKey,
+        CNContactImageDataAvailableKey,
+        CNContactThumbnailImageDataKey,
+        CNContactUrlAddressesKey,
+        CNContactBirthdayKey,
+        CNContactInstantMessageAddressesKey
+    ];
+    
+    if (notesUsageEnabled) {
+        keysToFetch = [keysToFetch arrayByAddingObject:CNContactNoteKey];
+    }
+    
+    CNContactFetchRequest *fetchRequest = [[CNContactFetchRequest alloc] initWithKeysToFetch:keysToFetch];
+    fetchRequest.predicate = predicate;
+    
+    NSMutableArray *contacts = [NSMutableArray array];
+    
+    BOOL success = [store enumerateContactsWithFetchRequest:fetchRequest error:&error usingBlock:^(CNContact * _Nonnull contact, BOOL * _Nonnull stop) {
+        NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:true];
+        [contacts addObject:contactDict];
+    }];
+    
+    if (!success) {
+        reject(@"contacts_in_group_error", @"Failed to fetch contacts in group", error);
+        return;
+    }
+    
+    resolve(contacts);
+}
+
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];

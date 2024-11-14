@@ -103,7 +103,9 @@ async function updateGroup(identifier: string, groupData: Partial<Group>): Promi
 async function addGroup(group: Partial<Group>): Promise<Group>{
   return Contacts.addGroup(group);
 }
-
+async function contactsInGroup(identifier: string): Promise<Contact[]> {
+  return Contacts.contactsInGroup(identifier);
+}
 export default {
   getAll,
   getAllWithoutPhotos,
@@ -127,5 +129,6 @@ export default {
   getGroup,
   deleteGroup,
   updateGroup,
-  addGroup
+  addGroup,
+  contactsInGroup
 };

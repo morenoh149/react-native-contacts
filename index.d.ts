@@ -23,6 +23,7 @@ export function getGroup(identifier: string): Promise<Group | null>;
 export function deleteGroup(identifier: string): Promise<boolean>;
 export function updateGroup(identifier: string,groupData: Partial<Group>): Promise<Group>;
 export function addGroup(group: Partial<Group>): Promise<Group>;
+export function contactsInGroup(identifier: string): Promise<Contact[]>; 
 export interface Group {
   identifier: string;
   name: string;

@@ -27,6 +27,7 @@ export interface Spec extends TurboModule {
   deleteGroup(identifier: string): Promise<boolean>;
   updateGroup(identifier: string,groupData: Partial<Group>): Promise<Group>;
   addGroup(group: Partial<Group>): Promise<Group>;
+  contactsInGroup(identifier: string): Promise<Contact[]>;
 
 }
 

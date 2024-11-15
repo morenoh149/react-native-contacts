@@ -97,7 +97,7 @@ async function getGroup(identifier: string): Promise<Group | null> {
 async function deleteGroup(identifier: string): Promise<boolean> {
   return Contacts.deleteGroup(identifier);
 }
-async function updateGroup(identifier: string, groupData: Partial<Group>): Promise<Group> {
+async function updateGroup(identifier: string, groupData: Pick<Group, 'name'>): Promise<Group> {
   return Contacts.updateGroup(identifier, groupData);
 }
 async function addGroup(group: Partial<Group>): Promise<Group>{

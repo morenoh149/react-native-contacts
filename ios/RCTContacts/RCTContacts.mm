@@ -1557,6 +1557,69 @@ RCT_EXPORT_METHOD(addContactsToGroup:(NSString *)groupId
     }
 }
 
+RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
+                      contactIds:(NSArray<NSString *> *)contactIds
+                      resolver:(RCTPromiseResolveBlock)resolve
+                      rejecter:(RCTPromiseRejectBlock)reject) {
+    // Ensure contactStore is initialized
+    if (!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
+    // Check authorization status
+    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
+    if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+        reject(@"permission_denied", @"Contacts permission denied", nil);
+        return;
+    }
+
+    // Fetch the group
+    NSError *error = nil;
+    NSPredicate *predicate = [CNGroup predicateForGroupsWithIdentifiers:@[groupId]];
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:predicate error:&error];
+
+    if (error) {
+        reject(@"group_fetch_error", @"Failed to fetch group", error);
+        return;
+    }
+
+    if (groups.count == 0) {
+        reject(@"group_not_found", @"No group found with the given identifier", nil);
+        return;
+    }
+
+    CNGroup *group = groups.firstObject;
+    CNMutableGroup *mutableGroup = [group mutableCopy];
+    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+
+    // Iterate over contactIds and remove each contact from the group
+    for (NSString *contactId in contactIds) {
+        NSError *contactError = nil;
+        CNContact *contact = [contactStore unifiedContactWithIdentifier:contactId
+                                                          keysToFetch:@[CNContactIdentifierKey]
+                                                                error:&contactError];
+        if (contactError) {
+            reject(@"contact_fetch_error", [NSString stringWithFormat:@"Failed to fetch contact with ID %@", contactId], contactError);
+            return;
+        }
+
+        if (!contact) {
+            reject(@"contact_not_found", [NSString stringWithFormat:@"No contact found with ID %@", contactId], nil);
+            return;
+        }
+
+        [saveRequest removeMember:contact fromGroup:mutableGroup];
+    }
+
+    // Execute the save request
+    BOOL success = [contactStore executeSaveRequest:saveRequest error:&error];
+
+    if (success) {
+        resolve(@(YES));
+    } else {
+        reject(@"remove_contacts_error", @"Failed to remove contacts from group", error);
+    }
+}
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];

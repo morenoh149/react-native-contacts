@@ -1488,6 +1488,75 @@ RCT_EXPORT_METHOD(contactsInGroup:(NSString *)identifier
     resolve(contacts);
 }
 
+RCT_EXPORT_METHOD(addContactsToGroup:(NSString *)groupId
+                  contactIds:(NSArray<NSString *> *)contactIds
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    // Ensure contactStore is initialized
+    if (!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+    
+    // Check authorization
+    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
+    if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+        reject(@"permission_denied", @"Contacts permission denied", nil);
+        return;
+    }
+    
+    NSError *error = nil;
+    
+    // Fetch the group
+    NSPredicate *predicate = [CNGroup predicateForGroupsWithIdentifiers:@[groupId]];
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:predicate error:&error];
+    
+    if (error) {
+        reject(@"group_fetch_error", @"Failed to fetch group", error);
+        return;
+    }
+    
+    if (groups.count == 0) {
+        reject(@"group_not_found", @"No group found with the given identifier", nil);
+        return;
+    }
+    
+    CNGroup *group = groups.firstObject;
+    
+    // Initialize CNSaveRequest
+    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+    
+    // Iterate over contactIds and add each contact to the group
+    for (NSString *contactId in contactIds) {
+        // Fetch the contact
+        NSError *contactError = nil;
+        CNContact *contact = [contactStore unifiedContactWithIdentifier:contactId
+                                                          keysToFetch:@[CNContactIdentifierKey]
+                                                                error:&contactError];
+        if (contactError) {
+            reject(@"contact_fetch_error", [NSString stringWithFormat:@"Failed to fetch contact with ID %@", contactId], contactError);
+            return;
+        }
+        
+        if (!contact) {
+            reject(@"contact_not_found", [NSString stringWithFormat:@"No contact found with ID %@", contactId], nil);
+            return;
+        }
+        
+        // Add contact to group
+        [saveRequest addMember:contact toGroup:group];
+    }
+    
+    // Execute the save request
+    BOOL success = [contactStore executeSaveRequest:saveRequest error:&error];
+    
+    if (success) {
+        resolve(@(YES));
+    } else {
+        reject(@"add_contacts_error", @"Failed to add contacts to group", error);
+    }
+}
+
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];

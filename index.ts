@@ -106,6 +106,9 @@ async function addGroup(group: Partial<Group>): Promise<Group>{
 async function contactsInGroup(identifier: string): Promise<Contact[]> {
   return Contacts.contactsInGroup(identifier);
 }
+async function addContactsToGroup(groupIdentifier: string, contactIdetifiers: string[]): Promise<boolean> {
+  return Contacts.addContactsToGroup(groupIdentifier, contactIdetifiers);
+}
 export default {
   getAll,
   getAllWithoutPhotos,
@@ -130,5 +133,6 @@ export default {
   deleteGroup,
   updateGroup,
   addGroup,
-  contactsInGroup
+  contactsInGroup,
+  addContactsToGroup
 };

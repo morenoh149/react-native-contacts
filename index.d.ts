@@ -24,8 +24,8 @@ export function deleteGroup(identifier: string): Promise<boolean>;
 export function updateGroup(identifier: string,groupData: Partial<Group>): Promise<Group>;
 export function addGroup(group: Partial<Group>): Promise<Group>;
 export function contactsInGroup(identifier: string): Promise<Contact[]>; 
-export function addContactsToGroup(groupIdentifier: string, contactIdetifiers: string[]): Promise<boolean>;
-export function removeContactsFromGroup(groupIdentifier: string, contactIdetifiers: string[]): Promise<boolean>;
+export function addContactsToGroup(groupIdentifier: string, contactIdentifiers: string[]): Promise<boolean>;
+export function removeContactsFromGroup(groupIdentifier: string, contactIdentifiers: string[]): Promise<boolean>;
 export interface Group {
   identifier: string;
   name: string;

@@ -106,11 +106,11 @@ async function addGroup(group: Partial<Group>): Promise<Group>{
 async function contactsInGroup(identifier: string): Promise<Contact[]> {
   return Contacts.contactsInGroup(identifier);
 }
-async function addContactsToGroup(groupIdentifier: string, contactIdetifiers: string[]): Promise<boolean> {
-  return Contacts.addContactsToGroup(groupIdentifier, contactIdetifiers);
+async function addContactsToGroup(groupIdentifier: string, contactIdentifiers: string[]): Promise<boolean> {
+  return Contacts.addContactsToGroup(groupIdentifier, contactIdentifiers);
 }
-async function removeContactsFromGroup(groupIdentifier: string, contactIdetifiers: string[]): Promise<boolean> {
-  return Contacts.removeContactsFromGroup(groupIdentifier, contactIdetifiers);
+async function removeContactsFromGroup(groupIdentifier: string, contactIdentifiers: string[]): Promise<boolean> {
+  return Contacts.removeContactsFromGroup(groupIdentifier, contactIdentifiers);
 }
 export default {
   getAll,

@@ -1258,6 +1258,368 @@ RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromise
     }
 }
 
+RCT_EXPORT_METHOD(getGroups:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+{
+    if (!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
+    NSError *error = nil;
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:nil error:&error];
+
+    if (error) {
+        reject(@"get_groups_error", @"Failed to fetch groups", error);
+        return;
+    }
+
+    NSMutableArray *groupArray = [NSMutableArray array];
+    for (CNGroup *group in groups) {
+        NSDictionary *groupDict = @{
+            @"identifier": group.identifier ?: @"",
+            @"name": group.name ?: @""
+        };
+        [groupArray addObject:groupDict];
+    }
+
+    resolve(groupArray);
+}
+RCT_EXPORT_METHOD(getGroup:(NSString *)identifier resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    CNContactStore *contactStore = [self contactsStore:reject];
+    if (!contactStore) {
+        // contactsStore method handles rejection
+        return;
+    }
+    
+    NSError *error = nil;
+    NSPredicate *predicate = [CNGroup predicateForGroupsWithIdentifiers:@[identifier]];
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:predicate error:&error];
+    
+    if (error) {
+        reject(@"get_group_error", @"Failed to fetch group", error);
+        return;
+    }
+    
+    if (groups.count == 0) {
+        reject(@"get_group_not_found", @"No group found with the given identifier", nil);
+        return;
+    }
+    
+    CNGroup *group = groups.firstObject;
+    NSDictionary *groupDict = @{
+        @"identifier": group.identifier ?: @"",
+        @"name": group.name ?: @""
+    };
+    
+    resolve(groupDict);
+}
+
+RCT_EXPORT_METHOD(deleteGroup:(NSString *)identifier
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
+    NSError *error = nil;
+    NSPredicate *predicate = [CNGroup predicateForGroupsWithIdentifiers:@[identifier]];
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:predicate error:&error];
+
+    if (error) {
+        reject(@"delete_group_error", @"Failed to fetch group", error);
+        return;
+    }
+
+    if (groups.count == 0) {
+        reject(@"delete_group_not_found", @"No group found with the given identifier", nil);
+        return;
+    }
+
+    CNGroup *groupToDelete = groups.firstObject;
+    CNMutableGroup *mutableGroup = [groupToDelete mutableCopy];
+    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+    [saveRequest deleteGroup:mutableGroup];
+
+    BOOL success = [contactStore executeSaveRequest:saveRequest error:&error];
+
+    if (success) {
+        resolve(@(YES));
+    } else {
+        reject(@"delete_group_failed", @"Failed to delete group", error);
+    }
+}
+
+RCT_EXPORT_METHOD(updateGroup:(NSString *)identifier
+                  groupData:(NSDictionary *)groupData
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    if (!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
+    NSError *error = nil;
+    NSPredicate *predicate = [CNGroup predicateForGroupsWithIdentifiers:@[identifier]];
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:predicate error:&error];
+
+    if (error) {
+        reject(@"update_group_error", @"Failed to fetch group", error);
+        return;
+    }
+
+    if (groups.count == 0) {
+        reject(@"update_group_not_found", @"No group found with the given identifier", nil);
+        return;
+    }
+
+    CNGroup *groupToUpdate = groups.firstObject;
+    CNMutableGroup *mutableGroup = [groupToUpdate mutableCopy];
+
+    // Update group details based on groupData
+    NSString *newName = groupData[@"name"];
+    if (newName && [newName isKindOfClass:[NSString class]] && newName.length > 0) {
+        mutableGroup.name = newName;
+    }
+
+    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+    [saveRequest updateGroup:mutableGroup];
+
+    BOOL success = [contactStore executeSaveRequest:saveRequest error:&error];
+
+    if (success) {
+        NSDictionary *updatedGroupDict = @{
+            @"identifier": mutableGroup.identifier ?: @"",
+            @"name": mutableGroup.name ?: @""
+        };
+        resolve(updatedGroupDict);
+    } else {
+        reject(@"update_group_failed", @"Failed to update group", error);
+    }
+}
+
+RCT_EXPORT_METHOD(addGroup:(NSDictionary *)groupData
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    if (!groupData || ![groupData isKindOfClass:[NSDictionary class]]) {
+        reject(@"invalid_data", @"Group data must be a dictionary", nil);
+        return;
+    }
+
+    NSString *groupName = groupData[@"name"];
+    if (!groupName || ![groupName isKindOfClass:[NSString class]] || groupName.length == 0) {
+        reject(@"invalid_name", @"Group name is required and must be a non-empty string", nil);
+        return;
+    }
+
+    CNContactStore *store = [self contactsStore:reject];
+    if (!store) {
+        // contactsStore method handles rejection
+        return;
+    }
+
+    CNMutableGroup *mutableGroup = [[CNMutableGroup alloc] init];
+    mutableGroup.name = groupName;
+
+    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+    [saveRequest addGroup:mutableGroup toContainerWithIdentifier:nil]; // Add to default container
+
+    NSError *error = nil;
+    BOOL success = [store executeSaveRequest:saveRequest error:&error];
+    if (success) {
+        NSDictionary *groupDict = @{
+            @"identifier": mutableGroup.identifier ?: @"",
+            @"name": mutableGroup.name ?: @""
+        };
+        resolve(groupDict);
+    } else {
+        NSString *errorMessage = error.localizedDescription ?: @"Unknown error adding group";
+        reject(@"add_group_error", errorMessage, error);
+    }
+}
+
+RCT_EXPORT_METHOD(contactsInGroup:(NSString *)identifier
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    CNContactStore *store = [self contactsStore:reject];
+    if (!store) {
+        return;
+    }
+    
+    NSError *error = nil;
+    NSPredicate *predicate = [CNContact predicateForContactsInGroupWithIdentifier:identifier];
+    NSArray *keysToFetch = @[
+        CNContactIdentifierKey,
+        CNContactGivenNameKey,
+        CNContactFamilyNameKey,
+        CNContactMiddleNameKey,
+        CNContactEmailAddressesKey,
+        CNContactPhoneNumbersKey,
+        CNContactPostalAddressesKey,
+        CNContactOrganizationNameKey,
+        CNContactJobTitleKey,
+        CNContactImageDataAvailableKey,
+        CNContactThumbnailImageDataKey,
+        CNContactUrlAddressesKey,
+        CNContactBirthdayKey,
+        CNContactInstantMessageAddressesKey
+    ];
+    
+    if (notesUsageEnabled) {
+        keysToFetch = [keysToFetch arrayByAddingObject:CNContactNoteKey];
+    }
+    
+    CNContactFetchRequest *fetchRequest = [[CNContactFetchRequest alloc] initWithKeysToFetch:keysToFetch];
+    fetchRequest.predicate = predicate;
+    
+    NSMutableArray *contacts = [NSMutableArray array];
+    
+    BOOL success = [store enumerateContactsWithFetchRequest:fetchRequest error:&error usingBlock:^(CNContact * _Nonnull contact, BOOL * _Nonnull stop) {
+        NSDictionary *contactDict = [self contactToDictionary:contact withThumbnails:true];
+        [contacts addObject:contactDict];
+    }];
+    
+    if (!success) {
+        reject(@"contacts_in_group_error", @"Failed to fetch contacts in group", error);
+        return;
+    }
+    
+    resolve(contacts);
+}
+
+RCT_EXPORT_METHOD(addContactsToGroup:(NSString *)groupId
+                  contactIds:(NSArray<NSString *> *)contactIds
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    // Ensure contactStore is initialized
+    if (!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+    
+    // Check authorization
+    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
+    if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+        reject(@"permission_denied", @"Contacts permission denied", nil);
+        return;
+    }
+    
+    NSError *error = nil;
+    
+    // Fetch the group
+    NSPredicate *predicate = [CNGroup predicateForGroupsWithIdentifiers:@[groupId]];
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:predicate error:&error];
+    
+    if (error) {
+        reject(@"group_fetch_error", @"Failed to fetch group", error);
+        return;
+    }
+    
+    if (groups.count == 0) {
+        reject(@"group_not_found", @"No group found with the given identifier", nil);
+        return;
+    }
+    
+    CNGroup *group = groups.firstObject;
+    
+    // Initialize CNSaveRequest
+    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+    
+    // Iterate over contactIds and add each contact to the group
+    for (NSString *contactId in contactIds) {
+        // Fetch the contact
+        NSError *contactError = nil;
+        CNContact *contact = [contactStore unifiedContactWithIdentifier:contactId
+                                                          keysToFetch:@[CNContactIdentifierKey]
+                                                                error:&contactError];
+        if (contactError) {
+            reject(@"contact_fetch_error", [NSString stringWithFormat:@"Failed to fetch contact with ID %@", contactId], contactError);
+            return;
+        }
+        
+        if (!contact) {
+            reject(@"contact_not_found", [NSString stringWithFormat:@"No contact found with ID %@", contactId], nil);
+            return;
+        }
+        
+        // Add contact to group
+        [saveRequest addMember:contact toGroup:group];
+    }
+    
+    // Execute the save request
+    BOOL success = [contactStore executeSaveRequest:saveRequest error:&error];
+    
+    if (success) {
+        resolve(@(YES));
+    } else {
+        reject(@"add_contacts_error", @"Failed to add contacts to group", error);
+    }
+}
+
+RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
+                      contactIds:(NSArray<NSString *> *)contactIds
+                      resolver:(RCTPromiseResolveBlock)resolve
+                      rejecter:(RCTPromiseRejectBlock)reject) {
+    // Ensure contactStore is initialized
+    if (!contactStore) {
+        contactStore = [[CNContactStore alloc] init];
+    }
+
+    // Check authorization status
+    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
+    if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+        reject(@"permission_denied", @"Contacts permission denied", nil);
+        return;
+    }
+
+    // Fetch the group
+    NSError *error = nil;
+    NSPredicate *predicate = [CNGroup predicateForGroupsWithIdentifiers:@[groupId]];
+    NSArray<CNGroup *> *groups = [contactStore groupsMatchingPredicate:predicate error:&error];
+
+    if (error) {
+        reject(@"group_fetch_error", @"Failed to fetch group", error);
+        return;
+    }
+
+    if (groups.count == 0) {
+        reject(@"group_not_found", @"No group found with the given identifier", nil);
+        return;
+    }
+
+    CNGroup *group = groups.firstObject;
+    CNMutableGroup *mutableGroup = [group mutableCopy];
+    CNSaveRequest *saveRequest = [[CNSaveRequest alloc] init];
+
+    // Iterate over contactIds and remove each contact from the group
+    for (NSString *contactId in contactIds) {
+        NSError *contactError = nil;
+        CNContact *contact = [contactStore unifiedContactWithIdentifier:contactId
+                                                          keysToFetch:@[CNContactIdentifierKey]
+                                                                error:&contactError];
+        if (contactError) {
+            reject(@"contact_fetch_error", [NSString stringWithFormat:@"Failed to fetch contact with ID %@", contactId], contactError);
+            return;
+        }
+
+        if (!contact) {
+            reject(@"contact_not_found", [NSString stringWithFormat:@"No contact found with ID %@", contactId], nil);
+            return;
+        }
+
+        [saveRequest removeMember:contact fromGroup:mutableGroup];
+    }
+
+    // Execute the save request
+    BOOL success = [contactStore executeSaveRequest:saveRequest error:&error];
+
+    if (success) {
+        resolve(@(YES));
+    } else {
+        reject(@"remove_contacts_error", @"Failed to remove contacts from group", error);
+    }
+}
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];

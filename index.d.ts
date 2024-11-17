@@ -18,6 +18,18 @@ export function requestPermission(): Promise<'authorized' | 'denied' | 'undefine
 export function writePhotoToPath(contactId: string, file: string): Promise<boolean>;
 export function iosEnableNotesUsage(enabled: boolean): void;
 
+export function getGroups(): Promise<Group[]>;
+export function getGroup(identifier: string): Promise<Group | null>;
+export function deleteGroup(identifier: string): Promise<boolean>;
+export function updateGroup(identifier: string, groupData: Pick<Group, 'name'>): Promise<Group>;
+export function addGroup(group: Pick<Group, 'name'>): Promise<Group>;
+export function contactsInGroup(identifier: string): Promise<Contact[]>; 
+export function addContactsToGroup(groupIdentifier: string, contactIdentifiers: string[]): Promise<boolean>;
+export function removeContactsFromGroup(groupIdentifier: string, contactIdentifiers: string[]): Promise<boolean>;
+export interface Group {
+  identifier: string;
+  name: string;
+}
 export interface EmailAddress {
     label: string;
     email: string;

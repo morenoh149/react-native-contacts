@@ -194,6 +194,16 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
  * `requestPermission()`: Promise<string> - request permission to access Contacts _ios only_
  * `writePhotoToPath()` - writes the contact photo to a given path _android only_
 
+ ### ios group specific functions
+ * `getGroups()`: Promise - returns an array of all groups. Each group contains `{ identifier: string; name: string;}`
+ * `getGroup: (identifier: string)`: Promise - returns the group matching the provided group identifier.
+ * `deleteGroup(identifier: string)`: Promise - deletes a group by group identifier.
+ * `updateGroup(identifier: string, groupData: Pick<Group, 'name'>`: Promise - updates an existing group's details. You can only change the group name.
+ * `addGroup(group: Pick<Group, 'name'>)`: Promise - adds a new group. Group name should be provided.
+ * `contactsInGroup(identifier: string)`: Promise - retrieves all contacts within a specified group.
+ * `addContactsToGroup(groupIdentifier: string, contactIdentifiers: string[])`: Promise - adds contacts to a group. Only contacts with id that has `:ABperson` as suffix can be added.
+ * `removeContactsFromGroup(groupIdentifier: string, contactIdentifiers: string[])`: Promise - removes specified contacts from a group.
+
 ## Example Contact Record
 ```js
 {

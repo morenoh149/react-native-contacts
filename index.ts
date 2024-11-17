@@ -1,6 +1,6 @@
 import { NativeModules } from "react-native";
 import NativeContacts from "./src/NativeContacts";
-import { Contact, PermissionType } from "./type";
+import { Contact, Group, PermissionType } from "./type";
 
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
 const Contacts = isTurboModuleEnabled ? NativeContacts : NativeModules.Contacts;
@@ -87,6 +87,31 @@ async function writePhotoToPath(
 ): Promise<boolean> {
   return Contacts.writePhotoToPath(contactId, file);
 }
+
+async function getGroups(): Promise<Group[]> {
+  return Contacts.getGroups();
+}
+async function getGroup(identifier: string): Promise<Group | null> {
+  return Contacts.getGroup(identifier);
+}
+async function deleteGroup(identifier: string): Promise<boolean> {
+  return Contacts.deleteGroup(identifier);
+}
+async function updateGroup(identifier: string, groupData: Pick<Group, 'name'>): Promise<Group> {
+  return Contacts.updateGroup(identifier, groupData);
+}
+async function addGroup(group: Pick<Group, 'name'>): Promise<Group>{
+  return Contacts.addGroup(group);
+}
+async function contactsInGroup(identifier: string): Promise<Contact[]> {
+  return Contacts.contactsInGroup(identifier);
+}
+async function addContactsToGroup(groupIdentifier: string, contactIdentifiers: string[]): Promise<boolean> {
+  return Contacts.addContactsToGroup(groupIdentifier, contactIdentifiers);
+}
+async function removeContactsFromGroup(groupIdentifier: string, contactIdentifiers: string[]): Promise<boolean> {
+  return Contacts.removeContactsFromGroup(groupIdentifier, contactIdentifiers);
+}
 export default {
   getAll,
   getAllWithoutPhotos,
@@ -106,4 +131,12 @@ export default {
   checkPermission,
   requestPermission,
   writePhotoToPath,
+  getGroups,
+  getGroup,
+  deleteGroup,
+  updateGroup,
+  addGroup,
+  contactsInGroup,
+  addContactsToGroup,
+  removeContactsFromGroup
 };

@@ -61,4 +61,9 @@ export interface Contact {
   note: string;
 }
 
+export interface Group {
+  identifier: string;
+  name: string;
+}
+
 export type PermissionType = 'authorized' | 'limited' | 'denied' | 'undefined'

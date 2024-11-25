@@ -65,5 +65,8 @@ export interface Group {
   identifier: string;
   name: string;
 }
+export interface GroupInput {
+  name: string;
+}
 
-export type PermissionType = 'authorized' | 'limited' | 'denied' | 'undefined'
+export type PermissionType = "authorized" | "limited" | "denied" | "undefined";

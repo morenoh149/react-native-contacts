@@ -118,7 +118,3 @@ export interface Contact {
   urlAddresses: UrlAddress[];
   note: string | null;
 }
-
-export type GroupInput = {
-  name: string;
-};

@@ -1,6 +1,6 @@
 import type { TurboModule } from "react-native/Libraries/TurboModule/RCTExport";
 import { TurboModuleRegistry } from "react-native";
-import { Contact, Group, GroupInput, PermissionType } from "../type";
+import { Contact, Group, PermissionType } from "../type";
 
 export interface Spec extends TurboModule {
   getAll: () => Promise<any>;
@@ -25,7 +25,7 @@ export interface Spec extends TurboModule {
   getGroups(): Promise<Group[]>;
   getGroup: (identifier: string) => Promise<Group | null>;
   deleteGroup(identifier: string): Promise<boolean>;
-  updateGroup(identifier: string, groupData: GroupInput): Promise<Group>;
+  updateGroup(identifier: string, groupData: Object): Promise<Group>;
   addGroup(group: Pick<Group, "name">): Promise<Group>;
   contactsInGroup(identifier: string): Promise<Contact[]>;
   addContactsToGroup(

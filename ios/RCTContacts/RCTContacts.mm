@@ -5,10 +5,6 @@
 #import <React/RCTLog.h>
 #import <Photos/Photos.h>
 
-// #ifdef RCT_NEW_ARCH_ENABLED
-// #import "RNContactsSpec.h"
-// #endif
-
 @implementation RCTContacts {
     CNContactStore * contactStore;
 
@@ -56,23 +52,24 @@ RCT_REMAP_METHOD(getAll, withResolver:(RCTPromiseResolveBlock) resolve
 }
 
 
-RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve 
+RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock)resolve
     rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
 
-    if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
+    if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted) {
         resolve(@"denied");
-    } else if (authStatus == CNAuthorizationStatusAuthorized){
+    } else if (authStatus == CNAuthorizationStatusAuthorized) {
         resolve(@"authorized");
-    } else if(@available(iOS 18, *)) {
-        if (authStatus == CNAuthorizationStatusLimited) {
+    } else if (@available(iOS 18, *)) {
+        if (authStatus == CNAuthorizationStatusRestricted) {
             resolve(@"limited");
         }
     } else {
         resolve(@"undefined");
     }
 }
+
 
 RCT_EXPORT_METHOD(requestPermission:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
@@ -555,34 +552,33 @@ RCT_EXPORT_METHOD(getCount:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromise
     return [paths firstObject];
 }
 
-RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID resolver:(RCTPromiseResolveBlock) resolve
-    rejecter:(RCTPromiseRejectBlock) reject)
+RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
 {
-    CNContactStore* contactStore = [self contactsStore:reject];
-    if(!contactStore)
+    CNContactStore *contactStore = [self contactsStore:reject];
+    if (!contactStore)
         return;
 
     CNEntityType entityType = CNEntityTypeContacts;
-    if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusNotDetermined)
-    {
+    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:entityType];
+
+    if (authStatus == CNAuthorizationStatusNotDetermined) {
         [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
-            if(granted){
+            if (granted) {
                 resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
             }
         }];
-    }
-    else if([CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
-    {
+    } else if (authStatus == CNAuthorizationStatusAuthorized) {
         resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
-    }
-    else if(@available(iOS 18, *))
-    {
-        if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited)
-        {
+    } else if (@available(iOS 18, *)) {
+        if (authStatus == CNAuthorizationStatusRestricted) {
             resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
         }
+    } else {
+        reject(@"CONTACT_ACCESS_DENIED", @"Contact access is not authorized.", nil);
     }
 }
+
 
 -(NSString *) getFilePathForThumbnailImage:(NSString *)recordID
                                addressBook:(CNContactStore*)addressBook
@@ -600,34 +596,35 @@ RCT_EXPORT_METHOD(getPhotoForId:(nonnull NSString *)recordID resolver:(RCTPromis
     return [self getFilePathForThumbnailImage:contact recordID:recordID];
 }
 
-RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID resolver:(RCTPromiseResolveBlock) resolve
-    rejecter:(RCTPromiseRejectBlock) reject)
+
+RCT_EXPORT_METHOD(getContactById:(nonnull NSString *)recordID resolver:(RCTPromiseResolveBlock)resolve
+    rejecter:(RCTPromiseRejectBlock)reject)
 {
-    CNContactStore* contactStore = [self contactsStore:reject];
-    if(!contactStore)
+    CNContactStore *contactStore = [self contactsStore:reject];
+    if (!contactStore)
         return;
 
     CNEntityType entityType = CNEntityTypeContacts;
-    if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusNotDetermined)
-    {
+    
+    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:entityType];
+
+    if (authStatus == CNAuthorizationStatusNotDetermined) {
         [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
-            if(granted){
-                resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
+            if (granted) {
+                resolve([self getContact:recordID addressBook:contactStore withThumbnails:NO]);
             }
         }];
-    }
-    else if([CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
-    {
-        resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
-    }
-    else if(@available(iOS 18, *))
-    {
-        if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited)
-        {
-            resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
+    } else if (authStatus == CNAuthorizationStatusAuthorized) {
+        resolve([self getContact:recordID addressBook:contactStore withThumbnails:NO]);
+    } else if (@available(iOS 18, *)) {
+        if (authStatus == CNAuthorizationStatusRestricted) {
+            resolve([self getContact:recordID addressBook:contactStore withThumbnails:NO]);
         }
+    } else {
+        reject(@"CONTACT_ACCESS_DENIED", @"Contact access is not authorized.", nil);
     }
 }
+
 
 -(NSDictionary *) getContact:(NSString *)recordID
                                addressBook:(CNContactStore*)addressBook
@@ -687,7 +684,7 @@ RCT_EXPORT_METHOD(addContact:(NSDictionary *)contactData resolver:(RCTPromiseRes
     }
 }
 
-RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData 
+RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData
     resolver:(RCTPromiseResolveBlock) resolve
     rejecter:(RCTPromiseRejectBlock) __unused reject)
 {
@@ -759,7 +756,7 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData resolver:(RCTP
                 activityIndicatorStyle = UIActivityIndicatorViewStyleMedium;
                 activityIndicatorBackgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
             } else {
-                activityIndicatorStyle = UIActivityIndicatorViewStyleGray;
+                activityIndicatorStyle = UIActivityIndicatorViewStyleMedium;
                 activityIndicatorBackgroundColor = [UIColor whiteColor];;
             }
 
@@ -791,7 +788,7 @@ RCT_EXPORT_METHOD(openExistingContact:(NSDictionary *)contactData resolver:(RCTP
                 [activityIndicatorView removeFromSuperview];
             });
 
-            updateContactPromise = resolve;
+            self->updateContactPromise = resolve;
         });
 
     }
@@ -1250,7 +1247,7 @@ RCT_EXPORT_METHOD(deleteContact:(NSDictionary *)contactData resolver:(RCTPromise
 }
 
 RCT_EXPORT_METHOD(writePhotoToPath:(nonnull NSString *)path resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject)
-{ 
+{
     @try {
         //Nothing is implemented here
     } @catch (NSException *exception) {
@@ -1500,7 +1497,7 @@ RCT_EXPORT_METHOD(addContactsToGroup:(NSString *)groupId
     
     // Check authorization
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-    if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+    if (authStatus != CNAuthorizationStatusAuthorized) {
         reject(@"permission_denied", @"Contacts permission denied", nil);
         return;
     }
@@ -1568,7 +1565,7 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
 
     // Check authorization status
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-    if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+    if (authStatus != CNAuthorizationStatusAuthorized) {
         reject(@"permission_denied", @"Contacts permission denied", nil);
         return;
     }
@@ -1620,6 +1617,8 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
         reject(@"remove_contacts_error", @"Failed to remove contacts from group", error);
     }
 }
+
+
 -(CNContactStore*) contactsStore: (RCTPromiseRejectBlock) reject {
     if(!contactStore) {
         CNContactStore* store = [[CNContactStore alloc] init];
@@ -1657,24 +1656,25 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
 
 #endif
 
-- (void)getAll:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)getAll:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [self getAllContacts:resolve reject:reject withThumbnails:true];
 }
 
- - (void)checkPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
-     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-     if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
-         resolve(@"denied");
-     } else if (authStatus == CNAuthorizationStatusAuthorized){
-         resolve(@"authorized");
-     } else if(@available(iOS 18, *)) {
-         if (authStatus == CNAuthorizationStatusLimited) {
-             resolve(@"limited");
-         }
-     } else {
-         resolve(@"undefined");
-     }
- }
+- (void)checkPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
+
+    if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted) {
+        resolve(@"denied");
+    } else if (authStatus == CNAuthorizationStatusAuthorized) {
+        resolve(@"authorized");
+    } else if (@available(iOS 18, *)) {
+        if (authStatus == CNAuthorizationStatusRestricted) {
+            resolve(@"limited");
+        }
+    } else {
+        resolve(@"undefined");
+    }
+}
 
 
  - (void)deleteContact:(NSDictionary *)contactData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
@@ -1802,37 +1802,33 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
  }
 
 
- - (void)getAllWithoutPhotos:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+ - (void)getAllWithoutPhotos:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
      [self getAllContacts:resolve reject:reject withThumbnails:false];
  }
 
 
- - (void)getContactById:(nonnull NSString *)recordID resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-     CNContactStore* contactStore = [self contactsStore:reject];
-     if(!contactStore)
-         return;
+- (void)getContactById:(nonnull NSString *)recordID resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    CNContactStore *contactStore = [self contactsStore:reject];
+    if (!contactStore)
+        return;
 
-     CNEntityType entityType = CNEntityTypeContacts;
-     if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusNotDetermined)
-     {
-         [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
-             if(granted){
-                 resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
-             }
-         }];
-     }
-     else if([CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
-     {
-         resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
-     }
-     else if(@available(iOS 18, *))
-     {
-        if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited)
-        {
-            resolve([self getContact:recordID addressBook:contactStore withThumbnails:false]);
+    CNEntityType entityType = CNEntityTypeContacts;
+    CNAuthorizationStatus authorizationStatus = [CNContactStore authorizationStatusForEntityType:entityType];
+
+    if (authorizationStatus == CNAuthorizationStatusNotDetermined) {
+        [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            if (granted) {
+                resolve([self getContact:recordID addressBook:contactStore withThumbnails:NO]);
+            }
+        }];
+    } else if (authorizationStatus == CNAuthorizationStatusAuthorized) {
+        resolve([self getContact:recordID addressBook:contactStore withThumbnails:NO]);
+    } else if (@available(iOS 18, *)) {
+        if (authorizationStatus == CNAuthorizationStatusRestricted) {
+            resolve([self getContact:recordID addressBook:contactStore withThumbnails:NO]);
         }
-     }
- }
+    }
+}
 
 
  - (void)getContactsByEmailAddress:(NSString *)string resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
@@ -1859,39 +1855,35 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
  }
 
 
- - (void)getCount:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+ - (void)getCount:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
      [self getAllContactsCount:resolve reject:reject];
  }
 
 
- - (void)getPhotoForId:(nonnull NSString *)recordID resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-     CNContactStore* contactStore = [self contactsStore:reject];
-        if(!contactStore)
-            return;
+- (void)getPhotoForId:(nonnull NSString *)recordID resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    CNContactStore *contactStore = [self contactsStore:reject];
+    if (!contactStore)
+        return;
 
-        CNEntityType entityType = CNEntityTypeContacts;
-        if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusNotDetermined)
-        {
-            [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
-                if(granted){
-                    resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
-                }
-            }];
-        }
-        else if([CNContactStore authorizationStatusForEntityType:entityType]== CNAuthorizationStatusAuthorized)
-        {
-            resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
-        }
-        else if(@available(iOS 18, *))
-        {
-            if([CNContactStore authorizationStatusForEntityType:entityType] == CNAuthorizationStatusLimited)
-            {
+    CNEntityType entityType = CNEntityTypeContacts;
+    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:entityType];
+
+    if (authStatus == CNAuthorizationStatusNotDetermined) {
+        [contactStore requestAccessForEntityType:entityType completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            if (granted) {
                 resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
             }
-
+        }];
+    } else if (authStatus == CNAuthorizationStatusAuthorized) {
+        resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
+    } else if (@available(iOS 18, *)) {
+        if (authStatus == CNAuthorizationStatusRestricted) {
+            resolve([self getFilePathForThumbnailImage:recordID addressBook:contactStore]);
         }
- }
-
+    } else {
+        reject(@"CONTACT_ACCESS_DENIED", @"Contact access is not authorized.", nil);
+    }
+}
 
 - (void)openContactForm:(NSDictionary *)contactData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     CNMutableContact * contact = [[CNMutableContact alloc] init];
@@ -2003,7 +1995,7 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
  }
 
 
- - (void)requestPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+ - (void)requestPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
      CNContactStore* contactStore = [[CNContactStore alloc] init];
 
         [contactStore requestAccessForEntityType:CNEntityTypeContacts completionHandler:^(BOOL granted, NSError * _Nullable error) {
@@ -2106,7 +2098,7 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
  }
 
 
- - (void)writePhotoToPath:(NSString *)contactId file:(NSString *)file resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+ - (void)writePhotoToPath:(NSString *)contactId file:(NSString *)file resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
      reject(@"Error", @"not implemented", nil);
  }
 

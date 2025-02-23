@@ -3,6 +3,7 @@
 #import "RCTContacts.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <React/RCTLog.h>
+#import <React/RCTUtils.h>
 #import <Photos/Photos.h>
 
 // #ifdef RCT_NEW_ARCH_ENABLED
@@ -68,6 +69,8 @@ RCT_EXPORT_METHOD(checkPermission:(RCTPromiseResolveBlock) resolve
     } else if(@available(iOS 18, *)) {
         if (authStatus == CNAuthorizationStatusLimited) {
             resolve(@"limited");
+        } else {
+            resolve(@"undefined");
         }
     } else {
         resolve(@"undefined");
@@ -702,12 +705,8 @@ RCT_EXPORT_METHOD(openContactForm:(NSDictionary *)contactData
 
     dispatch_async(dispatch_get_main_queue(), ^{
         UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
-        UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
-        while (viewController.presentedViewController)
-            {
-                viewController = viewController.presentedViewController;
-            }
-        [viewController presentViewController:navigation animated:YES completion:nil];
+        UIViewController *presentingViewController = RCTPresentedViewController();
+        [presentingViewController presentViewController:navigation animated:YES completion:nil];
 
         self->updateContactPromise = resolve;
     });
@@ -831,15 +830,8 @@ RCT_EXPORT_METHOD(viewExistingContact:(NSDictionary *)contactData resolver:(RCTP
 
         dispatch_async(dispatch_get_main_queue(), ^{
             UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:contactViewController];
-
-            UIViewController *currentViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
-
-            while (currentViewController.presentedViewController)
-            {
-                currentViewController = currentViewController.presentedViewController;
-            }
-
-            [currentViewController presentViewController:navigation animated:YES completion:nil];
+            UIViewController *presentingViewController = RCTPresentedViewController();
+            [presentingViewController presentViewController:navigation animated:YES completion:nil];
 
             updateContactPromise = resolve;
         });
@@ -922,15 +914,8 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData resolver:(RCTP
 
         dispatch_async(dispatch_get_main_queue(), ^{
             UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
-            UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
-            
-            //navigation.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor redColor]};
-            
-            while (viewController.presentedViewController)
-                {
-                    viewController = viewController.presentedViewController;
-                }
-            [viewController presentViewController:navigation animated:YES completion:nil];
+            UIViewController *presentingViewController = RCTPresentedViewController();
+            [presentingViewController presentViewController:navigation animated:YES completion:nil];
             [controller presentViewController:alert animated:YES completion:nil];
 
             self->updateContactPromise = resolve;
@@ -1500,7 +1485,13 @@ RCT_EXPORT_METHOD(addContactsToGroup:(NSString *)groupId
     
     // Check authorization
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-    if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+    if (@available(iOS 18.0, *)) {
+        if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+            reject(@"permission_denied", @"Contacts permission denied", nil);
+            return;
+        }
+    }
+    else if (authStatus != CNAuthorizationStatusAuthorized) {
         reject(@"permission_denied", @"Contacts permission denied", nil);
         return;
     }
@@ -1568,7 +1559,13 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
 
     // Check authorization status
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-    if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+    if (@available(iOS 18.0, *)) {
+        if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+            reject(@"permission_denied", @"Contacts permission denied", nil);
+            return;
+        }
+    }
+    else if (authStatus != CNAuthorizationStatusAuthorized) {
         reject(@"permission_denied", @"Contacts permission denied", nil);
         return;
     }
@@ -1773,15 +1770,8 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
 
          dispatch_async(dispatch_get_main_queue(), ^{
              UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
-             UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
-             
-             //navigation.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor redColor]};
-             
-             while (viewController.presentedViewController)
-                 {
-                     viewController = viewController.presentedViewController;
-                 }
-             [viewController presentViewController:navigation animated:YES completion:nil];
+             UIViewController *presentingViewController = RCTPresentedViewController();
+             [presentingViewController presentViewController:navigation animated:YES completion:nil];
              [controller presentViewController:alert animated:YES completion:nil];
 
              self->updateContactPromise = resolve;
@@ -1905,12 +1895,8 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
     
     dispatch_async(dispatch_get_main_queue(), ^{
         UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:controller];
-        UIViewController *viewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
-        while (viewController.presentedViewController)
-        {
-            viewController = viewController.presentedViewController;
-        }
-        [viewController presentViewController:navigation animated:YES completion:nil];
+        UIViewController *presentingViewController = RCTPresentedViewController();
+        [presentingViewController presentViewController:navigation animated:YES completion:nil];
         
         self->updateContactPromise = resolve;
     });
@@ -2086,15 +2072,8 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
 
          dispatch_async(dispatch_get_main_queue(), ^{
              UINavigationController* navigation = [[UINavigationController alloc] initWithRootViewController:contactViewController];
-
-             UIViewController *currentViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
-
-             while (currentViewController.presentedViewController)
-             {
-                 currentViewController = currentViewController.presentedViewController;
-             }
-
-             [currentViewController presentViewController:navigation animated:YES completion:nil];
+             UIViewController *presentingViewController = RCTPresentedViewController();
+             [presentingViewController presentViewController:navigation animated:YES completion:nil];
 
              updateContactPromise = resolve;
          });

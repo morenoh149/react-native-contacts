@@ -1485,7 +1485,13 @@ RCT_EXPORT_METHOD(addContactsToGroup:(NSString *)groupId
     
     // Check authorization
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-    if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+    if (@available(iOS 18.0, *)) {
+        if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+            reject(@"permission_denied", @"Contacts permission denied", nil);
+            return;
+        }
+    }
+    else if (authStatus != CNAuthorizationStatusAuthorized) {
         reject(@"permission_denied", @"Contacts permission denied", nil);
         return;
     }
@@ -1553,7 +1559,13 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
 
     // Check authorization status
     CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-    if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+    if (@available(iOS 18.0, *)) {
+        if (authStatus != CNAuthorizationStatusAuthorized && authStatus != CNAuthorizationStatusLimited) {
+            reject(@"permission_denied", @"Contacts permission denied", nil);
+            return;
+        }
+    }
+    else if (authStatus != CNAuthorizationStatusAuthorized) {
         reject(@"permission_denied", @"Contacts permission denied", nil);
         return;
     }

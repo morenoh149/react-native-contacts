@@ -25,11 +25,17 @@ export interface Spec extends TurboModule {
   getGroups(): Promise<Group[]>;
   getGroup: (identifier: string) => Promise<Group | null>;
   deleteGroup(identifier: string): Promise<boolean>;
-  updateGroup(identifier: string,groupData: Pick<Group, 'name'>): Promise<Group>;
-  addGroup(group: Pick<Group, 'name'>): Promise<Group>;
+  updateGroup(identifier: string, groupData: Object): Promise<Group>;
+  addGroup(group: Object): Promise<Group>;
   contactsInGroup(identifier: string): Promise<Contact[]>;
-  addContactsToGroup(groupIdentifier: string, contactIdentifiers: string[]): Promise<boolean>;
-  removeContactsFromGroup(groupIdentifier: string, contactIdentifiers: string[]): Promise<boolean>;
+  addContactsToGroup(
+    groupIdentifier: string,
+    contactIdentifiers: string[]
+  ): Promise<boolean>;
+  removeContactsFromGroup(
+    groupIdentifier: string,
+    contactIdentifiers: string[]
+  ): Promise<boolean>;
 }
 
 export default TurboModuleRegistry.get<Spec>("RCTContacts");

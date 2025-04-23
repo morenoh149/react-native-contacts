@@ -2,8 +2,7 @@ import { NativeModules } from "react-native";
 import NativeContacts from "./src/NativeContacts";
 import { Contact, Group, PermissionType } from "./type";
 
-const isTurboModuleEnabled = global.__turboModuleProxy != null;
-const Contacts = isTurboModuleEnabled ? NativeContacts : NativeModules.Contacts;
+const Contacts = NativeModules.Contacts ?? NativeContacts;
 
 async function getAll(): Promise<Contact[]> {
   return Contacts.getAll();

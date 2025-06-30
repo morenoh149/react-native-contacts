@@ -12,6 +12,8 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.rt2zz.reactnativecontacts.impl.ContactsManagerImpl;
+import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReadableArray;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,6 +27,46 @@ public class ContactsManager extends NativeContactsSpec implements ActivityEvent
         super(reactContext);
         this.contactsManagerImpl = new ContactsManagerImpl(reactContext, true);
         reactContext.addActivityEventListener(this);
+    }
+
+    @Override
+    public void removeContactsFromGroup(String groupId, ReadableArray contactIds, Promise promise) {
+        promise.reject("E_NOT_IMPLEMENTED", "removeContactsFromGroup not implemented yet");
+    }
+
+    @Override
+    public void addContactsToGroup(String groupId, ReadableArray contactIds, Promise promise) {
+        promise.reject("E_NOT_IMPLEMENTED", "addContactsToGroup not implemented yet");
+    }
+
+    @Override
+    public void contactsInGroup(String groupId, Promise promise) {
+        promise.reject("E_NOT_IMPLEMENTED", "contactsInGroup not implemented yet");
+    }
+
+    @Override
+    public void addGroup(ReadableMap groupData, Promise promise) {
+        promise.reject("E_NOT_IMPLEMENTED", "addGroup not implemented yet");
+    }
+
+    @Override
+    public void updateGroup(String groupId, ReadableMap groupData, Promise promise) {
+        promise.reject("E_NOT_IMPLEMENTED", "updateGroup not implemented yet");
+    }
+
+    @Override
+    public void deleteGroup(String groupId, Promise promise) {
+        promise.reject("E_NOT_IMPLEMENTED", "deleteGroup not implemented yet");
+    }
+
+    @Override
+    public void getGroup(String groupId, Promise promise) {
+        promise.reject("E_NOT_IMPLEMENTED", "getGroup not implemented yet");
+    }
+
+    @Override
+    public void getGroups(Promise promise) {
+        promise.reject("E_NOT_IMPLEMENTED", "getGroups not implemented yet");
     }
 
     /*

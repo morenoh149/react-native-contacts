@@ -22,20 +22,20 @@ export interface Spec extends TurboModule {
   requestPermission: () => Promise<PermissionType>;
   writePhotoToPath: (contactId: string, file: string) => Promise<boolean>;
   iosEnableNotesUsage: (enabled: boolean) => void;
-  getGroups(): Promise<Group[]>;
-  getGroup: (identifier: string) => Promise<Group | null>;
-  deleteGroup(identifier: string): Promise<boolean>;
-  updateGroup(identifier: string, groupData: Object): Promise<Group>;
-  addGroup(group: Object): Promise<Group>;
-  contactsInGroup(identifier: string): Promise<Contact[]>;
-  addContactsToGroup(
+  getGroups?: () => Promise<Group[]>;
+  getGroup?: (identifier: string) => Promise<Group | null>;
+  deleteGroup?: (identifier: string) => Promise<boolean>;
+  updateGroup?: (identifier: string, groupData: Object) => Promise<Group>;
+  addGroup?: (group: Object) => Promise<Group>;
+  contactsInGroup?: (identifier: string) => Promise<Contact[]>;
+  addContactsToGroup?: (
     groupIdentifier: string,
     contactIdentifiers: string[]
-  ): Promise<boolean>;
-  removeContactsFromGroup(
+  ) => Promise<boolean>;
+  removeContactsFromGroup?: (
     groupIdentifier: string,
     contactIdentifiers: string[]
-  ): Promise<boolean>;
+  ) => Promise<boolean>;
 }
 
 export default TurboModuleRegistry.get<Spec>("RCTContacts");

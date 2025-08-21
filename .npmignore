@@ -8,3 +8,7 @@ ios/RCTContacts.xcodeproj/project.xcworkspace
 .npm-debug.log
 
 example/
+
+# version files
+.tool-versions
+.nvmrc

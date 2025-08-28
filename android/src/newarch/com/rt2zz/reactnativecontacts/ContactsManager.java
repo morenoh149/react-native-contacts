@@ -11,6 +11,7 @@ import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableArray;
 import com.rt2zz.reactnativecontacts.impl.ContactsManagerImpl;
 
 import java.io.ByteArrayOutputStream;
@@ -220,6 +221,78 @@ public class ContactsManager extends NativeContactsSpec implements ActivityEvent
     @Override
     public void iosEnableNotesUsage(boolean enabled) {
         // this method is only needed for iOS
+    }
+
+    /*
+     * Get all groups
+     */
+    @Override
+    public void getGroups(Promise promise) {
+        // TODO: Implement group functionality
+        promise.reject("NOT_IMPLEMENTED", "Groups functionality not yet implemented on Android");
+    }
+
+    /*
+     * Get group by identifier
+     */
+    @Override
+    public void getGroup(String identifier, Promise promise) {
+        // TODO: Implement group functionality
+        promise.reject("NOT_IMPLEMENTED", "Groups functionality not yet implemented on Android");
+    }
+
+    /*
+     * Delete group
+     */
+    @Override
+    public void deleteGroup(String identifier, Promise promise) {
+        // TODO: Implement group functionality
+        promise.reject("NOT_IMPLEMENTED", "Groups functionality not yet implemented on Android");
+    }
+
+    /*
+     * Update group
+     */
+    @Override
+    public void updateGroup(String identifier, ReadableMap groupData, Promise promise) {
+        // TODO: Implement group functionality
+        promise.reject("NOT_IMPLEMENTED", "Groups functionality not yet implemented on Android");
+    }
+
+    /*
+     * Add group
+     */
+    @Override
+    public void addGroup(ReadableMap group, Promise promise) {
+        // TODO: Implement group functionality
+        promise.reject("NOT_IMPLEMENTED", "Groups functionality not yet implemented on Android");
+    }
+
+    /*
+     * Get contacts in group
+     */
+    @Override
+    public void contactsInGroup(String identifier, Promise promise) {
+        // TODO: Implement group functionality
+        promise.reject("NOT_IMPLEMENTED", "Groups functionality not yet implemented on Android");
+    }
+
+    /*
+     * Add contacts to group
+     */
+    @Override
+    public void addContactsToGroup(String groupIdentifier, ReadableArray contactIdentifiers, Promise promise) {
+        // TODO: Implement group functionality
+        promise.reject("NOT_IMPLEMENTED", "Groups functionality not yet implemented on Android");
+    }
+
+    /*
+     * Remove contacts from group
+     */
+    @Override
+    public void removeContactsFromGroup(String groupIdentifier, ReadableArray contactIdentifiers, Promise promise) {
+        // TODO: Implement group functionality
+        promise.reject("NOT_IMPLEMENTED", "Groups functionality not yet implemented on Android");
     }
 
 

@@ -30,6 +30,8 @@ import static android.provider.ContactsContract.CommonDataKinds.Website;
 import static android.provider.ContactsContract.CommonDataKinds.Im;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
+import com.rt2zz.reactnativecontacts.Social;
+
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
 
@@ -76,6 +78,8 @@ public class ContactsProvider {
             add(Im.DATA);
             add(Event.START_DATE);
             add(Event.TYPE);
+            add(Social.ACCOUNT_TYPE);
+            add(Social.ACCOUNT_NAME);
         }
     };
 
@@ -105,7 +109,7 @@ public class ContactsProvider {
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
                     ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ? OR " +
                             Organization.COMPANY + " LIKE ?",
-                    new String[] { "%" + searchString + "%", "%" + searchString + "%" },
+                    new String[]{"%" + searchString + "%", "%" + searchString + "%"},
                     null);
 
             try {
@@ -132,7 +136,7 @@ public class ContactsProvider {
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
                     ContactsContract.CommonDataKinds.Phone.NUMBER + " LIKE ? OR "
                             + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " LIKE ?",
-                    new String[] { "%" + phoneNumber + "%", "%" + phoneNumber + "%" },
+                    new String[]{"%" + phoneNumber + "%", "%" + phoneNumber + "%"},
                     null);
 
             try {
@@ -158,7 +162,7 @@ public class ContactsProvider {
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
                     ContactsContract.CommonDataKinds.Email.ADDRESS + " LIKE ?",
-                    new String[] { "%" + emailAddress + "%" },
+                    new String[]{"%" + emailAddress + "%"},
                     null);
 
             try {
@@ -180,9 +184,9 @@ public class ContactsProvider {
     public WritableMap getContactByRawId(String contactRawId) {
 
         // Get Contact Id from Raw Contact Id
-        String[] projections = new String[] { ContactsContract.RawContacts.CONTACT_ID };
+        String[] projections = new String[]{ContactsContract.RawContacts.CONTACT_ID};
         String select = ContactsContract.RawContacts._ID + "= ?";
-        String[] selectionArgs = new String[] { contactRawId };
+        String[] selectionArgs = new String[]{contactRawId};
         Cursor rawCursor = contentResolver.query(ContactsContract.RawContacts.CONTENT_URI, projections, select,
                 selectionArgs, null);
         String contactId = null;
@@ -214,7 +218,7 @@ public class ContactsProvider {
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
                     ContactsContract.RawContacts.CONTACT_ID + " = ?",
-                    new String[] { contactId },
+                    new String[]{contactId},
                     null);
 
             try {
@@ -273,8 +277,11 @@ public class ContactsProvider {
                             + ContactsContract.Data.MIMETYPE + "=? OR "
                             + ContactsContract.Data.MIMETYPE + "=? OR "
                             + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
                             + ContactsContract.Data.MIMETYPE + "=?",
-                    new String[] {
+                    new String[]{
                             Email.CONTENT_ITEM_TYPE,
                             Phone.CONTENT_ITEM_TYPE,
                             StructuredName.CONTENT_ITEM_TYPE,
@@ -284,6 +291,9 @@ public class ContactsProvider {
                             Website.CONTENT_ITEM_TYPE,
                             Im.CONTENT_ITEM_TYPE,
                             Event.CONTENT_ITEM_TYPE,
+                            Social.WHATSAPP,
+                            Social.TELEGRAM,
+                            Social.FACEBOOK
                     },
                     null);
 
@@ -552,15 +562,20 @@ public class ContactsProvider {
                                     contact.birthday = new Contact.Birthday(year, month, day);
                                 }
                             }
-                        } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException e) {
+                        } catch (NumberFormatException | ArrayIndexOutOfBoundsException |
+                                 NullPointerException e) {
                             // whoops, birthday isn't in the format we expect
                             Log.w("ContactsProvider", e.toString());
-
                         }
                     }
                     break;
                 case Note.CONTENT_ITEM_TYPE:
                     contact.note = cursor.getString(cursor.getColumnIndex(Note.NOTE));
+                    break;
+                case Social.WHATSAPP:
+                case Social.TELEGRAM:
+                case Social.FACEBOOK:
+                    contact.socialMedia.add(new Contact.SocialMediaItem(cursor, mimeType));
                     break;
             }
         }
@@ -573,7 +588,7 @@ public class ContactsProvider {
                 ContactsContract.Data.CONTENT_URI,
                 PHOTO_PROJECTION.toArray(new String[PHOTO_PROJECTION.size()]),
                 ContactsContract.RawContacts.CONTACT_ID + " = ?",
-                new String[] { contactId },
+                new String[]{contactId},
                 null);
         try {
             if (cursor != null && cursorMoveToNext(cursor)) {
@@ -611,6 +626,7 @@ public class ContactsProvider {
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
         private List<PostalAddressItem> postalAddresses = new ArrayList<>();
+        private List<SocialMediaItem> socialMedia = new ArrayList<>();
         private Birthday birthday;
 
         public Contact(String contactId) {
@@ -678,6 +694,12 @@ public class ContactsProvider {
                 postalAddresses.pushMap(item.map);
             }
             contact.putArray("postalAddresses", postalAddresses);
+
+            WritableArray socialMedia = Arguments.createArray();
+            for (SocialMediaItem item : this.socialMedia) {
+                socialMedia.pushMap(item.map);
+            }
+            contact.putArray("socialMedia", socialMedia);
 
             WritableMap birthdayMap = Arguments.createMap();
             if (birthday != null) {
@@ -761,6 +783,34 @@ public class ContactsProvider {
                         return label != null ? label : "";
                 }
                 return "other";
+            }
+        }
+
+        public static class SocialMediaItem {
+            public final WritableMap map;
+
+            public SocialMediaItem(Cursor cursor, String mimeType) {
+                map = Arguments.createMap();
+
+                Social.Descriptor socialDescriptor = Social.get(mimeType);
+                map.putString("mimeType", mimeType);
+                map.putString("socialId", SocialValueExtractor.extract(cursor, socialDescriptor.socialIdField));
+                map.putString("accountName", SocialValueExtractor.extract(cursor, socialDescriptor.accountNameField));
+                map.putString("accountType", SocialValueExtractor.extract(cursor, socialDescriptor.accountTypeField));
+                map.putString("phone", SocialValueExtractor.extract(cursor, socialDescriptor.phoneField));
+            }
+        }
+
+        public static final class SocialValueExtractor {
+
+            private SocialValueExtractor() {}
+
+            public static String extract(Cursor cursor, String field) {
+                if (field == null) return null;
+                int index = cursor.getColumnIndex(field);
+
+                if (index == -1) return null;
+                return cursor.getString(index);
             }
         }
     }

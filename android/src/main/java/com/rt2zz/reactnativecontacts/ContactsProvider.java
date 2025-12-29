@@ -34,6 +34,16 @@ public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
 
     public static final String NAME = "RCTContacts";
+
+    public static final String ACCOUNT_NAME = "account_name";
+    public static final String ACCOUNT_TYPE = "account_type";
+    public static final String DATA1 = ContactsContract.Data.DATA1;
+    public static final String DATA3 = ContactsContract.Data.DATA3;
+
+    public static final String WHATSAPP_TYPE = "vnd.android.cursor.item/vnd.com.whatsapp.profile";
+    public static final String TELEGRAM_TYPE = "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile";
+    public static final String FACEBOOK_TYPE = "vnd.android.cursor.item/vnd.com.facebook.profile";
+
     private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {
         {
             add((ContactsContract.Data._ID));
@@ -76,6 +86,8 @@ public class ContactsProvider {
             add(Im.DATA);
             add(Event.START_DATE);
             add(Event.TYPE);
+            add(ACCOUNT_TYPE);
+            add(ACCOUNT_NAME);
         }
     };
 
@@ -233,6 +245,46 @@ public class ContactsProvider {
         return null;
     }
 
+    public WritableMap getContactValueById(String contactId, String mimeType, String key) {
+        WritableMap result = Arguments.createMap();
+
+        // ContactsContract.Data - key
+
+        Cursor cursor = contentResolver.query(
+            ContactsContract.Data.CONTENT_URI,
+            new String[]{ key },
+            ContactsContract.RawContacts.CONTACT_ID + " = ? AND " +
+            ContactsContract.Data.MIMETYPE + " = ?",
+            new String[]{
+                contactId,
+                mimeType
+            },
+            null
+        );
+
+        try {
+            if (cursor != null) {
+                int index = cursor.getColumnIndex(key);
+                if (index == -1) {
+                    return result;
+                }
+
+                while (cursor.moveToNext()) {
+                    String value = cursor.getString(index);
+                    if (value != null) {
+                        result.putString(mimeType, value);
+                    }
+                }
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return result;
+    }
+
     public Integer getContactsCount() {
         Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         int count = cursor.getCount();
@@ -273,6 +325,9 @@ public class ContactsProvider {
                             + ContactsContract.Data.MIMETYPE + "=? OR "
                             + ContactsContract.Data.MIMETYPE + "=? OR "
                             + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
                             + ContactsContract.Data.MIMETYPE + "=?",
                     new String[] {
                             Email.CONTENT_ITEM_TYPE,
@@ -284,6 +339,9 @@ public class ContactsProvider {
                             Website.CONTENT_ITEM_TYPE,
                             Im.CONTENT_ITEM_TYPE,
                             Event.CONTENT_ITEM_TYPE,
+                            WHATSAPP_TYPE,
+                            TELEGRAM_TYPE,
+                            FACEBOOK_TYPE,
                     },
                     null);
 
@@ -562,6 +620,11 @@ public class ContactsProvider {
                 case Note.CONTENT_ITEM_TYPE:
                     contact.note = cursor.getString(cursor.getColumnIndex(Note.NOTE));
                     break;
+                case WHATSAPP_TYPE:
+                case TELEGRAM_TYPE:
+                case FACEBOOK_TYPE:
+                    contact.socialMedia.add(new Contact.SocialMediaItem(cursor, mimeType));
+                    break;
             }
         }
 
@@ -611,6 +674,7 @@ public class ContactsProvider {
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
         private List<PostalAddressItem> postalAddresses = new ArrayList<>();
+        private List<SocialMediaItem> socialMedia = new ArrayList<>();
         private Birthday birthday;
 
         public Contact(String contactId) {
@@ -678,6 +742,12 @@ public class ContactsProvider {
                 postalAddresses.pushMap(item.map);
             }
             contact.putArray("postalAddresses", postalAddresses);
+
+            WritableArray socialMedia = Arguments.createArray();
+            for (SocialMediaItem item : this.socialMedia) {
+                socialMedia.pushMap(item.map);
+            }
+            contact.putArray("socialMedia", socialMedia);
 
             WritableMap birthdayMap = Arguments.createMap();
             if (birthday != null) {
@@ -761,6 +831,29 @@ public class ContactsProvider {
                         return label != null ? label : "";
                 }
                 return "other";
+            }
+        }
+
+        public static class SocialMediaItem {
+            public final WritableMap map;
+
+            public SocialMediaItem(Cursor cursor, String mimeType) {
+                map = Arguments.createMap();
+                map.putString("mimeType", mimeType);
+                map.putString("socialId", extract(cursor, DATA1));
+                map.putString("accountName", extract(cursor, ACCOUNT_NAME));
+                map.putString("accountType", extract(cursor, ACCOUNT_TYPE));
+
+                String formattedPhone = extract(cursor, DATA3).replaceAll("[^\\d+]", "");
+                map.putString("phone", formattedPhone);
+            }
+
+            public static String extract(Cursor cursor, String field) {
+                if (field == null) return null;
+                int index = cursor.getColumnIndex(field);
+
+                if (index == -1) return null;
+                return cursor.getString(index);
             }
         }
     }

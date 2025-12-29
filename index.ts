@@ -16,6 +16,14 @@ async function getContactById(contactId: string): Promise<Contact | null> {
   return Contacts.getContactById(contactId);
 }
 
+async function getContactValueById(
+    contactId: string,
+    mimeType: string,
+    key: string
+): Promise<any> {
+  return Contacts.getContactValueById(contactId, mimeType, key);
+}
+
 async function getCount(): Promise<number> {
   return Contacts.getCount();
 }
@@ -115,6 +123,7 @@ export default {
   getAll,
   getAllWithoutPhotos,
   getContactById,
+  getContactValueById,
   getCount,
   getPhotoForId,
   addContact,

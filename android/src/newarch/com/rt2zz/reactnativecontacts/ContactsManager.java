@@ -154,6 +154,11 @@ public class ContactsManager extends NativeContactsSpec implements ActivityEvent
     }
 
     @Override
+    public void getContactValueById(final String contactId, final String mimeType, final String key, final Promise promise) {
+        contactsManagerImpl.getContactValueById(contactId, mimeType, key, promise);
+    }
+
+    @Override
     public void writePhotoToPath(final String contactId, final String file, final Promise promise) {
         contactsManagerImpl.writePhotoToPath(contactId, file, promise);
     }

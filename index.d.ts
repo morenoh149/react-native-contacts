@@ -24,10 +24,10 @@ export function getContactsByEmailAddress(
   emailAddress: string
 ): Promise<Contact[]>;
 export function checkPermission(): Promise<
-  "authorized" | "denied" | "undefined"
+  "authorized" | "denied" | "undefined" | "limited"
 >;
 export function requestPermission(): Promise<
-  "authorized" | "denied" | "undefined"
+  "authorized" | "denied" | "undefined" | "limited"
 >;
 export function writePhotoToPath(
   contactId: string,

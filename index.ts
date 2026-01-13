@@ -1,4 +1,4 @@
-import { NativeModules } from "react-native";
+import {NativeModules, Platform} from "react-native";
 import NativeContacts from "./src/NativeContacts";
 import { Contact, Group, PermissionType } from "./type";
 
@@ -21,6 +21,9 @@ async function getContactDataValue(
     mimeType: string,
     columnName: string
 ): Promise<any> {
+  if (Platform.OS == 'ios') {
+    return Promise.resolve([]);
+  }
   return Contacts.getContactDataValue(contactId, mimeType, columnName);
 }
 

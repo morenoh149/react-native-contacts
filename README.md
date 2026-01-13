@@ -245,6 +245,13 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
     { username: 'johndoe123', service: 'Facebook'}
   ],
   isStarred: false,
+  socialMedia: [{
+    phone: '5555555555', 
+    accountType: 'com.whatsapp',
+    accountName: 'WhatsApp',
+    socialId: '0123456789@s.whatsapp.net',
+    mimeType: 'vnd.android.cursor.item/vnd.com.whatsapp.profile'
+  }],
 }
 ```
 
@@ -253,6 +260,7 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
 * on Android versions below 8 the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
 * isStarred field
 * writePhotoToPath() - writes the contact photo to a given path
+* getContactDataValue() - take a value from any contact data column
 
 ## iOS only
 

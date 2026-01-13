@@ -154,8 +154,8 @@ public class ContactsManager extends NativeContactsSpec implements ActivityEvent
     }
 
     @Override
-    public void getContactValueById(final String contactId, final String mimeType, final String key, final Promise promise) {
-        contactsManagerImpl.getContactValueById(contactId, mimeType, key, promise);
+    public void getContactDataValue(final String contactId, final String mimeType, final String columnName, final Promise promise) {
+        contactsManagerImpl.getContactDataValue(contactId, mimeType, columnName, promise);
     }
 
     @Override

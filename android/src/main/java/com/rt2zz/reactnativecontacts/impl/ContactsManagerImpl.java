@@ -216,12 +216,12 @@ public class ContactsManagerImpl {
         });
     }
 
-    public void getContactValueById(final String contactId, final String mimeType, final String key, final Promise promise) {
+    public void getContactDataValue(final String contactId, final String mimeType, final String key, final Promise promise) {
         getExecutor().execute(() -> {
             Context context = getReactApplicationContext();
             ContentResolver cr = context.getContentResolver();
             ContactsProvider contactsProvider = new ContactsProvider(cr);
-            WritableMap values = contactsProvider.getContactValueById(contactId, mimeType, key);
+            WritableArray values = contactsProvider.getContactDataValue(contactId, mimeType, key);
             promise.resolve(values);
         });
     }

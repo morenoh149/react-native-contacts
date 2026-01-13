@@ -276,7 +276,7 @@ public class ContactsProvider {
                 result.pushString(value);
             }
         } catch (Exception e) {
-            Log.w("ContactsProvider. Error getContactValueById", e.getMessage());
+            Log.w("ContactsProvider. Error getContactDataValue", e.getMessage());
             return result;
         } finally {
             if (cursor != null) {

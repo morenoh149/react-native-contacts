@@ -360,9 +360,9 @@ Contacts.deleteContact(contact).then((recordId) => {
 
 ## Get contact data value (raw values)
 To retrieve data from any column in its original form, you need:
-1. record identifier (recordId)
-2. MIME type (mimeType)
-3. column name (columnName)
+1. record identifier (`recordId`)
+2. MIME type (`mimeType`)
+3. column name (`columnName`)
 ```js
 Contacts.getContactDataValue(recordId, mimeType, columnName).then(values => {
   // contact values

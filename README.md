@@ -178,6 +178,7 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
  * `getAll`: Promise<Contact[]> - returns *all* contacts as an array of objects
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
  * `getContactById(contactId)`: Promise<Contact> - returns contact with defined contactId (or null if it doesn't exist)
+ * `getContactDataValue(contactId, mimetype, columnName)`: Promise<any> - returns the values in the array or an empty array.
  * `getCount()`: Promise<number> - returns the number of contacts
  * `getPhotoForId(contactId)`: Promise<string> - returns a URI (or null) for a contacts photo
  * `addContact(contact)`: Promise<Contact> - adds a contact to the AddressBook.  
@@ -246,7 +247,8 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
   ],
   isStarred: false,
   socialMedia: [{
-    phone: '5555555555', 
+    phone: '5555555555',
+    rawPhone: 'Message +5555555555',
     accountType: 'com.whatsapp',
     accountName: 'WhatsApp',
     socialId: '0123456789@s.whatsapp.net',
@@ -353,6 +355,17 @@ Or by passing the full contact object with a `recordID` field.
 ```js
 Contacts.deleteContact(contact).then((recordId) => {
   // contact deleted
+})
+```
+
+## Get contact data value (raw values)
+To retrieve data from any column in its original form, you need:
+1. record identifier (recordId)
+2. MIME type (mimeType)
+3. column name (columnName)
+```js
+Contacts.getContactDataValue(recordId, mimeType, columnName).then(values => {
+  // contact values
 })
 ```
 

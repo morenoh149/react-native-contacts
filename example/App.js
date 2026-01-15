@@ -20,6 +20,7 @@ import {
   ActivityIndicator,
   Button
 } from "react-native";
+import {GestureHandlerRootView} from "react-native-gesture-handler";
 import Contacts from "react-native-contacts";
 
 import ListItem from "./components/ListItem";
@@ -37,7 +38,8 @@ export default class App extends Component<Props> {
       contacts: [],
       searchPlaceholder: "Search",
       typeText: null,
-      loading: true
+      loading: true,
+      pickedValue: [],
     };
 
     // if you want to read/write the contact note field on iOS, this method has to be called
@@ -124,82 +126,124 @@ export default class App extends Component<Props> {
 
   render() {
     return (
-      <SafeAreaView style={styles.container}>
-        <View
-          style={{
-            paddingLeft: 100,
-            paddingRight: 100,
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <Image
-            source={require("./logo.png")}
+      <GestureHandlerRootView style={{flex: 1}}>
+        <SafeAreaView style={styles.container}>
+          <View
             style={{
-              aspectRatio: 6,
-              resizeMode: "contain"
+              paddingLeft: 100,
+              paddingRight: 100,
+              justifyContent: "center",
+              alignItems: "center"
             }}
+          >
+            <Image
+              source={require("./logo.png")}
+              style={{
+                aspectRatio: 6,
+                resizeMode: "contain"
+              }}
+            />
+          </View>
+          <Button title="Add new" onPress={() => this.addNew()} />
+          <SearchBar
+            searchPlaceholder={this.state.searchPlaceholder}
+            onChangeText={this.search}
           />
-        </View>
-        <Button title="Add new" onPress={() => this.addNew()} />
-        <SearchBar
-          searchPlaceholder={this.state.searchPlaceholder}
-          onChangeText={this.search}
-        />
 
-        <View style={{ paddingLeft: 10, paddingRight: 10 }}>
-          <TextInput
-            keyboardType='number-pad'
-            style={styles.inputStyle}
-            placeholder='Enter number to add to contact'
-            onChangeText={text => this.setState({ typeText: text })}
-            value={this.state.typeText}
-          />
-        </View>
+          <View style={{ paddingLeft: 10, paddingRight: 10 }}>
+            <TextInput
+              keyboardType='number-pad'
+              style={styles.inputStyle}
+              placeholder='Enter number to add to contact'
+              onChangeText={text => this.setState({ typeText: text })}
+              value={this.state.typeText}
+            />
+          </View>
 
-        {
-          this.state.loading === true ?
-            (
-              <View style={styles.spinner}>
-                <ActivityIndicator size="large" color="#0000ff" />
+          {
+            this.state.pickedValues && this.state.pickedValues.length > 0 && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 999
+                }}>
+
+                <View style={{
+                  backgroundColor: '#f2f2f2',
+                  borderRadius: 8,
+                  padding: 15,
+                  maxHeight: 300,
+                  width: '80%'
+                }}>
+                  <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>Raw phones:</Text>
+                  {this.state.pickedValues.map((value, i) => (
+                    <Text key={i} style={{ paddingVertical: 2 }}>{value}</Text>
+                  ))}
+                  <Button title="Close" onPress={() => this.setState({ pickedValues: [] })} />
+                </View>
               </View>
-            ) : (
-              <ScrollView style={{ flex: 1 }}>
-                {this.state.contacts.map(contact => {
-                  return (
-                    <ListItem
-                      leftElement={
-                        <Avatar
-                          img={
-                            contact.hasThumbnail
-                              ? { uri: contact.thumbnailPath }
-                              : undefined
-                          }
-                          placeholder={getAvatarInitials(
-                            `${contact.givenName} ${contact.familyName}`
-                          )}
-                          width={40}
-                          height={40}
-                        />
-                      }
-                      key={contact.recordID}
-                      title={`${contact.givenName} ${contact.familyName}`}
-                      description={`${contact.company}`}
-                      onPress={() => this.onPressContact(contact)}
-                      onLongPress={() => Contacts.viewExistingContact(contact)}
-                      onDelete={() =>
-                        Contacts.deleteContact(contact).then(() => {
-                          this.loadContacts();
-                        })
-                      }
-                    />
-                  );
-                })}
-              </ScrollView>
-            )
-        }
+              )
+          }
 
-      </SafeAreaView>
+          {
+            this.state.loading === true ?
+              (
+                <View style={styles.spinner}>
+                  <ActivityIndicator size="large" color="#0000ff" />
+                </View>
+              ) : (
+                <ScrollView style={{ flex: 1 }}>
+                  {this.state.contacts.map(contact => {
+                    return (
+                      <ListItem
+                        leftElement={
+                          <Avatar
+                            img={
+                              contact.hasThumbnail
+                                ? { uri: contact.thumbnailPath }
+                                : undefined
+                            }
+                            placeholder={getAvatarInitials(
+                              `${contact.givenName} ${contact.familyName}`
+                            )}
+                            width={40}
+                            height={40}
+                          />
+                        }
+                        key={contact.recordID}
+                        title={`${contact.givenName} ${contact.familyName}`}
+                        description={`${contact.company}`}
+                        onPress={() => this.onPressContact(contact)}
+                        onLongPress={() => Contacts.viewExistingContact(contact)}
+                        onDelete={() =>
+                          Contacts.deleteContact(contact).then(() => {
+                            this.loadContacts();
+                          })
+                        }
+                        onRawPhones={() =>
+                          Contacts.getContactDataValue(
+                              contact.recordID,
+                              'vnd.android.cursor.item/phone_v2',
+                              'data1',
+                          ).then(values => {
+                            this.setState({pickedValues: values || []});
+                          })
+                        }
+                      />
+                    );
+                  })}
+                </ScrollView>
+              )
+          }
+
+        </SafeAreaView>
+      </GestureHandlerRootView>
     );
   }
 }

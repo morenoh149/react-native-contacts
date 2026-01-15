@@ -853,8 +853,9 @@ public class ContactsProvider {
                 map.putString("accountName", extract(cursor, ACCOUNT_NAME));
                 map.putString("accountType", extract(cursor, ACCOUNT_TYPE));
 
-                String formattedPhone = "";
                 String rawPhone = extract(cursor, ContactsContract.Data.DATA3);
+                map.putString("rawPhone", rawPhone);
+                String formattedPhone = "";
                 if (rawPhone != null) {
                     formattedPhone = rawPhone.replaceAll("[^\\d+]", "");
                 }

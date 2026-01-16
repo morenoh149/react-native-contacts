@@ -178,7 +178,7 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
  * `getAll`: Promise<Contact[]> - returns *all* contacts as an array of objects
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
  * `getContactById(contactId)`: Promise<Contact> - returns contact with defined contactId (or null if it doesn't exist)
- * `getContactDataValue(contactId, mimetype, columnName)`: Promise<any> - returns the values in the array or an empty array.
+ * `getContactDataValue(contactId, mimetype, columnName)`: Promise<any> - returns the raw values in the array or an empty array.
  * `getCount()`: Promise<number> - returns the number of contacts
  * `getPhotoForId(contactId)`: Promise<string> - returns a URI (or null) for a contacts photo
  * `addContact(contact)`: Promise<Contact> - adds a contact to the AddressBook.  
@@ -262,7 +262,7 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
 * on Android versions below 8 the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
 * isStarred field
 * writePhotoToPath() - writes the contact photo to a given path
-* getContactDataValue() - take a value from any contact data column
+* getContactDataValue() - take a raw value from any contact data column
 
 ## iOS only
 

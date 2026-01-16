@@ -22,7 +22,7 @@ class ListItem extends Component {
     onDelete: PropTypes.func,
     onLongPress: PropTypes.func,
     disabled: PropTypes.bool,
-    onRawPhones: PropTypes.func,
+    onRawValues: PropTypes.func,
   };
 
   renderRightAction = (iconName, color, x, progress, onPress) => {
@@ -49,11 +49,11 @@ class ListItem extends Component {
   };
 
   renderRightActions = progress => {
-    const { onDelete, onRawPhones } = this.props;
+    const { onDelete, onRawValues } = this.props;
 
     return (
       <View style={{width: 128, flexDirection: "row"}}>
-        {this.renderRightAction("Phones", "#1976d2", 128, progress, onRawPhones)}
+        {this.renderRightAction("Raw values", "#1976d2", 128, progress, onRawValues)}
         {this.renderRightAction("Delete", "#ef5350", 64, progress, onDelete)}
       </View>
     );

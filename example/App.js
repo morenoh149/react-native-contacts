@@ -39,8 +39,9 @@ export default class App extends Component<Props> {
       searchPlaceholder: "Search",
       typeText: null,
       loading: true,
-      pickedValue: [],
-    };
+      showRawValues: false,
+      pickedValues: {}
+    }
 
     // if you want to read/write the contact note field on iOS, this method has to be called
     // WARNING: by enabling notes on iOS, a valid entitlement file containing the note entitlement as well as a separate
@@ -124,6 +125,37 @@ export default class App extends Component<Props> {
     })
   }
 
+  getRawContacts(contact) {
+    const recordId = contact.recordID;
+    const phoneType = 'vnd.android.cursor.item/phone_v2';
+    const emailType = 'vnd.android.cursor.item/email_v2';
+    const waType = 'vnd.android.cursor.item/vnd.com.whatsapp.profile';
+    const tgType = 'vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile';
+    const data1 = 'data1';
+    const data3 = 'data3';
+
+    Promise.all([
+      Contacts.getContactDataValue(recordId, phoneType, data1),
+      Contacts.getContactDataValue(recordId, emailType, data1),
+      Contacts.getContactDataValue(recordId, waType, data1),
+      Contacts.getContactDataValue(recordId, waType, data3),
+      Contacts.getContactDataValue(recordId, tgType, data1),
+      Contacts.getContactDataValue(recordId, tgType, data3),
+    ]).then(([phones, emails, wa, waPhones, tg, tgPhones]) => {
+      this.setState({
+        showRawValues: true,
+        pickedValues: {
+          phones: phones || [],
+          emails: emails || [],
+          'WhatsApp ids': wa || [],
+          'WhatsApp phones': waPhones || [],
+          'Telegram ids': tg || [],
+          'Telegram phones': tgPhones || [],
+        }
+      });
+    });
+  }
+
   render() {
     return (
       <GestureHandlerRootView style={{flex: 1}}>
@@ -161,37 +193,6 @@ export default class App extends Component<Props> {
           </View>
 
           {
-            this.state.pickedValues && this.state.pickedValues.length > 0 && (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  zIndex: 999
-                }}>
-
-                <View style={{
-                  backgroundColor: '#f2f2f2',
-                  borderRadius: 8,
-                  padding: 15,
-                  maxHeight: 300,
-                  width: '80%'
-                }}>
-                  <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>Raw phones:</Text>
-                  {this.state.pickedValues.map((value, i) => (
-                    <Text key={i} style={{ paddingVertical: 2 }}>{value}</Text>
-                  ))}
-                  <Button title="Close" onPress={() => this.setState({ pickedValues: [] })} />
-                </View>
-              </View>
-              )
-          }
-
-          {
             this.state.loading === true ?
               (
                 <View style={styles.spinner}>
@@ -226,15 +227,7 @@ export default class App extends Component<Props> {
                             this.loadContacts();
                           })
                         }
-                        onRawPhones={() =>
-                          Contacts.getContactDataValue(
-                              contact.recordID,
-                              'vnd.android.cursor.item/phone_v2',
-                              'data1',
-                          ).then(values => {
-                            this.setState({pickedValues: values || []});
-                          })
-                        }
+                        onRawValues={() => this.getRawContacts(contact)}
                       />
                     );
                   })}
@@ -242,6 +235,40 @@ export default class App extends Component<Props> {
               )
           }
 
+          {this.state.showRawValues && (
+              <View
+                  style={{
+                    borderTopWidth: 1,
+                    borderColor: '#ddd',
+                    padding: 10,
+                    backgroundColor: '#fafafa'
+                  }}
+              >
+                {Object.entries(this.state.pickedValues).map(([type, values]) => (
+                    <View key={type} style={{ marginBottom: 8 }}>
+                      <Text style={{ fontWeight: '600' }}>{type}</Text>
+
+                      {values.length === 0 ? (
+                          <Text style={{ color: '#999', fontSize: 12 }}>Empty</Text>
+                      ) : (
+                          values.map((value, i) => (
+                              <Text key={i} style={{ color: '#999', fontSize: 13 }}>{value}</Text>
+                          ))
+                      )}
+                    </View>
+                ))}
+
+                <Button
+                    title="Close"
+                    onPress={() =>
+                        this.setState({
+                          showRawValues: false,
+                          pickedValues: {}
+                        })
+                    }
+                />
+              </View>
+          )}
         </SafeAreaView>
       </GestureHandlerRootView>
     );

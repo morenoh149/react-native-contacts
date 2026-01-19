@@ -363,9 +363,14 @@ To retrieve data from any column in its original form, you need:
 1. record identifier (`recordId`)
 2. MIME type (`mimeType`)
 3. column name (`columnName`)
+
+Example
 ```js
-Contacts.getContactDataValue(recordId, mimeType, columnName).then(values => {
-  // contact values
+const recordID = contact.recordID;
+const mimeType = 'vnd.android.cursor.item/phone_v2';
+const columnName = 'data1';
+Contacts.getContactDataValue(recordID, mimeType, columnName).then(values => {
+  // values = ["(555) 555-5555", "(444) 444-4444"];
 })
 ```
 

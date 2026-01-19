@@ -358,11 +358,11 @@ Contacts.deleteContact(contact).then((recordId) => {
 })
 ```
 
-## Get contact data value (raw values)
+## Get contact data values (raw values)
 To retrieve data from any column in its original form, you need:
-1. record identifier (`recordId`)
-2. MIME type (`mimeType`)
-3. column name (`columnName`)
+1. Record identifier (`recordID`) – internal contact ID from the Android database.
+2. MIME type (`mimeType`) – specific contact data type identifier used in the Android contacts database.
+3. Column name (`columnName`) – original column name from the `ContactsContract.Data` table.
 
 Example
 ```js

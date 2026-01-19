@@ -53,7 +53,7 @@ class ListItem extends Component {
 
     return (
       <View style={{width: 128, flexDirection: "row"}}>
-        {this.renderRightAction("Raw values", "#1976d2", 128, progress, onRawValues)}
+        {this.renderRightAction("Raw data", "#1976d2", 128, progress, onRawValues)}
         {this.renderRightAction("Delete", "#ef5350", 64, progress, onDelete)}
       </View>
     );

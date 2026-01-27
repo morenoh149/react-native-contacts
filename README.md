@@ -256,8 +256,8 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
 
 ## iOS only
 
-checkPermission(): Promise - checks permission to access Contacts
-requestPermission(): Promise - request permission to access Contacts
+* checkPermission(): Promise - checks permission to access Contacts
+* requestPermission(): Promise - request permission to access Contacts
 
 ## Adding Contacts
 Currently all fields from the contact record except for thumbnailPath are supported for writing

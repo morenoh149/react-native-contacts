@@ -2,7 +2,7 @@
   "name": "react-native-contacts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rt2zz/react-native-contacts.git"
+    "url": "https://github.com/morenoh149/react-native-contacts.git"
   },
   "version": "8.0.8",
   "description": "React Native Contacts (android & ios)",
@@ -17,7 +17,7 @@
     "android"
   ],
   "bugs": {
-    "url": "https://github.com/rt2zz/react-native-contacts/issues"
+    "url": "https://github.com/morenoh149/react-native-contacts/issues"
   },
   "@react-native-community/bob": {
     "source": "src",
@@ -28,7 +28,7 @@
       "typescript"
     ]
   },
-  "homepage": "https://github.com/rt2zz/react-native-contacts",
+  "homepage": "https://github.com/morenoh149/react-native-contacts",
   "main": "index.ts",
   "types": "index.d.ts",
   "scripts": {

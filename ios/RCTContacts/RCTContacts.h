@@ -5,12 +5,10 @@
 #import <RNContactsSpec/RNContactsSpec.h>
 #endif
 
-@interface RCTContacts : NSObject <RCTBridgeModule, CNContactViewControllerDelegate>
-
-@end
-
 #ifdef RCT_NEW_ARCH_ENABLED
-@interface RCTContacts: NSObject <NativeContactsSpec, CNContactViewControllerDelegate>
+@interface RCTContacts : NSObject <NativeContactsSpec, CNContactViewControllerDelegate>
+#else
+@interface RCTContacts : NSObject <RCTBridgeModule, CNContactViewControllerDelegate>
+#endif
 
 @end
-#endif

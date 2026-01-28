@@ -1,4 +1,4 @@
-import { NativeModules } from "react-native";
+import {NativeModules, Platform} from "react-native";
 import NativeContacts from "./src/NativeContacts";
 import { Contact, Group, PermissionType } from "./type";
 
@@ -14,6 +14,17 @@ async function getAllWithoutPhotos(): Promise<Contact[]> {
 
 async function getContactById(contactId: string): Promise<Contact | null> {
   return Contacts.getContactById(contactId);
+}
+
+async function getContactDataValue(
+    contactId: string,
+    mimeType: string,
+    columnName: string
+): Promise<any> {
+  if (Platform.OS == 'ios') {
+    return Promise.resolve([]);
+  }
+  return Contacts.getContactDataValue(contactId, mimeType, columnName);
 }
 
 async function getCount(): Promise<number> {
@@ -115,6 +126,7 @@ export default {
   getAll,
   getAllWithoutPhotos,
   getContactById,
+  getContactDataValue,
   getCount,
   getPhotoForId,
   addContact,

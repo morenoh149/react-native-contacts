@@ -6,6 +6,11 @@ export interface Spec extends TurboModule {
   getAll: () => Promise<any>;
   getAllWithoutPhotos: () => Promise<Contact[]>;
   getContactById: (contactId: string) => Promise<Contact>;
+  getContactDataValue: (
+      contactId: string,
+      mimeType: string,
+      columnName: string
+  ) => Promise<any>;
   getCount: () => Promise<number>;
   getPhotoForId: (contactId: string) => Promise<string>;
   addContact: (contact: Object) => Promise<any>;

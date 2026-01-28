@@ -216,6 +216,16 @@ public class ContactsManagerImpl {
         });
     }
 
+    public void getContactDataValue(final String contactId, final String mimeType, final String key, final Promise promise) {
+        getExecutor().execute(() -> {
+            Context context = getReactApplicationContext();
+            ContentResolver cr = context.getContentResolver();
+            ContactsProvider contactsProvider = new ContactsProvider(cr);
+            WritableArray values = contactsProvider.getContactDataValue(contactId, mimeType, key);
+            promise.resolve(values);
+        });
+    }
+
 
     public void writePhotoToPath(final String contactId, final String file, final Promise promise) {
         getExecutor().execute(() -> {

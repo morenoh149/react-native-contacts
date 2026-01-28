@@ -178,6 +178,7 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
  * `getAll`: Promise<Contact[]> - returns *all* contacts as an array of objects
  * `getAllWithoutPhotos` - same as `getAll` on Android, but on iOS it will not return uris for contact photos (because there's a significant overhead in creating the images)
  * `getContactById(contactId)`: Promise<Contact> - returns contact with defined contactId (or null if it doesn't exist)
+ * `getContactDataValue(contactId, mimetype, columnName)`: Promise<any> - returns the raw values in the array or an empty array.
  * `getCount()`: Promise<number> - returns the number of contacts
  * `getPhotoForId(contactId)`: Promise<string> - returns a URI (or null) for a contacts photo
  * `addContact(contact)`: Promise<Contact> - adds a contact to the AddressBook.  
@@ -245,6 +246,14 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
     { username: 'johndoe123', service: 'Facebook'}
   ],
   isStarred: false,
+  socialMedia: [{
+    phone: '5555555555',
+    rawPhone: 'Message +5555555555',
+    accountType: 'com.whatsapp',
+    accountName: 'WhatsApp',
+    socialId: '0123456789@s.whatsapp.net',
+    mimeType: 'vnd.android.cursor.item/vnd.com.whatsapp.profile'
+  }],
 }
 ```
 
@@ -253,6 +262,7 @@ If you'd like to read/write the contact's notes, call the `iosEnableNotesUsage(t
 * on Android versions below 8 the entire display name is passed in the `givenName` field. `middleName` and `familyName` will be `""`.
 * isStarred field
 * writePhotoToPath() - writes the contact photo to a given path
+* getContactDataValue() - take a raw value from any contact data column
 
 ## iOS only
 
@@ -345,6 +355,22 @@ Or by passing the full contact object with a `recordID` field.
 ```js
 Contacts.deleteContact(contact).then((recordId) => {
   // contact deleted
+})
+```
+
+## Get contact data values (raw values)
+To retrieve data from any column in its original form, you need:
+1. Record identifier (`recordID`) – internal contact ID from the Android database.
+2. MIME type (`mimeType`) – specific contact data type identifier used in the Android contacts database.
+3. Column name (`columnName`) – original column name from the `ContactsContract.Data` table.
+
+Example
+```js
+const recordID = contact.recordID;
+const mimeType = 'vnd.android.cursor.item/phone_v2';
+const columnName = 'data1';
+Contacts.getContactDataValue(recordID, mimeType, columnName).then(values => {
+  // values = ["(555) 555-5555", "(444) 444-4444"];
 })
 ```
 

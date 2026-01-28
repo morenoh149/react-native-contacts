@@ -21,18 +21,18 @@ class ListItem extends Component {
     onPress: PropTypes.func,
     onDelete: PropTypes.func,
     onLongPress: PropTypes.func,
-    disabled: PropTypes.bool
+    disabled: PropTypes.bool,
+    onRawValues: PropTypes.func,
   };
 
-  renderRightAction = (iconName, color, x, progress) => {
+  renderRightAction = (iconName, color, x, progress, onPress) => {
     const trans = progress.interpolate({
       inputRange: [0, 1],
       outputRange: [x, 0]
     });
 
     const pressHandler = () => {
-      const { onDelete } = this.props;
-      if (onDelete) onDelete();
+      if (onPress) onPress();
       this.close();
     };
 
@@ -42,23 +42,22 @@ class ListItem extends Component {
           style={[styles.rightAction, { backgroundColor: color }]}
           onPress={pressHandler}
         >
-          <Text style={{ color: "#fff" }}>Delete</Text>
+          <Text style={{ color: "#fff" }}>{iconName}</Text>
         </RectButton>
       </Animated.View>
     );
   };
 
-  renderRightActions = progress => (
-    <View style={{ width: 64, flexDirection: "row" }}>
-      {this.renderRightAction("trash", "#ef5350", 64, progress)}
-    </View>
-  );
+  renderRightActions = progress => {
+    const { onDelete, onRawValues } = this.props;
 
-  renderRightActions = progress => (
-    <View style={{ width: 64, flexDirection: "row" }}>
-      {this.renderRightAction("trash", "#ef5350", 64, progress)}
-    </View>
-  );
+    return (
+      <View style={{width: 128, flexDirection: "row"}}>
+        {this.renderRightAction("Raw data", "#1976d2", 128, progress, onRawValues)}
+        {this.renderRightAction("Delete", "#ef5350", 64, progress, onDelete)}
+      </View>
+    );
+  };
 
   updateRef = ref => {
     this.swipeableRow = ref;

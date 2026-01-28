@@ -16,8 +16,10 @@ import com.facebook.react.bridge.WritableMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static android.provider.ContactsContract.CommonDataKinds.Contactables;
 import static android.provider.ContactsContract.CommonDataKinds.Email;
@@ -34,6 +36,7 @@ public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
 
     public static final String NAME = "RCTContacts";
+
     private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {
         {
             add((ContactsContract.Data._ID));
@@ -76,6 +79,8 @@ public class ContactsProvider {
             add(Im.DATA);
             add(Event.START_DATE);
             add(Event.TYPE);
+            add(Contact.SocialMediaItem.ACCOUNT_TYPE);
+            add(Contact.SocialMediaItem.ACCOUNT_NAME);
         }
     };
 
@@ -233,6 +238,55 @@ public class ContactsProvider {
         return null;
     }
 
+    public WritableArray getContactDataValue(String contactId, String mimeType, String columnName) {
+        WritableArray result = Arguments.createArray();
+        Set<String> uniqueValues = new LinkedHashSet<>();
+
+        Cursor cursor = null;
+        try {
+            cursor = contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                new String[]{ columnName },
+                ContactsContract.RawContacts.CONTACT_ID + " = ? AND " +
+                ContactsContract.Data.MIMETYPE + " = ?",
+                new String[]{
+                    contactId,
+                    mimeType
+                },
+                null
+            );
+
+            if (cursor == null) {
+                return result;
+            }
+
+            int index = cursor.getColumnIndex(columnName);
+            if (index == -1) {
+                return result;
+            }
+
+            while (cursor.moveToNext()) {
+                String value = cursor.getString(index);
+                if (value != null) {
+                    uniqueValues.add(value);
+                }
+            }
+
+            for (String value : uniqueValues) {
+                result.pushString(value);
+            }
+        } catch (Exception e) {
+            Log.w("ContactsProvider. Error getContactDataValue", e.getMessage());
+            return result;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return result;
+    }
+
     public Integer getContactsCount() {
         Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         int count = cursor.getCount();
@@ -273,6 +327,9 @@ public class ContactsProvider {
                             + ContactsContract.Data.MIMETYPE + "=? OR "
                             + ContactsContract.Data.MIMETYPE + "=? OR "
                             + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR "
                             + ContactsContract.Data.MIMETYPE + "=?",
                     new String[] {
                             Email.CONTENT_ITEM_TYPE,
@@ -284,6 +341,9 @@ public class ContactsProvider {
                             Website.CONTENT_ITEM_TYPE,
                             Im.CONTENT_ITEM_TYPE,
                             Event.CONTENT_ITEM_TYPE,
+                            Contact.SocialMediaItem.WHATSAPP_TYPE,
+                            Contact.SocialMediaItem.TELEGRAM_TYPE,
+                            Contact.SocialMediaItem.FACEBOOK_TYPE,
                     },
                     null);
 
@@ -562,6 +622,11 @@ public class ContactsProvider {
                 case Note.CONTENT_ITEM_TYPE:
                     contact.note = cursor.getString(cursor.getColumnIndex(Note.NOTE));
                     break;
+                case Contact.SocialMediaItem.WHATSAPP_TYPE:
+                case Contact.SocialMediaItem.TELEGRAM_TYPE:
+                case Contact.SocialMediaItem.FACEBOOK_TYPE:
+                    contact.socialMedia.add(new Contact.SocialMediaItem(cursor, mimeType));
+                    break;
             }
         }
 
@@ -611,6 +676,7 @@ public class ContactsProvider {
         private List<Item> emails = new ArrayList<>();
         private List<Item> phones = new ArrayList<>();
         private List<PostalAddressItem> postalAddresses = new ArrayList<>();
+        private List<SocialMediaItem> socialMedia = new ArrayList<>();
         private Birthday birthday;
 
         public Contact(String contactId) {
@@ -678,6 +744,12 @@ public class ContactsProvider {
                 postalAddresses.pushMap(item.map);
             }
             contact.putArray("postalAddresses", postalAddresses);
+
+            WritableArray socialMedia = Arguments.createArray();
+            for (SocialMediaItem item : this.socialMedia) {
+                socialMedia.pushMap(item.map);
+            }
+            contact.putArray("socialMedia", socialMedia);
 
             WritableMap birthdayMap = Arguments.createMap();
             if (birthday != null) {
@@ -761,6 +833,41 @@ public class ContactsProvider {
                         return label != null ? label : "";
                 }
                 return "other";
+            }
+        }
+
+        public static class SocialMediaItem {
+            public static final String ACCOUNT_NAME = "account_name";
+            public static final String ACCOUNT_TYPE = "account_type";
+
+            public static final String WHATSAPP_TYPE = "vnd.android.cursor.item/vnd.com.whatsapp.profile";
+            public static final String TELEGRAM_TYPE = "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile";
+            public static final String FACEBOOK_TYPE = "vnd.android.cursor.item/vnd.com.facebook.profile";
+
+            public final WritableMap map;
+
+            public SocialMediaItem(Cursor cursor, String mimeType) {
+                map = Arguments.createMap();
+                map.putString("mimeType", mimeType);
+                map.putString("socialId", extract(cursor, ContactsContract.Data.DATA1));
+                map.putString("accountName", extract(cursor, ACCOUNT_NAME));
+                map.putString("accountType", extract(cursor, ACCOUNT_TYPE));
+
+                String rawPhone = extract(cursor, ContactsContract.Data.DATA3);
+                map.putString("rawPhone", rawPhone);
+                String formattedPhone = "";
+                if (rawPhone != null) {
+                    formattedPhone = rawPhone.replaceAll("[^\\d+]", "");
+                }
+                map.putString("phone", formattedPhone);
+            }
+
+            public static String extract(Cursor cursor, String field) {
+                if (field == null) return null;
+                int index = cursor.getColumnIndex(field);
+
+                if (index == -1) return null;
+                return cursor.getString(index);
             }
         }
     }

@@ -20,6 +20,7 @@ import {
   ActivityIndicator,
   Button
 } from "react-native";
+import {GestureHandlerRootView} from "react-native-gesture-handler";
 import Contacts from "react-native-contacts";
 
 import ListItem from "./components/ListItem";
@@ -37,8 +38,10 @@ export default class App extends Component<Props> {
       contacts: [],
       searchPlaceholder: "Search",
       typeText: null,
-      loading: true
-    };
+      loading: true,
+      showRawValues: false,
+      pickedValues: {}
+    }
 
     // if you want to read/write the contact note field on iOS, this method has to be called
     // WARNING: by enabling notes on iOS, a valid entitlement file containing the note entitlement as well as a separate
@@ -122,84 +125,152 @@ export default class App extends Component<Props> {
     })
   }
 
+  getRawContacts(contact) {
+    const recordId = contact.recordID;
+    const phoneType = 'vnd.android.cursor.item/phone_v2';
+    const emailType = 'vnd.android.cursor.item/email_v2';
+    const waType = 'vnd.android.cursor.item/vnd.com.whatsapp.profile';
+    const tgType = 'vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile';
+    const data1 = 'data1';
+    const data3 = 'data3';
+
+    Promise.all([
+      Contacts.getContactDataValue(recordId, phoneType, data1),
+      Contacts.getContactDataValue(recordId, emailType, data1),
+      Contacts.getContactDataValue(recordId, waType, data1),
+      Contacts.getContactDataValue(recordId, waType, data3),
+      Contacts.getContactDataValue(recordId, tgType, data1),
+      Contacts.getContactDataValue(recordId, tgType, data3),
+    ]).then(([phones, emails, wa, waPhones, tg, tgPhones]) => {
+      this.setState({
+        showRawValues: true,
+        pickedValues: {
+          phones: phones || [],
+          emails: emails || [],
+          'WhatsApp ids': wa || [],
+          'WhatsApp phones': waPhones || [],
+          'Telegram ids': tg || [],
+          'Telegram phones': tgPhones || [],
+        }
+      });
+    });
+  }
+
   render() {
     return (
-      <SafeAreaView style={styles.container}>
-        <View
-          style={{
-            paddingLeft: 100,
-            paddingRight: 100,
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <Image
-            source={require("./logo.png")}
+      <GestureHandlerRootView style={{flex: 1}}>
+        <SafeAreaView style={styles.container}>
+          <View
             style={{
-              aspectRatio: 6,
-              resizeMode: "contain"
+              paddingLeft: 100,
+              paddingRight: 100,
+              justifyContent: "center",
+              alignItems: "center"
             }}
+          >
+            <Image
+              source={require("./logo.png")}
+              style={{
+                aspectRatio: 6,
+                resizeMode: "contain"
+              }}
+            />
+          </View>
+          <Button title="Add new" onPress={() => this.addNew()} />
+          <SearchBar
+            searchPlaceholder={this.state.searchPlaceholder}
+            onChangeText={this.search}
           />
-        </View>
-        <Button title="Add new" onPress={() => this.addNew()} />
-        <SearchBar
-          searchPlaceholder={this.state.searchPlaceholder}
-          onChangeText={this.search}
-        />
 
-        <View style={{ paddingLeft: 10, paddingRight: 10 }}>
-          <TextInput
-            keyboardType='number-pad'
-            style={styles.inputStyle}
-            placeholder='Enter number to add to contact'
-            onChangeText={text => this.setState({ typeText: text })}
-            value={this.state.typeText}
-          />
-        </View>
+          <View style={{ paddingLeft: 10, paddingRight: 10 }}>
+            <TextInput
+              keyboardType='number-pad'
+              style={styles.inputStyle}
+              placeholder='Enter number to add to contact'
+              onChangeText={text => this.setState({ typeText: text })}
+              value={this.state.typeText}
+            />
+          </View>
 
-        {
-          this.state.loading === true ?
-            (
-              <View style={styles.spinner}>
-                <ActivityIndicator size="large" color="#0000ff" />
-              </View>
-            ) : (
-              <ScrollView style={{ flex: 1 }}>
-                {this.state.contacts.map(contact => {
-                  return (
-                    <ListItem
-                      leftElement={
-                        <Avatar
-                          img={
-                            contact.hasThumbnail
-                              ? { uri: contact.thumbnailPath }
-                              : undefined
-                          }
-                          placeholder={getAvatarInitials(
-                            `${contact.givenName} ${contact.familyName}`
-                          )}
-                          width={40}
-                          height={40}
-                        />
-                      }
-                      key={contact.recordID}
-                      title={`${contact.givenName} ${contact.familyName}`}
-                      description={`${contact.company}`}
-                      onPress={() => this.onPressContact(contact)}
-                      onLongPress={() => Contacts.viewExistingContact(contact)}
-                      onDelete={() =>
-                        Contacts.deleteContact(contact).then(() => {
-                          this.loadContacts();
+          {
+            this.state.loading === true ?
+              (
+                <View style={styles.spinner}>
+                  <ActivityIndicator size="large" color="#0000ff" />
+                </View>
+              ) : (
+                <ScrollView style={{ flex: 1 }}>
+                  {this.state.contacts.map(contact => {
+                    return (
+                      <ListItem
+                        leftElement={
+                          <Avatar
+                            img={
+                              contact.hasThumbnail
+                                ? { uri: contact.thumbnailPath }
+                                : undefined
+                            }
+                            placeholder={getAvatarInitials(
+                              `${contact.givenName} ${contact.familyName}`
+                            )}
+                            width={40}
+                            height={40}
+                          />
+                        }
+                        key={contact.recordID}
+                        title={`${contact.givenName} ${contact.familyName}`}
+                        description={`${contact.company}`}
+                        onPress={() => this.onPressContact(contact)}
+                        onLongPress={() => Contacts.viewExistingContact(contact)}
+                        onDelete={() =>
+                          Contacts.deleteContact(contact).then(() => {
+                            this.loadContacts();
+                          })
+                        }
+                        onRawValues={() => this.getRawContacts(contact)}
+                      />
+                    );
+                  })}
+                </ScrollView>
+              )
+          }
+
+          {this.state.showRawValues && (
+              <View
+                  style={{
+                    borderTopWidth: 1,
+                    borderColor: '#ddd',
+                    padding: 10,
+                    backgroundColor: '#fafafa'
+                  }}
+              >
+                {Object.entries(this.state.pickedValues).map(([type, values]) => (
+                    <View key={type} style={{ marginBottom: 8 }}>
+                      <Text style={{ fontWeight: '600' }}>{type}</Text>
+
+                      {values.length === 0 ? (
+                          <Text style={{ color: '#999', fontSize: 12 }}>Empty</Text>
+                      ) : (
+                          values.map((value, i) => (
+                              <Text key={i} style={{ color: '#999', fontSize: 13 }}>{value}</Text>
+                          ))
+                      )}
+                    </View>
+                ))}
+
+                <Button
+                    title="Close"
+                    onPress={() =>
+                        this.setState({
+                          showRawValues: false,
+                          pickedValues: {}
                         })
-                      }
-                    />
-                  );
-                })}
-              </ScrollView>
-            )
-        }
-
-      </SafeAreaView>
+                    }
+                />
+              </View>
+          )}
+        </SafeAreaView>
+      </GestureHandlerRootView>
     );
   }
 }

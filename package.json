@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/morenoh149/react-native-contacts.git"
   },
-  "version": "8.0.9",
+  "version": "8.0.10",
   "description": "React Native Contacts (android & ios)",
   "nativePackage": true,
   "keywords": [

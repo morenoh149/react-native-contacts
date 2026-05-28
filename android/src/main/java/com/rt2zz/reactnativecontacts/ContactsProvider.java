@@ -16,6 +16,7 @@ import com.facebook.react.bridge.WritableMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -125,56 +126,16 @@ public class ContactsProvider {
     }
 
     public WritableArray getContactsByPhoneNumber(String phoneNumber) {
-        Map<String, Contact> matchingContacts;
-        {
-            Cursor cursor = contentResolver.query(
-                    ContactsContract.Data.CONTENT_URI,
-                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.CommonDataKinds.Phone.NUMBER + " LIKE ? OR "
-                            + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " LIKE ?",
-                    new String[] { "%" + phoneNumber + "%", "%" + phoneNumber + "%" },
-                    null);
-
-            try {
-                matchingContacts = loadContactsFrom(cursor);
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
-            }
-        }
-
-        WritableArray contacts = Arguments.createArray();
-        for (Contact contact : matchingContacts.values()) {
-            contacts.pushMap(contact.toMap());
-        }
-        return contacts;
+        return getFullContactsForSelection(
+                ContactsContract.CommonDataKinds.Phone.NUMBER + " LIKE ? OR "
+                        + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " LIKE ?",
+                new String[] { "%" + phoneNumber + "%", "%" + phoneNumber + "%" });
     }
 
     public WritableArray getContactsByEmailAddress(String emailAddress) {
-        Map<String, Contact> matchingContacts;
-        {
-            Cursor cursor = contentResolver.query(
-                    ContactsContract.Data.CONTENT_URI,
-                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.CommonDataKinds.Email.ADDRESS + " LIKE ?",
-                    new String[] { "%" + emailAddress + "%" },
-                    null);
-
-            try {
-                matchingContacts = loadContactsFrom(cursor);
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
-            }
-        }
-
-        WritableArray contacts = Arguments.createArray();
-        for (Contact contact : matchingContacts.values()) {
-            contacts.pushMap(contact.toMap());
-        }
-        return contacts;
+        return getFullContactsForSelection(
+                ContactsContract.CommonDataKinds.Email.ADDRESS + " LIKE ?",
+                new String[] { "%" + emailAddress + "%" });
     }
 
     public WritableMap getContactByRawId(String contactRawId) {
@@ -313,6 +274,74 @@ public class ContactsProvider {
         } catch (RuntimeException error) {
             return false;
         }
+    }
+
+    private WritableArray getFullContactsForSelection(String selection, String[] selectionArgs) {
+        LinkedHashSet<String> matchingContactIds = new LinkedHashSet<>();
+        Cursor cursor = contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                new String[] { ContactsContract.Data.CONTACT_ID },
+                selection,
+                selectionArgs,
+                null);
+
+        try {
+            while (cursor != null && cursorMoveToNext(cursor)) {
+                int contactIdColumnIndex = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID);
+                if (contactIdColumnIndex != -1) {
+                    String contactId = cursor.getString(contactIdColumnIndex);
+                    if (!TextUtils.isEmpty(contactId)) {
+                        matchingContactIds.add(contactId);
+                    }
+                }
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return getContactsByIds(new ArrayList<>(matchingContactIds));
+    }
+
+    private WritableArray getContactsByIds(List<String> contactIds) {
+        WritableArray contacts = Arguments.createArray();
+        if (contactIds.isEmpty()) {
+            return contacts;
+        }
+
+        StringBuilder selectionBuilder = new StringBuilder();
+        for (int i = 0; i < contactIds.size(); i++) {
+            if (i > 0) {
+                selectionBuilder.append(", ");
+            }
+            selectionBuilder.append("?");
+        }
+
+        Map<String, Contact> contactsById;
+        Cursor cursor = contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                ContactsContract.Data.CONTACT_ID + " IN (" + selectionBuilder + ")",
+                contactIds.toArray(new String[0]),
+                null);
+
+        try {
+            contactsById = loadContactsFrom(cursor);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        for (String contactId : contactIds) {
+            Contact contact = contactsById.get(contactId);
+            if (contact != null) {
+                contacts.pushMap(contact.toMap());
+            }
+        }
+
+        return contacts;
     }
 
     @NonNull

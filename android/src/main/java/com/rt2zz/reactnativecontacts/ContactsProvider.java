@@ -271,11 +271,18 @@ public class ContactsProvider {
     }
 
     private Boolean cursorMoveToNext(Cursor cursor) {
+        if (cursor == null) {
+            return false;
+        }
         try {
             return cursor.moveToNext();
         } catch (RuntimeException error) {
             return false;
         }
+    }
+
+    private String getSelectionPlaceholders(int count) {
+        return TextUtils.join(", ", Collections.nCopies(count, "?"));
     }
 
     private WritableArray getFullContactsForSelection(String selection, String[] selectionArgs) {
@@ -319,8 +326,7 @@ public class ContactsProvider {
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Data.CONTACT_ID + " IN (" + TextUtils.join(", ",
-                            Collections.nCopies(contactIdBatch.size(), "?")) + ")",
+                    ContactsContract.Data.CONTACT_ID + " IN (" + getSelectionPlaceholders(contactIdBatch.size()) + ")",
                     contactIdBatch.toArray(new String[0]),
                     null);
 

@@ -15,6 +15,7 @@ import com.facebook.react.bridge.WritableMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -310,19 +311,11 @@ public class ContactsProvider {
             return contacts;
         }
 
-        StringBuilder selectionBuilder = new StringBuilder();
-        for (int i = 0; i < contactIds.size(); i++) {
-            if (i > 0) {
-                selectionBuilder.append(", ");
-            }
-            selectionBuilder.append("?");
-        }
-
         Map<String, Contact> contactsById;
         Cursor cursor = contentResolver.query(
                 ContactsContract.Data.CONTENT_URI,
                 FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                ContactsContract.Data.CONTACT_ID + " IN (" + selectionBuilder + ")",
+                ContactsContract.Data.CONTACT_ID + " IN (" + TextUtils.join(", ", Collections.nCopies(contactIds.size(), "?")) + ")",
                 contactIds.toArray(new String[0]),
                 null);
 

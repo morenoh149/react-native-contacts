@@ -34,6 +34,7 @@ import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal
 
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
+    private static final int CONTACTS_BY_ID_BATCH_SIZE = 500;
 
     public static final String NAME = "RCTContacts";
     private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {
@@ -311,19 +312,24 @@ public class ContactsProvider {
             return contacts;
         }
 
-        Map<String, Contact> contactsById;
-        Cursor cursor = contentResolver.query(
-                ContactsContract.Data.CONTENT_URI,
-                FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                ContactsContract.Data.CONTACT_ID + " IN (" + TextUtils.join(", ", Collections.nCopies(contactIds.size(), "?")) + ")",
-                contactIds.toArray(new String[0]),
-                null);
+        Map<String, Contact> contactsById = new LinkedHashMap<>();
+        for (int start = 0; start < contactIds.size(); start += CONTACTS_BY_ID_BATCH_SIZE) {
+            List<String> contactIdBatch = contactIds.subList(start,
+                    Math.min(start + CONTACTS_BY_ID_BATCH_SIZE, contactIds.size()));
+            Cursor cursor = contentResolver.query(
+                    ContactsContract.Data.CONTENT_URI,
+                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                    ContactsContract.Data.CONTACT_ID + " IN (" + TextUtils.join(", ",
+                            Collections.nCopies(contactIdBatch.size(), "?")) + ")",
+                    contactIdBatch.toArray(new String[0]),
+                    null);
 
-        try {
-            contactsById = loadContactsFrom(cursor);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
+            try {
+                contactsById.putAll(loadContactsFrom(cursor));
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
             }
         }
 

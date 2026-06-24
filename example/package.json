@@ -15,7 +15,7 @@
     "react-native-gesture-handler": "^1.10.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.14",
+    "@babel/core": "^7.29.6",
     "@babel/runtime": "^7.13.10",
     "@react-native-community/eslint-config": "^0.0.7",
     "babel-jest": "^25.1.0",

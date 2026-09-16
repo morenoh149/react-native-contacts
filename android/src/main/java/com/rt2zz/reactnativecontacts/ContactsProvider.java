@@ -125,14 +125,51 @@ public class ContactsProvider {
     }
 
     public WritableArray getContactsByPhoneNumber(String phoneNumber) {
+        List<String> contactIds = new ArrayList<>();
+        {
+            Uri lookupUri = Uri.withAppendedPath(
+                    ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+                    Uri.encode(phoneNumber));
+            Cursor lookupCursor = contentResolver.query(
+                    lookupUri,
+                    new String[] { ContactsContract.PhoneLookup._ID },
+                    null,
+                    null,
+                    null);
+
+            try {
+                while (cursorMoveToNext(lookupCursor)) {
+                    int columnIndex = lookupCursor.getColumnIndex(ContactsContract.PhoneLookup._ID);
+                    if (columnIndex != -1) {
+                        String contactId = lookupCursor.getString(columnIndex);
+                        if (!TextUtils.isEmpty(contactId) && !contactIds.contains(contactId)) {
+                            contactIds.add(contactId);
+                        }
+                    }
+                }
+            } finally {
+                if (lookupCursor != null) {
+                    lookupCursor.close();
+                }
+            }
+        }
+
+        if (contactIds.isEmpty()) {
+            return Arguments.createArray();
+        }
+
         Map<String, Contact> matchingContacts;
         {
+            String[] placeholders = new String[contactIds.size()];
+            Arrays.fill(placeholders, "?");
+            String selection = ContactsContract.RawContacts.CONTACT_ID
+                    + " IN (" + TextUtils.join(",", placeholders) + ")";
+
             Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.CommonDataKinds.Phone.NUMBER + " LIKE ? OR "
-                            + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " LIKE ?",
-                    new String[] { "%" + phoneNumber + "%", "%" + phoneNumber + "%" },
+                    selection,
+                    contactIds.toArray(new String[contactIds.size()]),
                     null);
 
             try {

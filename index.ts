@@ -1,6 +1,12 @@
 import { NativeModules } from "react-native";
 import NativeContacts from "./src/NativeContacts";
-import { Contact, Group, PermissionType } from "./type";
+import {
+  Contact,
+  ContactPickerOptions,
+  Group,
+  PermissionType,
+  PickedContact,
+} from "./type";
 
 const Contacts = NativeModules.Contacts ?? NativeContacts;
 
@@ -72,6 +78,12 @@ async function getContactsByEmailAddress(
   return Contacts.getContactsByEmailAddress(emailAddress);
 }
 
+async function pickContacts(
+  options: ContactPickerOptions = {}
+): Promise<PickedContact[]> {
+  return Contacts.pickContacts(options);
+}
+
 async function checkPermission(): Promise<PermissionType> {
   return Contacts.checkPermission();
 }
@@ -127,6 +139,7 @@ export default {
   getContactsMatchingString,
   getContactsByPhoneNumber,
   getContactsByEmailAddress,
+  pickContacts,
   checkPermission,
   requestPermission,
   writePhotoToPath,

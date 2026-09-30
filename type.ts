@@ -37,6 +37,20 @@ export interface UrlAddress {
   label: string;
 }
 
+export type ContactPickerField = "name" | "emailAddresses" | "phoneNumbers";
+
+export interface ContactPickerOptions {
+  fields?: ContactPickerField[];
+  selectionLimit?: number;
+}
+
+export type PickedContact = Pick<
+  Contact,
+  "displayName" | "givenName" | "middleName" | "familyName" | "emailAddresses" | "phoneNumbers"
+> & {
+  identifier: string;
+};
+
 export interface Contact {
   recordID: string;
   backTitle: string;

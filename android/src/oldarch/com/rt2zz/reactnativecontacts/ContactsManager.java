@@ -116,6 +116,11 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         contactsManagerImpl.getContactsByEmailAddress(emailAddress, promise);
     }
 
+    @ReactMethod
+    public void pickContacts(ReadableMap options, Promise promise) {
+        contactsManagerImpl.pickContacts(options, promise);
+    }
+
     /**
      * Retrieves <code>thumbnailPath</code> for contact, or <code>null</code> if not
      * available.

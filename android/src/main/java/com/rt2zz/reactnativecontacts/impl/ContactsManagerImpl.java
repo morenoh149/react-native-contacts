@@ -10,10 +10,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 
@@ -21,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -37,6 +40,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -49,9 +54,18 @@ public class ContactsManagerImpl {
     private static final int PERMISSION_REQUEST_CODE = 888;
     private static final int REQUEST_OPEN_CONTACT_FORM = 52941;
     private static final int REQUEST_OPEN_EXISTING_CONTACT = 52942;
+    private static final int REQUEST_PICK_CONTACTS = 52943;
+    private static final int SYSTEM_CONTACT_PICKER_MIN_API = 37;
+
+    // String constants keep consumers below compileSdk 37 source-compatible.
+    private static final String ACTION_PICK_CONTACTS = "android.provider.action.PICK_CONTACTS";
+    private static final String EXTRA_USE_SYSTEM_CONTACTS_PICKER = "android.intent.extra.USE_SYSTEM_CONTACTS_PICKER";
+    private static final String EXTRA_PICK_CONTACTS_REQUESTED_DATA_FIELDS = "android.provider.extra.PICK_CONTACTS_REQUESTED_DATA_FIELDS";
+    private static final String EXTRA_PICK_CONTACTS_SELECTION_LIMIT = "android.provider.extra.PICK_CONTACTS_SELECTION_LIMIT";
 
     private static Promise updateContactPromise;
     private static Promise requestPromise;
+    private Promise pickContactsPromise;
 
     private final ReactApplicationContext reactApplicationContext;
 
@@ -182,6 +196,69 @@ public class ContactsManagerImpl {
             WritableArray contacts = contactsProvider.getContactsByEmailAddress(emailAddress);
             promise.resolve(contacts);
         });
+    }
+
+    public void pickContacts(ReadableMap options, Promise promise) {
+        if (Build.VERSION.SDK_INT < SYSTEM_CONTACT_PICKER_MIN_API) {
+            promise.reject("E_CONTACT_PICKER_UNAVAILABLE", "The system contact picker requires Android 17 or newer.");
+            return;
+        }
+        if (pickContactsPromise != null) {
+            promise.reject("E_CONTACT_PICKER_BUSY", "A contact picker request is already in progress.");
+            return;
+        }
+
+        Activity activity = getCurrentActivity();
+        if (activity == null) {
+            promise.reject("E_ACTIVITY_DOES_NOT_EXIST", "No foreground activity is available.");
+            return;
+        }
+
+        ArrayList<String> requestedDataFields = new ArrayList<>();
+        ReadableArray fields = options != null && options.hasKey("fields") && !options.isNull("fields")
+                ? options.getArray("fields")
+                : null;
+        if (fields == null || fields.size() == 0) {
+            requestedDataFields.add(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
+            requestedDataFields.add(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
+            requestedDataFields.add(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+        } else {
+            for (int index = 0; index < fields.size(); index++) {
+                String field = fields.getString(index);
+                if ("name".equals(field)) {
+                    requestedDataFields.add(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
+                } else if ("phoneNumbers".equals(field)) {
+                    requestedDataFields.add(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
+                } else if ("emailAddresses".equals(field)) {
+                    requestedDataFields.add(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+                } else {
+                    promise.reject("E_CONTACT_PICKER_INVALID_FIELD", "Unsupported contact picker field: " + field);
+                    return;
+                }
+            }
+        }
+
+        int selectionLimit = options != null && options.hasKey("selectionLimit") && !options.isNull("selectionLimit")
+                ? options.getInt("selectionLimit")
+                : 50;
+        if (selectionLimit < 1 || selectionLimit > 100) {
+            promise.reject("E_CONTACT_PICKER_INVALID_LIMIT", "selectionLimit must be between 1 and 100.");
+            return;
+        }
+
+        Intent intent = new Intent(ACTION_PICK_CONTACTS);
+        intent.putExtra(EXTRA_USE_SYSTEM_CONTACTS_PICKER, true);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        intent.putExtra(EXTRA_PICK_CONTACTS_SELECTION_LIMIT, selectionLimit);
+        intent.putStringArrayListExtra(EXTRA_PICK_CONTACTS_REQUESTED_DATA_FIELDS, requestedDataFields);
+
+        pickContactsPromise = promise;
+        try {
+            activity.startActivityForResult(intent, REQUEST_PICK_CONTACTS);
+        } catch (Exception exception) {
+            pickContactsPromise = null;
+            promise.reject("E_CONTACT_PICKER_LAUNCH", "Unable to launch the system contact picker.", exception);
+        }
     }
 
     /**
@@ -1287,7 +1364,144 @@ public class ContactsManagerImpl {
     }
 
 
+    private WritableArray readPickedContacts(Uri sessionUri) {
+        String[] projection = new String[]{
+                ContactsContract.Contacts.LOOKUP_KEY,
+                ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
+                ContactsContract.Data.MIMETYPE,
+                ContactsContract.Data.DATA1,
+                ContactsContract.Data.DATA2,
+                ContactsContract.Data.DATA3,
+                ContactsContract.Data.DATA5
+        };
+        Map<String, PickedContactResult> contacts = new LinkedHashMap<>();
+        ContentResolver resolver = getReactApplicationContext().getContentResolver();
+
+        try (Cursor cursor = resolver.query(sessionUri, projection, null, null, null)) {
+            if (cursor == null) {
+                return Arguments.createArray();
+            }
+
+            int lookupKeyIndex = cursor.getColumnIndex(ContactsContract.Contacts.LOOKUP_KEY);
+            int displayNameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY);
+            int mimeTypeIndex = cursor.getColumnIndex(ContactsContract.Data.MIMETYPE);
+            int valueIndex = cursor.getColumnIndex(ContactsContract.Data.DATA1);
+            int typeIndex = cursor.getColumnIndex(ContactsContract.Data.DATA2);
+            int customLabelIndex = cursor.getColumnIndex(ContactsContract.Data.DATA3);
+            int middleNameIndex = cursor.getColumnIndex(ContactsContract.Data.DATA5);
+
+            while (cursor.moveToNext()) {
+                String lookupKey = getString(cursor, lookupKeyIndex);
+                if (lookupKey == null) {
+                    continue;
+                }
+
+                PickedContactResult contact = contacts.get(lookupKey);
+                if (contact == null) {
+                    contact = new PickedContactResult(lookupKey, getString(cursor, displayNameIndex));
+                    contacts.put(lookupKey, contact);
+                }
+
+                String mimeType = getString(cursor, mimeTypeIndex);
+                if (ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE.equals(mimeType)) {
+                    contact.givenName = getString(cursor, typeIndex);
+                    contact.familyName = getString(cursor, customLabelIndex);
+                    contact.middleName = getString(cursor, middleNameIndex);
+                    continue;
+                }
+                String value = getString(cursor, valueIndex);
+                if (value == null || value.isEmpty()) {
+                    continue;
+                }
+
+                int type = typeIndex >= 0 && !cursor.isNull(typeIndex) ? cursor.getInt(typeIndex) : 0;
+                String customLabel = getString(cursor, customLabelIndex);
+                if (ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE.equals(mimeType)) {
+                    contact.phoneNumbers.pushMap(makePhoneNumber(value, type, customLabel));
+                } else if (ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE.equals(mimeType)) {
+                    contact.emailAddresses.pushMap(makeEmailAddress(value, type, customLabel));
+                }
+            }
+        }
+
+        WritableArray result = Arguments.createArray();
+        for (PickedContactResult contact : contacts.values()) {
+            WritableMap value = Arguments.createMap();
+            value.putString("identifier", contact.identifier);
+            value.putString("displayName", contact.displayName);
+            value.putString("givenName", contact.givenName == null ? "" : contact.givenName);
+            value.putString("middleName", contact.middleName == null ? "" : contact.middleName);
+            value.putString("familyName", contact.familyName == null ? "" : contact.familyName);
+            value.putArray("phoneNumbers", contact.phoneNumbers);
+            value.putArray("emailAddresses", contact.emailAddresses);
+            result.pushMap(value);
+        }
+        return result;
+    }
+
+    private WritableMap makePhoneNumber(String number, int type, String customLabel) {
+        WritableMap phoneNumber = Arguments.createMap();
+        CharSequence label = ContactsContract.CommonDataKinds.Phone.getTypeLabel(
+                getReactApplicationContext().getResources(), type, customLabel);
+        phoneNumber.putString("number", number);
+        phoneNumber.putString("label", label.toString());
+        return phoneNumber;
+    }
+
+    private WritableMap makeEmailAddress(String email, int type, String customLabel) {
+        WritableMap emailAddress = Arguments.createMap();
+        CharSequence label = ContactsContract.CommonDataKinds.Email.getTypeLabel(
+                getReactApplicationContext().getResources(), type, customLabel);
+        emailAddress.putString("email", email);
+        emailAddress.putString("label", label.toString());
+        return emailAddress;
+    }
+
+    private static String getString(Cursor cursor, int columnIndex) {
+        return columnIndex >= 0 && !cursor.isNull(columnIndex) ? cursor.getString(columnIndex) : null;
+    }
+
+    private static class PickedContactResult {
+        final String identifier;
+        final String displayName;
+        String givenName;
+        String middleName;
+        String familyName;
+        final WritableArray phoneNumbers = Arguments.createArray();
+        final WritableArray emailAddresses = Arguments.createArray();
+
+        PickedContactResult(String identifier, String displayName) {
+            this.identifier = identifier;
+            this.displayName = displayName == null ? "" : displayName;
+        }
+    }
+
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_PICK_CONTACTS) {
+            Promise promise = pickContactsPromise;
+            pickContactsPromise = null;
+            if (promise == null) {
+                return;
+            }
+            if (resultCode != Activity.RESULT_OK) {
+                promise.resolve(Arguments.createArray());
+                return;
+            }
+            Uri sessionUri = data == null ? null : data.getData();
+            if (sessionUri == null) {
+                promise.reject("E_CONTACT_PICKER_RESULT", "The contact picker returned no session URI.");
+                return;
+            }
+            getExecutor().execute(() -> {
+                try {
+                    promise.resolve(readPickedContacts(sessionUri));
+                } catch (Exception exception) {
+                    promise.reject("E_CONTACT_PICKER_READ", "Unable to read selected contacts.", exception);
+                }
+            });
+            return;
+        }
+
         if (requestCode != REQUEST_OPEN_CONTACT_FORM && requestCode != REQUEST_OPEN_EXISTING_CONTACT) {
             return;
         }

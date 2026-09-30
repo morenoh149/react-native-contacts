@@ -88,6 +88,13 @@ RCT_EXPORT_METHOD(iosEnableNotesUsage:(BOOL) enabled)
     notesUsageEnabled = enabled;
 }
 
+RCT_EXPORT_METHOD(pickContacts:(NSDictionary *)options
+    resolver:(RCTPromiseResolveBlock) __unused resolve
+    rejecter:(RCTPromiseRejectBlock) reject)
+{
+    reject(@"E_CONTACT_PICKER_UNAVAILABLE", @"pickContacts is currently available on Android 17 or newer.", nil);
+}
+
 RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string resolver:(RCTPromiseResolveBlock) resolve
     rejecter:(RCTPromiseRejectBlock) reject)
 {
@@ -1655,6 +1662,10 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
 
 - (void)getAll:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [self getAllContacts:resolve reject:reject withThumbnails:true];
+}
+
+- (void)pickContacts:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    reject(@"E_CONTACT_PICKER_UNAVAILABLE", @"pickContacts is currently available on Android 17 or newer.", nil);
 }
 
 - (void)checkPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

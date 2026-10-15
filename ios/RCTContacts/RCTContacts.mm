@@ -935,7 +935,7 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData resolver:(RCTP
 - (void)doneContactForm
 {
     if (updateContactPromise != nil) {
-        UIViewController *rootViewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        UIViewController *rootViewController = RCTKeyWindow().rootViewController;
         [rootViewController dismissViewControllerAnimated:YES completion:nil];
 
         NSDictionary *contactDict = [self contactToDictionary:selectedContact withThumbnails:true];
@@ -947,7 +947,7 @@ RCT_EXPORT_METHOD(editExistingContact:(NSDictionary *)contactData resolver:(RCTP
 - (void)cancelContactForm
 {
     if (updateContactPromise != nil) {
-        UIViewController *rootViewController = (UIViewController*)[[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        UIViewController *rootViewController = RCTKeyWindow().rootViewController;
         while (rootViewController.presentedViewController)
             {
                 rootViewController = rootViewController.presentedViewController;

@@ -1657,20 +1657,9 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
     [self getAllContacts:resolve reject:reject withThumbnails:true];
 }
 
+// New-architecture entry point; shares the exported implementation above so the two can't drift.
 - (void)checkPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    CNAuthorizationStatus authStatus = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-
-    if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted) {
-        resolve(@"denied");
-    } else if (authStatus == CNAuthorizationStatusAuthorized) {
-        resolve(@"authorized");
-    } else if (@available(iOS 18, *)) {
-        if (authStatus == CNAuthorizationStatusRestricted) {
-            resolve(@"limited");
-        }
-    } else {
-        resolve(@"undefined");
-    }
+    [self checkPermission:resolve rejecter:reject];
 }
 
 

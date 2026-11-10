@@ -1640,7 +1640,10 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
                 }
             }
             NSString *message = [NSString stringWithFormat:@"Contacts store has no default container (authorization status: %@)", statusName];
-            reject(@"Error", message, nil);
+            NSError *error = [NSError errorWithDomain:@"RNContacts"
+                                                 code:authStatus
+                                             userInfo:@{@"authorizationStatus": statusName}];
+            reject(@"Error", message, error);
         }
 
         return nil;

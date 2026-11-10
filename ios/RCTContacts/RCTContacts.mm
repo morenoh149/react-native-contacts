@@ -1629,7 +1629,18 @@ RCT_EXPORT_METHOD(removeContactsFromGroup:(NSString *)groupId
         if (authStatus == CNAuthorizationStatusDenied || authStatus == CNAuthorizationStatusRestricted){
             reject(@"Error", @"denied", nil);
         } else {
-            reject(@"Error", @"undefined", nil);
+            NSString *statusName = @"unknown";
+            if (authStatus == CNAuthorizationStatusNotDetermined) {
+                statusName = @"notDetermined";
+            } else if (authStatus == CNAuthorizationStatusAuthorized) {
+                statusName = @"authorized";
+            } else if (@available(iOS 18, *)) {
+                if (authStatus == CNAuthorizationStatusLimited) {
+                    statusName = @"limited";
+                }
+            }
+            NSString *message = [NSString stringWithFormat:@"Contacts store has no default container (authorization status: %@)", statusName];
+            reject(@"Error", message, nil);
         }
 
         return nil;
